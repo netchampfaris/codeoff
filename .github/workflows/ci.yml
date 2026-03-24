@@ -107,8 +107,8 @@ jobs:
       - name: Coverage Report
         working-directory: /home/runner/frappe-bench/sites
         run: |
-          coverage report --include="*/codeoff/*" --skip-empty
-          coverage xml --include="*/codeoff/*" -o $GITHUB_WORKSPACE/coverage.xml
+          ../env/bin/coverage report --include="*/codeoff/*" --skip-empty
+          ../env/bin/coverage xml --include="*/codeoff/*" -o $GITHUB_WORKSPACE/coverage.xml
 
       - name: Coverage Badge
         if: github.ref == 'refs/heads/main'
