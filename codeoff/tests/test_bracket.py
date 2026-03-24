@@ -1,8 +1,8 @@
 import frappe
 from frappe.tests import IntegrationTestCase
 
-from codeoff.code_off.services.match_engine import finalize_match
-from codeoff.code_off.tests.utils import cleanup_test_data, create_players, create_problem, create_tournament
+from codeoff.services.match_engine import finalize_match
+from codeoff.tests.utils import cleanup_test_data, create_players, create_problem, create_tournament
 
 
 class TestCodeoffBracket(IntegrationTestCase):

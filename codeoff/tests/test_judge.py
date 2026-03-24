@@ -1,7 +1,7 @@
 from frappe.tests import IntegrationTestCase
 
-from codeoff.code_off.services.judge import run_tests
-from codeoff.code_off.tests.utils import make_test_cases
+from codeoff.services.judge import run_tests
+from codeoff.tests.utils import make_test_cases
 
 
 class TestCodeoffJudge(IntegrationTestCase):

@@ -1,14 +1,14 @@
 import frappe
 from frappe.tests import IntegrationTestCase
 
-from codeoff.code_off.services.match_engine import (
+from codeoff.services.match_engine import (
 	determine_winner_by_score,
 	finalize_match,
 	process_verdict,
 	recompute_scores,
 	resolve_match_timeout,
 )
-from codeoff.code_off.tests.utils import cleanup_test_data, create_live_match, create_submission
+from codeoff.tests.utils import cleanup_test_data, create_live_match, create_submission
 
 
 class TestCodeoffWinnerDetermination(IntegrationTestCase):

@@ -57,7 +57,7 @@ class CodeoffMatch(Document):
 
 		# Schedule timeout resolution
 		frappe.enqueue(
-			"codeoff.code_off.services.match_engine.resolve_match_timeout",
+			"codeoff.services.match_engine.resolve_match_timeout",
 			match_id=self.name,
 			enqueue_after_commit=True,
 			at_front=False,

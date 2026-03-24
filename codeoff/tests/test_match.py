@@ -1,7 +1,7 @@
 import frappe
 from frappe.tests import IntegrationTestCase
 
-from codeoff.code_off.tests.utils import (
+from codeoff.tests.utils import (
 	cleanup_test_data,
 	create_live_match,
 	create_players,

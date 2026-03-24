@@ -4,7 +4,7 @@ import frappe
 from frappe.tests import IntegrationTestCase
 from frappe.utils import now_datetime
 
-from codeoff.code_off.tests.utils import cleanup_test_data, create_live_match, create_players
+from codeoff.tests.utils import cleanup_test_data, create_live_match, create_players
 
 
 class TestCodeoffSubmissionValidation(IntegrationTestCase):

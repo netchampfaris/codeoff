@@ -40,7 +40,7 @@ def submit_code(match_id, source_code):
 
 	# Enqueue judging
 	frappe.enqueue(
-		"codeoff.code_off.services.judge.judge_submission",
+		"codeoff.services.judge.judge_submission",
 		submission_id=submission.name,
 		enqueue_after_commit=True,
 	)
@@ -60,7 +60,7 @@ def run_sample_tests(match_id, source_code):
 	if player.name not in (match.player_1, match.player_2):
 		frappe.throw("You are not a participant in this match")
 
-	from codeoff.code_off.services.judge import run_sample_tests as _run_sample_tests
+	from codeoff.services.judge import run_sample_tests as _run_sample_tests
 
 	results = _run_sample_tests(source_code, match.problem)
 	return results

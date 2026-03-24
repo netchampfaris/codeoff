@@ -46,7 +46,7 @@ def judge_submission(submission_id):
 	frappe.db.commit()
 
 	# Process the verdict (winner determination, bracket advancement)
-	from codeoff.code_off.services.match_engine import process_verdict
+	from codeoff.services.match_engine import process_verdict
 
 	process_verdict(submission_id)
 
