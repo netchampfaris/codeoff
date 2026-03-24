@@ -243,12 +243,13 @@ def setup():
 				"email": org["email"],
 				"first_name": org["first_name"],
 				"send_welcome_email": 0,
-				"new_password": "Dem0@codeoff#2024",
+				"new_password": "123",
 				"roles": [{"role": "System Manager"}],
 			}
 		)
+		user.flags.ignore_password_policy = True
 		user.insert(ignore_permissions=True)
-		print(f"  Created organizer: {org['email']} — password: Dem0@codeoff#2024")
+		print(f"  Created organizer: {org['email']} — password: 123")
 	else:
 		print(f"  Organizer already exists: {org['email']}")
 
@@ -263,11 +264,12 @@ def setup():
 					"first_name": p["first_name"],
 					"last_name": p.get("last_name", ""),
 					"send_welcome_email": 0,
-					"new_password": "Dem0@codeoff#2024",
+					"new_password": "123",
 				}
 			)
+			user.flags.ignore_password_policy = True
 			user.insert(ignore_permissions=True)
-			print(f"  Created user: {p['email']} — password: Dem0@codeoff#2024")
+			print(f"  Created user: {p['email']} — password: 123")
 		else:
 			print(f"  User already exists: {p['email']}")
 
@@ -325,7 +327,7 @@ def setup():
 	first_match = frappe.get_doc("Codeoff Match", matches[0].name)
 
 	print("\n✓ Demo data created successfully!")
-	print(f"\nLogin credentials (password for all: Dem0@codeoff#2024):")
+	print(f"\nLogin credentials (password for all: 123):")
 	print(f"  {DEMO_ORGANIZER['email']} (organizer — Desk access)")
 	for p in DEMO_PLAYERS:
 		print(f"  {p['email']} (contestant)")
