@@ -10,6 +10,9 @@ concurrency:
   group: main-codeoff-${{ github.event.number }}
   cancel-in-progress: true
 
+permissions:
+  contents: write
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -112,12 +115,15 @@ jobs:
 
       - name: Coverage Badge
         if: github.ref == 'refs/heads/main'
+        working-directory: /home/runner/frappe-bench/sites
         run: |
-          COV=$(cd /home/runner/frappe-bench/sites && ../env/bin/coverage report --include="*/codeoff/*" --skip-empty | tail -1 | awk '{print $NF}' | tr -d '%')
-          if [ $(echo "$COV >= 80" | bc) -eq 1 ]; then COLOR="brightgreen"
-          elif [ $(echo "$COV >= 60" | bc) -eq 1 ]; then COLOR="yellow"
+          COV=$(../env/bin/coverage report --include="*/codeoff/*" --skip-empty | grep '^TOTAL' | grep -oP '\d+%' | tr -d '%')
+          echo "Coverage: ${COV}%"
+          if [ "$COV" -ge 80 ] 2>/dev/null; then COLOR="brightgreen"
+          elif [ "$COV" -ge 60 ] 2>/dev/null; then COLOR="yellow"
           else COLOR="red"; fi
-          curl -s "https://img.shields.io/badge/coverage-${COV}%25-${COLOR}" > badge.svg
+          curl -s "https://img.shields.io/badge/coverage-${COV}%25-${COLOR}" > $GITHUB_WORKSPACE/badge.svg
+          cd $GITHUB_WORKSPACE
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git checkout --orphan coverage-badge
