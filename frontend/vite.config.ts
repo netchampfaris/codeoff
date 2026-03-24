@@ -22,6 +22,6 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['tailwind.config.js'],
+    include: ['tailwind.config.js', 'feather-icons', 'debug'],
   },
 })

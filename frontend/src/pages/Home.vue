@@ -27,7 +27,10 @@
             ]"
             @click.prevent="toggleStatus(todo)"
           >
-            <LucideCheck v-if="todo.status === 'Closed'" class="h-3.5 w-3.5 text-white" />
+            <LucideCheck
+              v-if="todo.status === 'Closed'"
+              class="h-3.5 w-3.5 text-white"
+            />
           </button>
           <span
             class="text-sm"
@@ -50,7 +53,7 @@
             {{ todo.priority }}
           </Badge>
           <button
-            class="rounded p-1 text-ink-gray-5 transition hover:bg-surface-gray-2 hover:text-ink-red-7"
+            class="hover:text-ink-red-7 rounded p-1 text-ink-gray-5 transition hover:bg-surface-gray-2"
             @click.prevent="deleteTodo(todo.name)"
           >
             <LucideTrash2 class="h-3.5 w-3.5" />
@@ -124,10 +127,10 @@ function priorityColor(priority: string) {
   }
 }
 
-async function createTodo() {
+function createTodo() {
   creating.value = true
   try {
-    await todos.insert.submit({
+    todos.insert.submit({
       description: newTodo.description,
       priority: newTodo.priority,
       status: 'Open',
@@ -135,21 +138,18 @@ async function createTodo() {
     showNewDialog.value = false
     newTodo.description = ''
     newTodo.priority = 'Medium'
-    todos.reload()
   } finally {
     creating.value = false
   }
 }
 
-async function toggleStatus(todo: any) {
+function toggleStatus(todo: any) {
   const newStatus = todo.status === 'Closed' ? 'Open' : 'Closed'
   todo.status = newStatus
-  await todos.setValue.submit({ name: todo.name, status: newStatus })
-  todos.reload()
+  todos.setValue.submit({ name: todo.name, status: newStatus })
 }
 
-async function deleteTodo(name: string) {
-  await todos.delete.submit({ name })
-  todos.reload()
+function deleteTodo(name: string) {
+  todos.delete.submit({ name })
 }
 </script>

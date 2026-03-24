@@ -56,4 +56,5 @@ jspm_packages/
 
 # Frontend build outputs
 codeoff/public/frontend/
+codeoff/public/node_modules
 codeoff/www/codeoff.html
