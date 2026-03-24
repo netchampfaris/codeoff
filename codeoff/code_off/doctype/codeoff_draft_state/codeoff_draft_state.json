@@ -1,0 +1,101 @@
+{
+ "actions": [],
+ "autoname": "format:DRAFT-{match}-{player}",
+ "creation": "2026-03-24 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "match",
+  "player",
+  "language",
+  "updated_at",
+  "column_break_1",
+  "cursor_line",
+  "cursor_column",
+  "section_break_code",
+  "source_code"
+ ],
+ "fields": [
+  {
+   "fieldname": "match",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Match",
+   "options": "Codeoff Match",
+   "reqd": 1
+  },
+  {
+   "fieldname": "player",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Player",
+   "options": "Codeoff Player",
+   "reqd": 1
+  },
+  {
+   "default": "python",
+   "fieldname": "language",
+   "fieldtype": "Data",
+   "label": "Language",
+   "read_only": 1
+  },
+  {
+   "fieldname": "updated_at",
+   "fieldtype": "Datetime",
+   "label": "Updated At",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "cursor_line",
+   "fieldtype": "Int",
+   "label": "Cursor Line"
+  },
+  {
+   "default": "0",
+   "fieldname": "cursor_column",
+   "fieldtype": "Int",
+   "label": "Cursor Column"
+  },
+  {
+   "fieldname": "section_break_code",
+   "fieldtype": "Section Break",
+   "label": "Source Code"
+  },
+  {
+   "fieldname": "source_code",
+   "fieldtype": "Code",
+   "label": "Source Code",
+   "options": "Python"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-03-24 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Code Off",
+ "name": "Codeoff Draft State",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

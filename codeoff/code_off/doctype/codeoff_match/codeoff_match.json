@@ -1,0 +1,192 @@
+{
+ "actions": [],
+ "autoname": "format:MATCH-{####}",
+ "creation": "2026-03-24 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "tournament",
+  "round_number",
+  "bracket_position",
+  "status",
+  "column_break_1",
+  "problem",
+  "start_time",
+  "deadline",
+  "section_break_players",
+  "player_1",
+  "best_score_player_1",
+  "wrong_submissions_player_1",
+  "column_break_2",
+  "player_2",
+  "best_score_player_2",
+  "wrong_submissions_player_2",
+  "section_break_result",
+  "winner",
+  "winning_reason",
+  "column_break_3",
+  "tie_break_metadata"
+ ],
+ "fields": [
+  {
+   "fieldname": "tournament",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Tournament",
+   "options": "Codeoff Tournament",
+   "reqd": 1
+  },
+  {
+   "fieldname": "round_number",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Round",
+   "reqd": 1
+  },
+  {
+   "fieldname": "bracket_position",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Bracket Position",
+   "reqd": 1
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Draft\nReady\nLive\nFinished\nReview\nCancelled"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "problem",
+   "fieldtype": "Link",
+   "label": "Problem",
+   "options": "Codeoff Problem"
+  },
+  {
+   "fieldname": "start_time",
+   "fieldtype": "Datetime",
+   "label": "Start Time",
+   "read_only": 1
+  },
+  {
+   "fieldname": "deadline",
+   "fieldtype": "Datetime",
+   "label": "Deadline",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_players",
+   "fieldtype": "Section Break",
+   "label": "Players"
+  },
+  {
+   "fieldname": "player_1",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Player 1",
+   "options": "Codeoff Player"
+  },
+  {
+   "default": "0",
+   "fieldname": "best_score_player_1",
+   "fieldtype": "Int",
+   "label": "Best Score (Player 1)",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "wrong_submissions_player_1",
+   "fieldtype": "Int",
+   "label": "Wrong Submissions (Player 1)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "player_2",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Player 2",
+   "options": "Codeoff Player"
+  },
+  {
+   "default": "0",
+   "fieldname": "best_score_player_2",
+   "fieldtype": "Int",
+   "label": "Best Score (Player 2)",
+   "read_only": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "wrong_submissions_player_2",
+   "fieldtype": "Int",
+   "label": "Wrong Submissions (Player 2)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_result",
+   "fieldtype": "Section Break",
+   "label": "Result"
+  },
+  {
+   "fieldname": "winner",
+   "fieldtype": "Link",
+   "label": "Winner",
+   "options": "Codeoff Player",
+   "read_only": 1
+  },
+  {
+   "fieldname": "winning_reason",
+   "fieldtype": "Select",
+   "label": "Winning Reason",
+   "options": "\nFirst Accepted\nBest Score\nTie Review\nManual Override",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "tie_break_metadata",
+   "fieldtype": "JSON",
+   "label": "Tie Break Metadata",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-03-24 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Code Off",
+ "name": "Codeoff Match",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

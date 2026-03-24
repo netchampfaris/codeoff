@@ -1,0 +1,162 @@
+{
+ "actions": [],
+ "autoname": "field:title",
+ "creation": "2026-03-24 00:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "title",
+  "slug",
+  "difficulty",
+  "is_active",
+  "column_break_1",
+  "function_name",
+  "function_signature",
+  "allowed_language",
+  "section_break_limits",
+  "time_limit_seconds",
+  "memory_limit_mb",
+  "section_break_statement",
+  "statement",
+  "constraints_text",
+  "section_break_code",
+  "starter_code",
+  "section_break_tests",
+  "test_cases"
+ ],
+ "fields": [
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Title",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "slug",
+   "fieldtype": "Data",
+   "label": "Slug",
+   "unique": 1
+  },
+  {
+   "fieldname": "difficulty",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Difficulty",
+   "options": "Easy\nMedium\nHard"
+  },
+  {
+   "default": "1",
+   "fieldname": "is_active",
+   "fieldtype": "Check",
+   "label": "Is Active"
+  },
+  {
+   "fieldname": "column_break_1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "function_name",
+   "fieldtype": "Data",
+   "label": "Function Name",
+   "reqd": 1,
+   "description": "e.g., two_sum, solve"
+  },
+  {
+   "fieldname": "function_signature",
+   "fieldtype": "Data",
+   "label": "Function Signature",
+   "reqd": 1,
+   "description": "e.g., def two_sum(nums, target):"
+  },
+  {
+   "default": "python",
+   "fieldname": "allowed_language",
+   "fieldtype": "Data",
+   "label": "Allowed Language",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_limits",
+   "fieldtype": "Section Break",
+   "label": "Execution Limits"
+  },
+  {
+   "default": "2.0",
+   "fieldname": "time_limit_seconds",
+   "fieldtype": "Float",
+   "label": "Time Limit (seconds)"
+  },
+  {
+   "default": "256",
+   "fieldname": "memory_limit_mb",
+   "fieldtype": "Int",
+   "label": "Memory Limit (MB)"
+  },
+  {
+   "fieldname": "section_break_statement",
+   "fieldtype": "Section Break",
+   "label": "Problem Statement"
+  },
+  {
+   "fieldname": "statement",
+   "fieldtype": "Markdown Editor",
+   "label": "Statement",
+   "reqd": 1
+  },
+  {
+   "fieldname": "constraints_text",
+   "fieldtype": "Text",
+   "label": "Constraints"
+  },
+  {
+   "fieldname": "section_break_code",
+   "fieldtype": "Section Break",
+   "label": "Starter Code"
+  },
+  {
+   "fieldname": "starter_code",
+   "fieldtype": "Code",
+   "label": "Starter Code",
+   "options": "Python"
+  },
+  {
+   "fieldname": "section_break_tests",
+   "fieldtype": "Section Break",
+   "label": "Test Cases"
+  },
+  {
+   "fieldname": "test_cases",
+   "fieldtype": "Table",
+   "label": "Test Cases",
+   "options": "Codeoff Test Case"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-03-24 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Code Off",
+ "name": "Codeoff Problem",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "title"
+}
