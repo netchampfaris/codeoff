@@ -100,6 +100,19 @@ jobs:
         working-directory: /home/runner/frappe-bench
         run: |
           bench --site test_site set-config allow_tests true
-          bench --site test_site run-tests --app codeoff
+          bench --site test_site run-tests --app codeoff --coverage
         env:
           TYPE: server
+
+      - name: Coverage Report
+        working-directory: /home/runner/frappe-bench/sites
+        run: |
+          coverage report --include="*/codeoff/*" --skip-empty
+          coverage xml --include="*/codeoff/*" -o $GITHUB_WORKSPACE/coverage.xml
+
+      - name: Coverage Badge
+        if: github.ref == 'refs/heads/main'
+        uses: orgoro/coverage@v3.2
+        with:
+          coverageFile: coverage.xml
+          token: ${{ secrets.GITHUB_TOKEN }}

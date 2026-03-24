@@ -1,5 +1,8 @@
 # Code Off
 
+[![CI](https://github.com/netchampfaris/codeoff/actions/workflows/ci.yml/badge.svg)](https://github.com/netchampfaris/codeoff/actions/workflows/ci.yml)
+[![Coverage](https://github.com/netchampfaris/codeoff/blob/coverage-badge/badge.svg)](https://github.com/netchampfaris/codeoff/actions/workflows/ci.yml)
+
 Live 1v1 programming contests with bracket-based progression, LeetCode-style problems, real-time audience projection, and automated judging. Built on [Frappe Framework](https://frappeframework.com).
 
 ## Screenshots
