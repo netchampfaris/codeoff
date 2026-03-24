@@ -10,13 +10,20 @@ declare module 'vue' {
   export interface GlobalComponents {
     AppLayout: typeof import('./src/components/AppLayout.vue')['default']
     AppSidebar: typeof import('./src/components/AppSidebar.vue')['default']
+    BracketMatchCard: typeof import('./src/components/BracketMatchCard.vue')['default']
+    BracketView: typeof import('./src/components/BracketView.vue')['default']
+    CodeEditor: typeof import('./src/components/CodeEditor.vue')['default']
     LucideArrowLeft: typeof import('~icons/lucide/arrow-left')['default']
     LucideCheck: typeof import('~icons/lucide/check')['default']
     LucideListTodo: typeof import('~icons/lucide/list-todo')['default']
     LucideLogOut: typeof import('~icons/lucide/log-out')['default']
     LucidePlus: typeof import('~icons/lucide/plus')['default']
     LucideTrash2: typeof import('~icons/lucide/trash2')['default']
+    PlayerPanel: typeof import('./src/components/PlayerPanel.vue')['default']
+    ProblemPanel: typeof import('./src/components/ProblemPanel.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TestResultsPanel: typeof import('./src/components/TestResultsPanel.vue')['default']
+    WaitingLobby: typeof import('./src/components/WaitingLobby.vue')['default']
   }
 }

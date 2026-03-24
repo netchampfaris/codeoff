@@ -12,6 +12,12 @@ class CodeoffSubmission(Document):
 		self.language = "python"
 		self.validate_match_state()
 
+	@frappe.whitelist()
+	def judge(self):
+		from codeoff.services.judge import judge_submission
+
+		judge_submission(self.name)
+
 	def validate_match_state(self):
 		match = frappe.get_doc("Codeoff Match", self.match)
 

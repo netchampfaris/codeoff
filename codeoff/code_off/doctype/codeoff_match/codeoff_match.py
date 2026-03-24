@@ -40,7 +40,7 @@ class CodeoffMatch(Document):
 		self.start_time = now
 		self.deadline = now + timedelta(seconds=duration)
 		self.status = "Live"
-		self.save()
+		self.save(ignore_permissions=True)
 
 		frappe.publish_realtime(
 			f"codeoff_match_{self.name}",

@@ -1,155 +1,79 @@
 <template>
-  <div class="mx-auto max-w-3xl px-6 py-8">
-    <div class="mb-6 flex items-center justify-between">
-      <h1 class="text-2xl font-semibold text-ink-gray-9">ToDos</h1>
-      <Button variant="solid" @click="showNewDialog = true">
-        <template #prefix>
-          <LucidePlus class="h-4 w-4" />
-        </template>
-        New ToDo
-      </Button>
+  <div class="bg-gray-950 flex h-full flex-col text-gray-200">
+    <div v-if="loading" class="flex flex-1 items-center justify-center">
+      <div class="text-gray-500">Loading...</div>
     </div>
 
-    <div v-if="todos.data?.length" class="space-y-2">
-      <router-link
-        v-for="todo in todos.data"
-        :key="todo.name"
-        :to="{ name: 'TodoDetail', params: { id: todo.name } }"
-        class="flex items-center justify-between rounded-lg border bg-surface-white px-4 py-3 transition hover:bg-surface-gray-1"
-      >
-        <div class="flex items-center gap-3">
-          <button
-            class="flex h-5 w-5 items-center justify-center rounded border transition"
-            :class="[
-              todo.status === 'Closed'
-                ? 'border-green-600 bg-green-600'
-                : 'border-outline-gray-3 hover:border-outline-gray-5',
-            ]"
-            @click.prevent="toggleStatus(todo)"
-          >
-            <LucideCheck
-              v-if="todo.status === 'Closed'"
-              class="h-3.5 w-3.5 text-white"
-            />
-          </button>
-          <span
-            class="text-sm"
-            :class="[
-              todo.status === 'Closed'
-                ? 'text-ink-gray-5 line-through'
-                : 'text-ink-gray-9',
-            ]"
-          >
-            {{ todo.description || 'Untitled' }}
-          </span>
-        </div>
-        <div class="flex items-center gap-2">
-          <Badge
-            v-if="todo.priority"
-            :variant="'subtle'"
-            :theme="priorityColor(todo.priority)"
-            size="sm"
-          >
-            {{ todo.priority }}
-          </Badge>
-          <button
-            class="hover:text-ink-red-7 rounded p-1 text-ink-gray-5 transition hover:bg-surface-gray-2"
-            @click.prevent="deleteTodo(todo.name)"
-          >
-            <LucideTrash2 class="h-3.5 w-3.5" />
-          </button>
-        </div>
-      </router-link>
-    </div>
-
+    <!-- Player view: show their match -->
     <div
-      v-else-if="!todos.loading"
-      class="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-ink-gray-5"
+      v-else-if="match?.match_id"
+      class="flex flex-1 items-center justify-center"
     >
-      <LucideListTodo class="mb-3 h-10 w-10 text-ink-gray-4" />
-      <p class="text-sm">No ToDos yet. Create one to get started.</p>
-    </div>
-
-    <Dialog v-model="showNewDialog" :options="{ title: 'New ToDo' }">
-      <template #body-content>
-        <div class="space-y-4">
-          <FormControl
-            label="Description"
-            v-model="newTodo.description"
-            type="textarea"
-            placeholder="What needs to be done?"
-          />
-          <FormControl
-            label="Priority"
-            v-model="newTodo.priority"
-            type="select"
-            :options="['Low', 'Medium', 'High']"
-          />
+      <div class="text-center">
+        <div class="mb-2 text-sm text-gray-400">Your match is</div>
+        <div class="mb-4 text-lg font-semibold text-white">
+          {{ match.status === 'Live' ? 'Live now!' : 'Coming up' }}
         </div>
-      </template>
-      <template #actions>
+        <div class="mb-6 text-sm text-gray-500">{{ match.match_id }}</div>
         <Button
           variant="solid"
-          class="w-full"
-          @click="createTodo"
-          :loading="creating"
+          size="lg"
+          @click="
+            $router.push({
+              name: 'MatchWorkspace',
+              params: { matchId: match.match_id },
+            })
+          "
         >
-          Create
+          {{ match.status === 'Live' ? 'Go to Match' : 'Open Workspace' }}
         </Button>
-      </template>
-    </Dialog>
+      </div>
+    </div>
+
+    <!-- Organizer / non-player view: tournament bracket -->
+    <div
+      v-else-if="match?.status === 'not_a_player'"
+      class="flex flex-1 flex-col overflow-hidden"
+    >
+      <div
+        v-if="bracket.loading"
+        class="flex flex-1 items-center justify-center"
+      >
+        <div class="text-sm text-gray-500">Loading bracket...</div>
+      </div>
+      <BracketView
+        v-else-if="bracket.data"
+        :data="bracket.data"
+        @spectate="
+          $router.push({ name: 'Spectate', params: { matchId: $event } })
+        "
+      />
+      <div v-else class="flex flex-1 items-center justify-center">
+        <div class="text-sm text-gray-500">No tournament found.</div>
+      </div>
+    </div>
+
+    <!-- No match found for player -->
+    <div v-else class="flex flex-1 items-center justify-center">
+      <div class="text-center">
+        <div class="mb-2 text-lg font-semibold text-white">No Active Match</div>
+        <div class="text-sm text-gray-500">
+          You don't have any upcoming matches right now. Check back later.
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
-import { useTodoList } from '@/data/todos'
+import { useCall } from 'frappe-ui'
+import { useMyMatch } from '@/data/match'
+import BracketView from '@/components/BracketView.vue'
 
-const todos = useTodoList()
-const showNewDialog = ref(false)
-const creating = ref(false)
+const { match, loading } = useMyMatch()
 
-const newTodo = reactive({
-  description: '',
-  priority: 'Medium',
+const bracket = useCall({
+  url: '/api/v2/method/codeoff.api.contest.get_tournament_bracket',
+  immediate: true,
 })
-
-function priorityColor(priority: string) {
-  switch (priority) {
-    case 'High':
-      return 'red'
-    case 'Medium':
-      return 'orange'
-    case 'Low':
-      return 'blue'
-    default:
-      return 'gray'
-  }
-}
-
-function createTodo() {
-  creating.value = true
-  try {
-    todos.insert.submit({
-      description: newTodo.description,
-      priority: newTodo.priority,
-      status: 'Open',
-    })
-    showNewDialog.value = false
-    newTodo.description = ''
-    newTodo.priority = 'Medium'
-  } finally {
-    creating.value = false
-  }
-}
-
-function toggleStatus(todo: any) {
-  const newStatus = todo.status === 'Closed' ? 'Open' : 'Closed'
-  todo.status = newStatus
-  todos.setValue.submit({ name: todo.name, status: newStatus })
-}
-
-function deleteTodo(name: string) {
-  todos.delete.submit({ name })
-}
 </script>

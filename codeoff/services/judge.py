@@ -191,7 +191,7 @@ def _run_tests():
             is_pass = actual == expected
             if is_pass:
                 passed += 1
-            results.append({{"test": i, "passed": is_pass}})
+            results.append({{"test": i, "passed": is_pass, "expected": expected, "actual": actual}})
         except Exception as e:
             results.append({{"test": i, "passed": False, "error": str(e)}})
 

@@ -14,15 +14,23 @@ const router = createRouter({
       component: () => import('@/pages/Home.vue'),
     },
     {
-      path: '/todos/:id',
-      name: 'TodoDetail',
-      component: () => import('@/pages/TodoDetail.vue'),
+      path: '/match/:matchId',
+      name: 'MatchWorkspace',
+      component: () => import('@/pages/MatchWorkspace.vue'),
       props: true,
+    },
+    {
+      path: '/spectate/:matchId',
+      name: 'Spectate',
+      component: () => import('@/pages/Spectate.vue'),
+      props: true,
+      meta: { public: true },
     },
   ],
 })
 
 router.beforeEach((to, from) => {
+  if (to.meta?.public) return true
   if (to.name !== 'Login' && !session.isLoggedIn) {
     window.location.href = '/login'
     return false

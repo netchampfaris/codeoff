@@ -15,10 +15,12 @@
   "deadline",
   "section_break_players",
   "player_1",
+  "player_1_joined",
   "best_score_player_1",
   "wrong_submissions_player_1",
   "column_break_2",
   "player_2",
+  "player_2_joined",
   "best_score_player_2",
   "wrong_submissions_player_2",
   "section_break_result",
@@ -97,6 +99,13 @@
   },
   {
    "default": "0",
+   "fieldname": "player_1_joined",
+   "fieldtype": "Check",
+   "label": "Player 1 Joined",
+   "read_only": 1
+  },
+  {
+   "default": "0",
    "fieldname": "best_score_player_1",
    "fieldtype": "Int",
    "label": "Best Score (Player 1)",
@@ -119,6 +128,13 @@
    "in_list_view": 1,
    "label": "Player 2",
    "options": "Codeoff Player"
+  },
+  {
+   "default": "0",
+   "fieldname": "player_2_joined",
+   "fieldtype": "Check",
+   "label": "Player 2 Joined",
+   "read_only": 1
   },
   {
    "default": "0",
@@ -166,7 +182,7 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-03-24 00:00:00.000000",
+ "modified": "2026-03-25 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Code Off",
  "name": "Codeoff Match",

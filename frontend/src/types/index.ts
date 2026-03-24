@@ -1,13 +1,3 @@
-export interface ToDo {
-  name: string
-  description: string
-  status: 'Open' | 'Closed' | 'Cancelled'
-  priority: 'Low' | 'Medium' | 'High'
-  date: string | null
-  modified: string
-  owner: string
-}
-
 declare global {
   interface Window {
     csrf_token: string
@@ -15,3 +5,5 @@ declare global {
     frappe_version: string
   }
 }
+
+export {}
