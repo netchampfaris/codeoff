@@ -112,7 +112,17 @@ jobs:
 
       - name: Coverage Badge
         if: github.ref == 'refs/heads/main'
-        uses: orgoro/coverage@v3.2
-        with:
-          coverageFile: coverage.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          COV=$(cd /home/runner/frappe-bench/sites && ../env/bin/coverage report --include="*/codeoff/*" --skip-empty | tail -1 | awk '{print $NF}' | tr -d '%')
+          if [ $(echo "$COV >= 80" | bc) -eq 1 ]; then COLOR="brightgreen"
+          elif [ $(echo "$COV >= 60" | bc) -eq 1 ]; then COLOR="yellow"
+          else COLOR="red"; fi
+          curl -s "https://img.shields.io/badge/coverage-${COV}%25-${COLOR}" > badge.svg
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan coverage-badge
+          git rm -rf . > /dev/null 2>&1 || true
+          mv badge.svg badge.svg.tmp && mv badge.svg.tmp badge.svg
+          git add badge.svg
+          git commit -m "Update coverage badge: ${COV}%"
+          git push -f origin coverage-badge
