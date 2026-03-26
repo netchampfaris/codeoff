@@ -99,6 +99,53 @@ class TestCodeoffJudge(IntegrationTestCase):
 
 		self.assertEqual(result["verdict"], "Runtime Error")
 
+	def test_time_limit_exceeded(self):
+		"""Infinite loop should produce Time Limit Exceeded."""
+		test_cases = make_test_cases([{"input": "[1, 2]", "expected": "3"}])
+
+		result = run_tests(
+			source_code="def add(a, b):\n\twhile True: pass",
+			function_name="add",
+			test_cases=test_cases,
+			time_limit=1.0,
+			memory_limit_mb=256,
+		)
+
+		self.assertEqual(result["verdict"], "Time Limit Exceeded")
+
+	def test_stdout_captured(self):
+		"""Print statements in user code should be captured and returned."""
+		test_cases = make_test_cases([{"input": "[1, 2]", "expected": "3"}])
+
+		result = run_tests(
+			source_code="def add(a, b):\n\tprint('debug', a, b)\n\treturn a + b",
+			function_name="add",
+			test_cases=test_cases,
+			time_limit=5.0,
+			memory_limit_mb=256,
+		)
+
+		self.assertEqual(result["verdict"], "Accepted")
+		self.assertIn("debug", result.get("stdout", ""))
+
+	def test_traceback_included_on_error(self):
+		"""Per-test errors should include a traceback in details."""
+		test_cases = make_test_cases([{"input": "[1, 2]", "expected": "3"}])
+
+		result = run_tests(
+			source_code="def add(a, b):\n\traise ValueError('oops')",
+			function_name="add",
+			test_cases=test_cases,
+			time_limit=5.0,
+			memory_limit_mb=256,
+		)
+
+		self.assertEqual(result["verdict"], "Wrong Answer")
+		details = result.get("details", [])
+		self.assertTrue(len(details) > 0)
+		self.assertIn("traceback", details[0])
+		self.assertIn("ValueError", details[0]["traceback"])
+
 	def test_timeout(self):
 		"""Infinite loop should get Time Limit Exceeded."""
 		test_cases = make_test_cases([{"input": "[1, 2]", "expected": "3"}])

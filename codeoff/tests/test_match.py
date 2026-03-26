@@ -66,3 +66,43 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 		match.player_2 = match.player_1
 		with self.assertRaises(frappe.ValidationError):
 			match.save()
+
+	def test_cannot_start_finished_match(self):
+		"""Cannot re-start a match that is already Finished."""
+		match, players, problem, _ = self._setup_match()
+		match.problem = problem.name
+		match.save()
+		match.start_match()
+		match.reload()
+
+		# Simulate finish
+		match.status = "Finished"
+		match.flags.ignore_validate = True
+		match.save()
+
+		with self.assertRaises(frappe.ValidationError):
+			match.start_match()
+
+	def test_per_round_duration_used_when_configured(self):
+		"""When a round duration entry exists it overrides the tournament default."""
+		from datetime import timedelta
+
+		players = create_players(2, prefix="durtest")
+		problem = create_problem()
+		tournament = create_tournament(players, duration=600)
+		# Add a per-round duration for round 1
+		tournament.append("round_durations", {"round_number": 1, "duration_seconds": 120})
+		tournament.save()
+		tournament.generate_bracket()
+
+		match_name = frappe.get_value("Codeoff Match", {"tournament": tournament.name})
+		match = frappe.get_doc("Codeoff Match", match_name)
+		match.problem = problem.name
+		match.save()
+		match.start_match()
+		match.reload()
+
+		expected_deadline = match.start_time + timedelta(seconds=120)
+		# Allow 2-second tolerance for test execution time
+		delta = abs((match.deadline - expected_deadline).total_seconds())
+		self.assertLessEqual(delta, 2)
