@@ -59,6 +59,11 @@ def determine_winner_by_score(match):
 	w1 = match.wrong_submissions_player_1 or 0
 	w2 = match.wrong_submissions_player_2 or 0
 
+	# Nobody scored anything — it's a draw
+	if s1 == 0 and s2 == 0:
+		draw_match(match)
+		return
+
 	if s1 > s2:
 		finalize_match(match, match.player_1, "Best Score")
 	elif s2 > s1:
@@ -68,7 +73,7 @@ def determine_winner_by_score(match):
 	elif w2 < w1:
 		finalize_match(match, match.player_2, "Best Score")
 	else:
-		# Tied — enter review
+		# Both had partial progress but equal — enter review
 		match.status = "Review"
 		match.tie_break_metadata = frappe.as_json(
 			{
@@ -85,6 +90,34 @@ def determine_winner_by_score(match):
 
 		frappe.db.commit()
 		publish_match_state(match.name)
+
+
+def draw_match(match):
+	"""Neither player solved the problem — mark as a draw (Finished, no winner)."""
+	match.status = "Finished"
+	match.winner = None
+	match.winning_reason = "Draw"
+	match.save(ignore_permissions=True)
+
+	from codeoff.api.contest import _broadcast_match_event, publish_match_state
+
+	frappe.db.commit()
+	publish_match_state(match.name)
+
+	# Notify organizers when a tournament match draws so they can advance
+	# the bracket manually (no winner = bracket slot stays empty).
+	if match.tournament:
+		_broadcast_match_event(
+			match.name,
+			{
+				"event_type": "draw_needs_resolution",
+				"match_id": match.name,
+				"tournament": match.tournament,
+				"message": (
+					f"Match {match.name} ended in a draw. Manually assign a winner to continue the bracket."
+				),
+			},
+		)
 
 
 def finalize_match(match, winner, reason):
