@@ -1,11 +1,10 @@
 {
  "actions": [],
- "creation": "2026-03-26 00:00:00.000000",
+ "creation": "2026-03-27 00:00:00.000000",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "round_number",
-  "duration_seconds",
   "problem"
  ],
  "fields": [
@@ -13,14 +12,7 @@
    "fieldname": "round_number",
    "fieldtype": "Int",
    "in_list_view": 1,
-   "label": "Round Number",
-   "reqd": 1
-  },
-  {
-   "fieldname": "duration_seconds",
-   "fieldtype": "Int",
-   "in_list_view": 1,
-   "label": "Duration (seconds)",
+   "label": "Round",
    "reqd": 1
   },
   {
@@ -28,16 +20,17 @@
    "fieldtype": "Link",
    "in_list_view": 1,
    "label": "Problem",
-   "options": "Codeoff Problem"
+   "options": "Codeoff Problem",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 0,
  "istable": 1,
  "links": [],
- "modified": "2026-03-26 00:00:00.000000",
+ "modified": "2026-03-27 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Code Off",
- "name": "Codeoff Round Duration",
+ "name": "Codeoff Round Problem",
  "owner": "Administrator",
  "permissions": [],
  "sort_field": "creation",

@@ -1,6 +1,7 @@
 # Copyright (c) 2026, Code Off and contributors
 # For license information, please see license.txt
 
+import json
 import math
 import random
 
@@ -51,6 +52,14 @@ class CodeoffTournament(Document):
 					match_doc.player_1 = players[idx1].player
 					match_doc.player_2 = players[idx2].player
 
+				# Assign problem from round config if available
+				round_entry = next(
+					(r for r in self.round_durations if r.round_number == round_num),
+					None,
+				)
+				if round_entry and round_entry.problem:
+					match_doc.problem = round_entry.problem
+
 				match_doc.insert()
 
 		self.current_round = 1
@@ -58,6 +67,149 @@ class CodeoffTournament(Document):
 		self.save()
 
 		frappe.msgprint(f"Bracket generated: {total_rounds} rounds, {num_players - 1} matches")
+
+	@frappe.whitelist()
+	def get_bracket_preview(self):
+		"""Return shuffled bracket matchups without saving to DB."""
+		self.validate_player_count()
+
+		if frappe.db.exists("Codeoff Match", {"tournament": self.name}):
+			frappe.throw("Bracket already generated. Delete existing matches first to re-plan.")
+
+		seeded = sorted([p for p in self.players if p.seed], key=lambda p: p.seed)
+		unseeded = [p for p in self.players if not p.seed]
+		random.shuffle(unseeded)
+		ordered = seeded + unseeded
+
+		num_players = len(ordered)
+		total_rounds = int(math.log2(num_players))
+
+		player_id_list = [p.player for p in ordered]
+		player_name_rows = frappe.get_all(
+			"Codeoff Player",
+			filters={"name": ["in", player_id_list]},
+			fields=["name", "player_name"],
+		)
+		player_names = {row.name: row.player_name or row.name for row in player_name_rows}
+		# Fallback for any player not returned
+		for pid in player_id_list:
+			player_names.setdefault(pid, pid)
+
+		preview = []
+		for round_num in range(1, total_rounds + 1):
+			matches_in_round = num_players // (2**round_num)
+			for pos in range(1, matches_in_round + 1):
+				m = {
+					"round_number": round_num,
+					"bracket_position": pos,
+					"player_1": None,
+					"player_1_name": None,
+					"player_2": None,
+					"player_2_name": None,
+				}
+				if round_num == 1:
+					idx1 = (pos - 1) * 2
+					idx2 = idx1 + 1
+					p1_id = ordered[idx1].player
+					p2_id = ordered[idx2].player
+					m["player_1"] = p1_id
+					m["player_1_name"] = player_names[p1_id]
+					m["player_2"] = p2_id
+					m["player_2_name"] = player_names[p2_id]
+				preview.append(m)
+		return preview
+
+	@frappe.whitelist()
+	def create_bracket_from_plan(self, plan: str | list[dict]):
+		"""Create all bracket matches from planner data in one transaction."""
+		if frappe.db.exists("Codeoff Match", {"tournament": self.name}):
+			frappe.throw("Bracket already generated. Delete existing matches first.")
+
+		matches_data = json.loads(plan) if isinstance(plan, str) else plan
+
+		for m in matches_data:
+			match_doc = frappe.new_doc("Codeoff Match")
+			match_doc.tournament = self.name
+			match_doc.round_number = int(m["round_number"])
+			match_doc.bracket_position = int(m["bracket_position"])
+			if m.get("player_1"):
+				match_doc.player_1 = m["player_1"]
+			if m.get("player_2"):
+				match_doc.player_2 = m["player_2"]
+			if m.get("problem"):
+				match_doc.problem = m["problem"]
+			if m.get("duration_seconds"):
+				try:
+					match_doc.duration_seconds = int(m["duration_seconds"])
+				except ValueError, TypeError:
+					frappe.throw(f"Invalid duration_seconds value: {m['duration_seconds']!r}")
+			match_doc.insert()
+
+		self.current_round = 1
+		self.status = "Ready"
+		self.save()
+
+		created = len(matches_data)
+		frappe.msgprint(f"Tournament planned: {created} matches created.")
+		return {"created": created}
+
+	@frappe.whitelist()
+	def assign_problems_randomly(self):
+		"""Pick a distinct random problem for each round and assign to all its Draft/Ready matches."""
+		# Find all rounds that have unassigned (Draft/Ready) matches
+		matches = frappe.get_all(
+			"Codeoff Match",
+			filters={"tournament": self.name, "status": ["in", ["Draft", "Ready"]]},
+			fields=["name", "round_number", "player_1", "player_2", "status"],
+		)
+		if not matches:
+			frappe.throw("No Draft/Ready matches found")
+
+		rounds = sorted({m.round_number for m in matches})
+
+		all_problems = frappe.get_all("Codeoff Problem", fields=["name", "title"])
+		if len(all_problems) < len(rounds):
+			frappe.throw(
+				f"Not enough problems ({len(all_problems)}) to assign one per round ({len(rounds)} rounds)"
+			)
+
+		selected = random.sample(all_problems, len(rounds))
+		round_problem_map = {r: p.name for r, p in zip(rounds, selected)}
+
+		for m in matches:
+			problem = round_problem_map[m.round_number]
+			frappe.db.set_value("Codeoff Match", m.name, "problem", problem)
+			if m.status == "Draft" and m.player_1 and m.player_2:
+				frappe.db.set_value("Codeoff Match", m.name, "status", "Ready")
+
+		summary = ", ".join(f"Round {r} → {round_problem_map[r]}" for r in rounds)
+		frappe.msgprint(f"Problems assigned:<br>{summary.replace(', ', '<br>')}")
+		return round_problem_map
+
+	@frappe.whitelist()
+	def assign_problem_to_round(self, round_number: int, problem: str):
+		"""Assign a problem to all Draft/Ready matches in a given round."""
+		matches = frappe.get_all(
+			"Codeoff Match",
+			filters={
+				"tournament": self.name,
+				"round_number": int(round_number),
+				"status": ["in", ["Draft", "Ready"]],
+			},
+			fields=["name"],
+		)
+		if not matches:
+			frappe.throw(f"No Draft/Ready matches found in Round {round_number}")
+
+		for m in matches:
+			frappe.db.set_value("Codeoff Match", m.name, "problem", problem)
+			# Re-run status transition: Draft → Ready if players are also set
+			match_doc = frappe.get_doc("Codeoff Match", m.name)
+			if match_doc.status == "Draft" and match_doc.player_1 and match_doc.player_2:
+				match_doc.status = "Ready"
+				match_doc.save(ignore_permissions=True)
+
+		frappe.msgprint(f"Problem '{problem}' assigned to {len(matches)} match(es) in Round {round_number}")
 
 	@frappe.whitelist()
 	def start_round(self):

@@ -1,0 +1,108 @@
+{
+ "app": "codeoff",
+ "charts": [],
+ "content": "[{\"id\":\"co_header_1\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Codeoff Tournament\",\"col\":4}},{\"id\":\"co_shortcut_2\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Codeoff Match\",\"col\":4}},{\"id\":\"co_shortcut_3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Codeoff Player\",\"col\":4}}]",
+ "creation": "2026-03-27 00:00:00.000000",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "lightning",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Code Off",
+ "links": [
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Tournament",
+   "link_count": 0,
+   "link_to": "Codeoff Tournament",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Match",
+   "link_count": 0,
+   "link_to": "Codeoff Match",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Player",
+   "link_count": 0,
+   "link_to": "Codeoff Player",
+   "link_type": "DocType",
+   "onboard": 1,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Problem",
+   "link_count": 0,
+   "link_to": "Codeoff Problem",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "dependencies": "",
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Submission",
+   "link_count": 0,
+   "link_to": "Codeoff Submission",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2026-03-27 00:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Code Off",
+ "name": "Code Off",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "color": "Green",
+   "format": "{} Active",
+   "label": "Codeoff Tournament",
+   "link_to": "Codeoff Tournament",
+   "stats_filter": "[[\"status\",\"in\",[\"Ready\",\"Active\"]]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Green",
+   "format": "{} Live",
+   "label": "Codeoff Match",
+   "link_to": "Codeoff Match",
+   "stats_filter": "[[\"status\",\"=\",\"Live\"]]",
+   "type": "DocType"
+  },
+  {
+   "color": "Blue",
+   "label": "Codeoff Player",
+   "link_to": "Codeoff Player",
+   "type": "DocType"
+  }
+ ],
+ "title": "Code Off"
+}
