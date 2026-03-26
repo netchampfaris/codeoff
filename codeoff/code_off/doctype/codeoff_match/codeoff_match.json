@@ -1,7 +1,7 @@
 {
  "actions": [],
  "autoname": "format:MATCH-{####}",
- "creation": "2026-03-24 00:00:00.000000",
+ "creation": "2026-03-24 00:00:00",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
@@ -13,16 +13,19 @@
   "problem",
   "start_time",
   "deadline",
+  "duration_seconds",
   "section_break_players",
   "player_1",
   "player_1_joined",
   "best_score_player_1",
   "wrong_submissions_player_1",
+  "votes_player_1",
   "column_break_2",
   "player_2",
   "player_2_joined",
   "best_score_player_2",
   "wrong_submissions_player_2",
+  "votes_player_2",
   "section_break_result",
   "winner",
   "winning_reason",
@@ -70,6 +73,7 @@
   {
    "fieldname": "problem",
    "fieldtype": "Link",
+   "in_list_view": 1,
    "label": "Problem",
    "options": "Codeoff Problem"
   },
@@ -84,6 +88,12 @@
    "fieldtype": "Datetime",
    "label": "Deadline",
    "read_only": 1
+  },
+  {
+   "description": "If set, overrides round and tournament duration for this match",
+   "fieldname": "duration_seconds",
+   "fieldtype": "Int",
+   "label": "Duration Override (seconds)"
   },
   {
    "fieldname": "section_break_players",
@@ -119,6 +129,13 @@
    "read_only": 1
   },
   {
+   "default": "0",
+   "fieldname": "votes_player_1",
+   "fieldtype": "Int",
+   "label": "Audience Votes (Player 1)",
+   "read_only": 1
+  },
+  {
    "fieldname": "column_break_2",
    "fieldtype": "Column Break"
   },
@@ -151,6 +168,13 @@
    "read_only": 1
   },
   {
+   "default": "0",
+   "fieldname": "votes_player_2",
+   "fieldtype": "Int",
+   "label": "Audience Votes (Player 2)",
+   "read_only": 1
+  },
+  {
    "fieldname": "section_break_result",
    "fieldtype": "Section Break",
    "label": "Result"
@@ -166,7 +190,7 @@
    "fieldname": "winning_reason",
    "fieldtype": "Select",
    "label": "Winning Reason",
-   "options": "\nFirst Accepted\nBest Score\nTie Review\nManual Override",
+   "options": "\nFirst Accepted\nBest Score\nDraw\nTie Review\nManual Override",
    "read_only": 1
   },
   {
@@ -180,10 +204,9 @@
    "read_only": 1
   }
  ],
- "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-03-25 00:00:00.000000",
- "modified_by": "Administrator",
+ "modified": "2026-03-27 04:19:59.618107",
+ "modified_by": "organizer@codeoff.demo",
  "module": "Code Off",
  "name": "Codeoff Match",
  "naming_rule": "Expression (old style)",
@@ -202,6 +225,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "creation",
  "sort_order": "DESC",
  "states": []

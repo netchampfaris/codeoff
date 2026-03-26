@@ -17,6 +17,8 @@
     :title="state.problem?.title || 'Match Lobby'"
     :player1="state.player_1"
     :player2="state.player_2"
+    :is-organizer="state.is_organizer"
+    @start="startMatch"
   />
   <div
     v-else-if="state"
@@ -215,6 +217,19 @@ const testResults = ref<any>(null)
 const runningTests = ref(false)
 const submitting = ref(false)
 const submitError = ref<string | null>(null)
+
+// --- Organizer start match ---
+const startMatchCall = useCall({
+  url: '/api/v2/method/codeoff.api.contest.start_match_now',
+  immediate: false,
+  onSuccess() {
+    reload()
+  },
+})
+
+function startMatch() {
+  startMatchCall.submit({ match_id: props.matchId })
+}
 
 // --- Resizable panels ---
 const { problemPanelWidth, bottomPanelHeight, startDragH, startDragV } =

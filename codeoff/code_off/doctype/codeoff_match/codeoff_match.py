@@ -10,9 +10,41 @@ from frappe.utils import now_datetime
 
 
 class CodeoffMatch(Document):
+	# begin: auto-generated types
+	# This code is auto-generated. Do not modify anything in this block.
+
+	from typing import TYPE_CHECKING
+
+	if TYPE_CHECKING:
+		from frappe.types import DF
+
+		best_score_player_1: DF.Int
+		best_score_player_2: DF.Int
+		bracket_position: DF.Int
+		deadline: DF.Datetime | None
+		duration_seconds: DF.Int
+		player_1: DF.Link | None
+		player_1_joined: DF.Check
+		player_2: DF.Link | None
+		player_2_joined: DF.Check
+		problem: DF.Link | None
+		round_number: DF.Int
+		start_time: DF.Datetime | None
+		status: DF.Literal["Draft", "Ready", "Live", "Finished", "Review", "Cancelled"]
+		tie_break_metadata: DF.JSON | None
+		tournament: DF.Link
+		votes_player_1: DF.Int
+		votes_player_2: DF.Int
+		winner: DF.Link | None
+		winning_reason: DF.Literal["", "First Accepted", "Best Score", "Tie Review", "Manual Override"]
+		wrong_submissions_player_1: DF.Int
+		wrong_submissions_player_2: DF.Int
+	# end: auto-generated types
+
 	def validate(self):
 		self.validate_players()
-		self.update_status()
+		if not self.is_new():
+			self.update_status()
 
 	def validate_players(self):
 		if self.player_1 and self.player_2 and self.player_1 == self.player_2:
@@ -40,7 +72,12 @@ class CodeoffMatch(Document):
 			(r for r in tournament.round_durations if r.round_number == self.round_number),
 			None,
 		)
-		duration = round_entry.duration_seconds if round_entry else tournament.match_duration_seconds
+		# Priority: match-level > round-level > tournament default
+		duration = (
+			self.duration_seconds
+			or (round_entry.duration_seconds if round_entry else None)
+			or tournament.match_duration_seconds
+		)
 
 		now = now_datetime()
 		self.start_time = now
@@ -99,6 +136,8 @@ class CodeoffMatch(Document):
 				"player_1_joined": 0,
 				"player_2_joined": 0,
 				"tie_break_metadata": None,
+				"votes_player_1": 0,
+				"votes_player_2": 0,
 			},
 		)
 		frappe.db.commit()
@@ -108,5 +147,3 @@ class CodeoffMatch(Document):
 		"""Compute the next round match position for bracket advancement."""
 		next_round = self.round_number + 1
 		next_position = math.ceil(self.bracket_position / 2)
-		next_slot = "player_1" if self.bracket_position % 2 == 1 else "player_2"
-		return next_round, next_position, next_slot
