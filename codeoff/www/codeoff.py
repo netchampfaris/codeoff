@@ -2,6 +2,7 @@ import frappe
 from frappe.utils import get_system_timezone
 
 no_cache = 1
+allow_guest = 1
 
 
 def get_context():
