@@ -23,130 +23,195 @@ DEMO_PLAYERS = [
 
 DEMO_PROBLEMS = [
 	{
-		"title": "Two Sum",
-		"function_name": "two_sum",
-		"function_signature": "def two_sum(nums, target):",
+		"title": "Add Two Numbers",
+		"function_name": "add",
+		"function_signature": "def add(a, b):",
 		"difficulty": "Easy",
 		"statement": (
-			"Given an array of integers `nums` and an integer `target`, "
-			"return the indices of the two numbers that add up to `target`.\n\n"
-			"You may assume that each input has exactly one solution, "
-			"and you may not use the same element twice.\n\n"
-			"Return the answer as a list of two indices in any order.\n\n"
-			"**Example:**\n"
-			"```\ntwo_sum([2, 7, 11, 15], 9) → [0, 1]\n```"
+			"Given two integers `a` and `b`, return their sum.\n\n**Example:**\n```\nadd(3, 5) → 8\n```"
 		),
-		"constraints_text": "2 <= len(nums) <= 100\n-1000 <= nums[i] <= 1000\nExactly one valid answer exists.",
-		"test_cases": [
-			{
-				"case_name": "Basic pair",
-				"visibility": "Sample",
-				"input_data": "[[2, 7, 11, 15], 9]",
-				"expected_output": "[0, 1]",
-				"weight": 1,
-				"is_active": 1,
-			},
-			{
-				"case_name": "Middle elements",
-				"visibility": "Sample",
-				"input_data": "[[3, 2, 4], 6]",
-				"expected_output": "[1, 2]",
-				"weight": 1,
-				"is_active": 1,
-			},
-			{
-				"case_name": "Same number",
-				"visibility": "Hidden",
-				"input_data": "[[3, 3], 6]",
-				"expected_output": "[0, 1]",
-				"weight": 1,
-				"is_active": 1,
-			},
-			{
-				"case_name": "Negative numbers",
-				"visibility": "Hidden",
-				"input_data": "[[-1, -2, -3, -4, -5], -8]",
-				"expected_output": "[2, 4]",
-				"weight": 1,
-				"is_active": 1,
-			},
-			{
-				"case_name": "Large array",
-				"visibility": "Hidden",
-				"input_data": "[[1, 5, 3, 7, 8, 2, 4, 6, 9, 10], 19]",
-				"expected_output": "[7, 8]",
-				"weight": 1,
-				"is_active": 1,
-			},
-		],
-	},
-	{
-		"title": "Fizz Buzz",
-		"function_name": "fizz_buzz",
-		"function_signature": "def fizz_buzz(n):",
-		"difficulty": "Easy",
-		"statement": (
-			"Given an integer `n`, return a list of strings where:\n\n"
-			'- `"FizzBuzz"` if the number is divisible by both 3 and 5\n'
-			'- `"Fizz"` if the number is divisible by 3\n'
-			'- `"Buzz"` if the number is divisible by 5\n'
-			"- The number as a string otherwise\n\n"
-			"**Example:**\n"
-			'```\nfizz_buzz(5) → ["1", "2", "Fizz", "4", "Buzz"]\n```'
-		),
-		"constraints_text": "1 <= n <= 10000",
-		"test_cases": [
-			{
-				"case_name": "Small input",
-				"visibility": "Sample",
-				"input_data": "[5]",
-				"expected_output": '["1", "2", "Fizz", "4", "Buzz"]',
-				"weight": 1,
-				"is_active": 1,
-			},
-			{
-				"case_name": "FizzBuzz at 15",
-				"visibility": "Sample",
-				"input_data": "[15]",
-				"expected_output": '["1", "2", "Fizz", "4", "Buzz", "Fizz", "7", "8", "Fizz", "Buzz", "11", "Fizz", "13", "14", "FizzBuzz"]',
-				"weight": 1,
-				"is_active": 1,
-			},
-			{
-				"case_name": "Single",
-				"visibility": "Hidden",
-				"input_data": "[1]",
-				"expected_output": '["1"]',
-				"weight": 1,
-				"is_active": 1,
-			},
-			{
-				"case_name": "Thirty",
-				"visibility": "Hidden",
-				"input_data": "[30]",
-				"expected_output": '["1", "2", "Fizz", "4", "Buzz", "Fizz", "7", "8", "Fizz", "Buzz", "11", "Fizz", "13", "14", "FizzBuzz", "16", "17", "Fizz", "19", "Buzz", "Fizz", "22", "23", "Fizz", "Buzz", "26", "Fizz", "28", "29", "FizzBuzz"]',
-				"weight": 1,
-				"is_active": 1,
-			},
-		],
-	},
-	{
-		"title": "Reverse Linked List",
-		"function_name": "reverse_list",
-		"function_signature": "def reverse_list(nums):",
-		"difficulty": "Easy",
-		"statement": (
-			"Given a list of integers, return the list in reverse order.\n\n"
-			"**Example:**\n"
-			"```\nreverse_list([1, 2, 3, 4, 5]) → [5, 4, 3, 2, 1]\n```"
-		),
-		"constraints_text": "0 <= len(nums) <= 1000",
+		"constraints_text": "-10^6 <= a, b <= 10^6",
+		"starter_code": "def add(a, b):\n    pass\n",
 		"test_cases": [
 			{
 				"case_name": "Basic",
 				"visibility": "Sample",
-				"input_data": "[[1, 2, 3, 4, 5]]",
-				"expected_output": "[5, 4, 3, 2, 1]",
+				"input_data": "[3, 5]",
+				"expected_output": "8",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "Negatives",
+				"visibility": "Sample",
+				"input_data": "[-1, -2]",
+				"expected_output": "-3",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "Zero",
+				"visibility": "Hidden",
+				"input_data": "[0, 0]",
+				"expected_output": "0",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "Mixed",
+				"visibility": "Hidden",
+				"input_data": "[-10, 7]",
+				"expected_output": "-3",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "Large",
+				"visibility": "Hidden",
+				"input_data": "[1000000, 1]",
+				"expected_output": "1000001",
+				"weight": 1,
+				"is_active": 1,
+			},
+		],
+	},
+	{
+		"title": "Maximum of Three",
+		"function_name": "max_of_three",
+		"function_signature": "def max_of_three(a, b, c):",
+		"difficulty": "Easy",
+		"statement": (
+			"Given three integers `a`, `b`, and `c`, return the largest one.\n\n"
+			"**Example:**\n"
+			"```\nmax_of_three(1, 5, 3) → 5\n```"
+		),
+		"constraints_text": "-10^6 <= a, b, c <= 10^6",
+		"starter_code": "def max_of_three(a, b, c):\n    pass\n",
+		"test_cases": [
+			{
+				"case_name": "Basic",
+				"visibility": "Sample",
+				"input_data": "[1, 5, 3]",
+				"expected_output": "5",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "First is largest",
+				"visibility": "Sample",
+				"input_data": "[9, 2, 4]",
+				"expected_output": "9",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "All equal",
+				"visibility": "Hidden",
+				"input_data": "[7, 7, 7]",
+				"expected_output": "7",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "Negatives",
+				"visibility": "Hidden",
+				"input_data": "[-3, -1, -2]",
+				"expected_output": "-1",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "Last is largest",
+				"visibility": "Hidden",
+				"input_data": "[2, 4, 8]",
+				"expected_output": "8",
+				"weight": 1,
+				"is_active": 1,
+			},
+		],
+	},
+	{
+		"title": "Count Vowels",
+		"function_name": "count_vowels",
+		"function_signature": "def count_vowels(s):",
+		"difficulty": "Easy",
+		"statement": (
+			"Given a string `s`, return the number of vowels (a, e, i, o, u) it contains. "
+			"Both uppercase and lowercase vowels count.\n\n"
+			"**Example:**\n"
+			"```\ncount_vowels('hello') → 2\n```"
+		),
+		"constraints_text": "0 <= len(s) <= 10000",
+		"starter_code": "def count_vowels(s):\n    pass\n",
+		"test_cases": [
+			{
+				"case_name": "Basic",
+				"visibility": "Sample",
+				"input_data": '["hello"]',
+				"expected_output": "2",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "All vowels",
+				"visibility": "Sample",
+				"input_data": '["aeiou"]',
+				"expected_output": "5",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "Mixed case",
+				"visibility": "Hidden",
+				"input_data": '["Hello World"]',
+				"expected_output": "3",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "No vowels",
+				"visibility": "Hidden",
+				"input_data": '["rhythm"]',
+				"expected_output": "0",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "Empty",
+				"visibility": "Hidden",
+				"input_data": '[""]',
+				"expected_output": "0",
+				"weight": 1,
+				"is_active": 1,
+			},
+		],
+	},
+	{
+		"title": "List Sum",
+		"function_name": "list_sum",
+		"function_signature": "def list_sum(nums):",
+		"difficulty": "Easy",
+		"statement": (
+			"Given a list of integers `nums`, return the sum of all elements.\n\n"
+			"**Example:**\n"
+			"```\nlist_sum([1, 2, 3, 4]) → 10\n```"
+		),
+		"constraints_text": "0 <= len(nums) <= 1000\n-1000 <= nums[i] <= 1000",
+		"starter_code": "def list_sum(nums):\n    pass\n",
+		"test_cases": [
+			{
+				"case_name": "Basic",
+				"visibility": "Sample",
+				"input_data": "[[1, 2, 3, 4]]",
+				"expected_output": "10",
+				"weight": 1,
+				"is_active": 1,
+			},
+			{
+				"case_name": "Negatives",
+				"visibility": "Sample",
+				"input_data": "[[-1, -2, 3]]",
+				"expected_output": "0",
 				"weight": 1,
 				"is_active": 1,
 			},
@@ -154,72 +219,23 @@ DEMO_PROBLEMS = [
 				"case_name": "Empty",
 				"visibility": "Hidden",
 				"input_data": "[[]]",
-				"expected_output": "[]",
+				"expected_output": "0",
 				"weight": 1,
 				"is_active": 1,
 			},
 			{
-				"case_name": "Single",
+				"case_name": "Single element",
 				"visibility": "Hidden",
 				"input_data": "[[42]]",
-				"expected_output": "[42]",
-				"weight": 1,
-				"is_active": 1,
-			},
-		],
-	},
-	{
-		"title": "Palindrome Check",
-		"function_name": "is_palindrome",
-		"function_signature": "def is_palindrome(s):",
-		"difficulty": "Easy",
-		"statement": (
-			"Given a string `s`, return `True` if it is a palindrome "
-			"(reads the same forwards and backwards), ignoring case and "
-			"non-alphanumeric characters. Return `False` otherwise.\n\n"
-			"**Example:**\n"
-			'```\nis_palindrome("racecar") → True\n'
-			'is_palindrome("hello") → False\n```'
-		),
-		"constraints_text": "0 <= len(s) <= 10000\nString may contain letters, digits, spaces and punctuation.",
-		"test_cases": [
-			{
-				"case_name": "Simple palindrome",
-				"visibility": "Sample",
-				"input_data": '["racecar"]',
-				"expected_output": "true",
+				"expected_output": "42",
 				"weight": 1,
 				"is_active": 1,
 			},
 			{
-				"case_name": "Not a palindrome",
-				"visibility": "Sample",
-				"input_data": '["hello"]',
-				"expected_output": "false",
-				"weight": 1,
-				"is_active": 1,
-			},
-			{
-				"case_name": "Mixed case",
+				"case_name": "All zeros",
 				"visibility": "Hidden",
-				"input_data": '["RaceCar"]',
-				"expected_output": "true",
-				"weight": 1,
-				"is_active": 1,
-			},
-			{
-				"case_name": "With spaces and punctuation",
-				"visibility": "Hidden",
-				"input_data": '["A man, a plan, a canal: Panama"]',
-				"expected_output": "true",
-				"weight": 1,
-				"is_active": 1,
-			},
-			{
-				"case_name": "Empty string",
-				"visibility": "Hidden",
-				"input_data": '[""]',
-				"expected_output": "true",
+				"input_data": "[[0, 0, 0]]",
+				"expected_output": "0",
 				"weight": 1,
 				"is_active": 1,
 			},
@@ -310,21 +326,22 @@ def setup():
 	tournament.generate_bracket()
 	print(f"  Tournament: {tournament.name} — bracket generated")
 
-	# Assign problems to matches
+	# Assign problems to all matches (cycle through available problems)
 	matches = frappe.get_all(
 		"Codeoff Match",
-		filters={"tournament": tournament.name, "round_number": 1},
-		order_by="bracket_position asc",
+		filters={"tournament": tournament.name},
+		fields=["name", "round_number", "bracket_position"],
+		order_by="round_number asc, bracket_position asc",
 	)
 	for i, m in enumerate(matches):
-		match = frappe.get_doc("Codeoff Match", m.name)
-		match.problem = problems[i].name
-		match.save(ignore_permissions=True)
-		print(f"  Match {match.name}: {match.player_1} vs {match.player_2} — Problem: {problems[i].title}")
+		problem = problems[i % len(problems)]
+		frappe.db.set_value("Codeoff Match", m.name, "problem", problem.name)
+		print(f"  Match {m.name} (R{m.round_number}P{m.bracket_position}): Problem: {problem.title}")
 
 	frappe.db.commit()
 
-	first_match = frappe.get_doc("Codeoff Match", matches[0].name)
+	round1_matches = [m for m in matches if m.round_number == 1]
+	first_match = frappe.get_doc("Codeoff Match", round1_matches[0].name)
 
 	print("\n✓ Demo data created successfully!")
 	print(f"\nLogin credentials (password for all: 123):")
