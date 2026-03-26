@@ -171,7 +171,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onUnmounted } from 'vue'
 import { useCall } from 'frappe-ui'
 import { useMatchState, useMatchTimer } from '@/data/match'
 import { useLobbyPoll } from '@/data/useLobbyPoll'
@@ -190,6 +190,21 @@ const props = defineProps<{
 
 const { state, loading, error, reload } = useMatchState(props.matchId)
 const { remaining, formatted } = useMatchTimer(state)
+
+// Poll for state update after the timer expires — the server-side timeout
+// job runs asynchronously so the state may not update via realtime immediately
+watch(remaining, (r) => {
+  if (r === 0 && state.value?.status === 'Live') {
+    const t = setInterval(() => {
+      if (!state.value || state.value.status !== 'Live') {
+        clearInterval(t)
+        return
+      }
+      reload()
+    }, 2000)
+    onUnmounted(() => clearInterval(t))
+  }
+})
 
 const testResults = ref<any>(null)
 const runningTests = ref(false)

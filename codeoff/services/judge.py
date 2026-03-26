@@ -125,7 +125,7 @@ def run_tests(source_code, function_name, test_cases, time_limit=2.0, memory_lim
 	# Parse results from stdout
 	try:
 		output = json.loads(result.stdout)
-	except json.JSONDecodeError, TypeError:
+	except Exception:
 		return {
 			"verdict": "Internal Error",
 			"passed_tests": 0,
@@ -228,7 +228,7 @@ def _execute_in_subprocess(script, time_limit, memory_limit_mb):
 			# Set memory limit (may fail on some platforms)
 			try:
 				resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
-			except ValueError, OSError:
+			except Exception:
 				pass
 
 		result = subprocess.run(
