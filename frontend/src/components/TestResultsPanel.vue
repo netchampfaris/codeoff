@@ -1,59 +1,147 @@
 <template>
-  <div v-if="testResults" class="overflow-auto border-t border-gray-800 p-3">
-    <h3 class="mb-2 text-sm font-semibold text-gray-300">
-      Test Results
-      <span class="ml-1 font-normal text-gray-500">
-        ({{ testResults.passed_tests }}/{{ testResults.total_tests }})
-      </span>
-    </h3>
-    <div class="flex flex-wrap gap-2">
-      <div
-        v-for="(result, i) in testResults.details"
-        :key="i"
-        class="rounded border px-2.5 py-1.5 text-sm"
+  <div
+    class="flex flex-col border-t border-term-border bg-term-surface font-mono"
+  >
+    <!-- Tab bar -->
+    <div class="flex border-b border-term-border">
+      <button
+        class="px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors"
         :class="
-          result.passed
-            ? 'bg-green-950 border-green-800'
-            : 'bg-red-950 border-red-800'
+          activeTab === 'tests'
+            ? 'border-b-2 border-term-green text-term-green'
+            : 'text-green-800 hover:text-green-500'
         "
+        @click="activeTab = 'tests'"
       >
-        <div class="flex items-center gap-1.5">
-          <LucideCheck
-            v-if="result.passed"
-            class="h-3.5 w-3.5 text-green-400"
-          />
-          <LucideX v-else class="h-3.5 w-3.5 text-red-400" />
-          <span>Test {{ i + 1 }}</span>
+        console
+        <span v-if="testResults" class="ml-1 text-green-700">
+          {{ testResults.passed_tests }}/{{ testResults.total_tests }}
+        </span>
+      </button>
+      <button
+        class="px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors"
+        :class="
+          activeTab === 'submissions'
+            ? 'border-b-2 border-term-green text-term-green'
+            : 'text-green-800 hover:text-green-500'
+        "
+        @click="activeTab = 'submissions'"
+      >
+        submissions
+        <span v-if="submissions.length" class="ml-1 text-green-700">{{
+          submissions.length
+        }}</span>
+      </button>
+    </div>
+
+    <!-- Test results tab -->
+    <div v-if="activeTab === 'tests'" class="overflow-auto p-3">
+      <div v-if="testResults">
+        <div
+          v-if="testResults.stdout"
+          class="mb-3 border border-term-border bg-term-bg p-2"
+        >
+          <div
+            class="mb-1 text-xs font-bold uppercase tracking-wider text-green-700"
+          >
+            $ stdout
+          </div>
+          <pre class="whitespace-pre-wrap text-sm text-green-300">{{
+            testResults.stdout
+          }}</pre>
+        </div>
+        <div class="flex flex-col gap-1">
+          <template v-for="(result, i) in testResults.details" :key="i">
+            <div
+              class="flex items-start gap-3 border-b border-term-border py-1.5 text-sm last:border-0"
+            >
+              <span
+                class="w-14 shrink-0 font-bold"
+                :class="result.passed ? 'text-term-green' : 'text-red-400'"
+                >{{ result.passed ? '[ok]' : '[fail]' }}</span
+              >
+              <span class="shrink-0 text-green-700">test {{ i + 1 }}</span>
+              <span
+                v-if="!result.passed && result.actual !== undefined"
+                class="text-xs text-red-300"
+              >
+                exp:
+                <code class="text-green-400">{{ result.expected }}</code>
+                &nbsp;·&nbsp; got:
+                <code class="text-red-300">{{ result.actual }}</code>
+              </span>
+              <span v-if="result.error" class="text-xs text-red-400">{{
+                result.error
+              }}</span>
+            </div>
+            <pre
+              v-if="result.traceback && !result.passed"
+              class="mb-1 ml-14 whitespace-pre-wrap text-xs text-red-300/80"
+              >{{ result.traceback }}</pre
+            >
+          </template>
         </div>
         <div
-          v-if="!result.passed && result.actual !== undefined"
-          class="mt-1 text-xs"
+          v-if="testResults.error"
+          class="bg-red-950/20 mt-2 border border-red-900 p-2 text-sm text-red-400"
         >
-          <div>
-            Expected: <code>{{ result.expected }}</code>
-          </div>
-          <div>
-            Got: <code>{{ result.actual }}</code>
-          </div>
-        </div>
-        <div v-if="result.error" class="mt-1 text-xs text-red-400">
-          {{ result.error }}
+          {{ testResults.error }}
         </div>
       </div>
+      <div v-else class="py-4 text-center text-xs text-green-800">
+        run tests to see results
+      </div>
     </div>
-    <div
-      v-if="testResults.error"
-      class="bg-red-950 mt-2 rounded border border-red-800 p-2 text-sm text-red-400"
-    >
-      {{ testResults.error }}
+
+    <!-- Submissions tab -->
+    <div v-if="activeTab === 'submissions'" class="overflow-auto p-3">
+      <div v-if="submissions.length" class="flex flex-col gap-1.5">
+        <div
+          v-for="sub in submissions"
+          :key="sub.name"
+          class="flex items-center justify-between border border-term-border bg-term-overlay p-2 text-sm"
+        >
+          <div class="flex items-center gap-3">
+            <span
+              class="font-bold"
+              :class="
+                sub.verdict === 'Accepted'
+                  ? 'text-term-green'
+                  : !sub.verdict
+                    ? 'text-green-600'
+                    : 'text-red-400'
+              "
+            >
+              [{{
+                sub.verdict === 'Accepted'
+                  ? 'AC'
+                  : sub.verdict === 'Wrong Answer'
+                    ? 'WA'
+                    : sub.verdict
+                      ? sub.verdict.substring(0, 3).toUpperCase()
+                      : sub.status
+              }}]
+            </span>
+            <span v-if="sub.total_tests" class="text-xs text-green-700">
+              {{ sub.passed_tests }}/{{ sub.total_tests }} tests
+            </span>
+          </div>
+          <span class="text-xs text-green-800">{{
+            formatTime(sub.submitted_at)
+          }}</span>
+        </div>
+      </div>
+      <div v-else class="py-4 text-center text-xs text-green-800">
+        no submissions yet
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { LucideCheck, LucideX } from 'lucide-vue-next'
+import { ref, watch } from 'vue'
 
-defineProps<{
+const props = defineProps<{
   testResults: {
     passed_tests: number
     total_tests: number
@@ -62,8 +150,46 @@ defineProps<{
       actual?: any
       expected?: any
       error?: string
+      traceback?: string
     }>
     error?: string
+    stdout?: string
   } | null
+  submissions: Array<{
+    name: string
+    verdict: string | null
+    status: string
+    passed_tests: number
+    total_tests: number
+    submitted_at: string
+  }>
 }>()
+
+const activeTab = ref<'tests' | 'submissions'>('tests')
+
+// Switch to tests tab when new results arrive
+watch(
+  () => props.testResults,
+  (v) => {
+    if (v) activeTab.value = 'tests'
+  },
+)
+
+// Switch to submissions tab when a new submission appears
+let prevCount = 0
+watch(
+  () => props.submissions.length,
+  (n) => {
+    if (n > prevCount) {
+      prevCount = n
+      activeTab.value = 'submissions'
+    }
+  },
+  { immediate: true },
+)
+
+function formatTime(dt: string) {
+  if (!dt) return ''
+  return new Date(dt).toLocaleTimeString()
+}
 </script>

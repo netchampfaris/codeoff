@@ -16,9 +16,11 @@ interface Draft {
   updated_at: string
 }
 
-interface MatchState {
+export interface MatchState {
   match_id: string
   status: string
+  round_number: number | null
+  bracket_position: number | null
   start_time: string | null
   deadline: string | null
   player_1: Player
@@ -35,6 +37,7 @@ interface MatchState {
     function_signature: string
     starter_code: string
     sample_test_cases: Array<{ input: string; expected_output: string }>
+    total_test_cases: number
   } | null
   submissions: Array<{
     name: string
@@ -78,62 +81,23 @@ export function useMatchState(matchId: string) {
   function handleEvent(data: any) {
     if (!state.value) return
 
-    switch (data.event_type) {
-      case 'match_started':
-        state.value.status = data.status
-        state.value.start_time = data.start_time
-        state.value.deadline = data.deadline
-        break
+    if (data.event_type === 'draft_updated') {
+      // Lightweight patch — these fire on every keystroke
+      state.value.drafts[data.player_id] = {
+        source_code: data.source_code,
+        cursor_line: data.cursor_line,
+        cursor_column: data.cursor_column,
+        updated_at: data.updated_at,
+      }
+      return
+    }
 
-      case 'player_joined':
-        if (data.slot === 'player_1') state.value.player_1.joined = true
-        if (data.slot === 'player_2') state.value.player_2.joined = true
-        break
-
-      case 'draft_updated':
-        state.value.drafts[data.player_id] = {
-          source_code: data.source_code,
-          cursor_line: data.cursor_line,
-          cursor_column: data.cursor_column,
-          updated_at: data.updated_at,
-        }
-        break
-
-      case 'submission_received':
-        state.value.submissions.push({
-          name: data.submission_id,
-          player: data.player_id,
-          status: data.status,
-          verdict: null,
-          passed_tests: 0,
-          total_tests: 0,
-          score: 0,
-          submitted_at: data.submitted_at,
-        })
-        break
-
-      case 'verdict_updated':
-        const sub = state.value.submissions.find(
-          (s) => s.name === data.submission_id,
-        )
-        if (sub) {
-          sub.status = 'Completed'
-          sub.verdict = data.verdict
-          sub.passed_tests = data.passed_tests
-          sub.total_tests = data.total_tests
-          sub.score = data.score
-        }
-        break
-
-      case 'match_finished':
-        state.value.status = data.status
-        state.value.winner = data.winner_id
-        state.value.winning_reason = data.winning_reason
-        break
-
-      case 'match_review_required':
-        state.value.status = data.status
-        break
+    // Full state replacement for all other events
+    if (data.event_type === 'match_state') {
+      // Preserve drafts from the current state since realtime state
+      // may not have the latest keystrokes
+      const currentDrafts = state.value.drafts
+      state.value = { ...data, drafts: { ...data.drafts, ...currentDrafts } }
     }
   }
 

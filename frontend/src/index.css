@@ -1,7 +1,42 @@
 @import 'frappe-ui/style.css';
 
+:root {
+  --term-green: #4ade80;
+  --term-green-dim: #166534;
+  --term-bg: #080808;
+  --term-surface: #0e0e0e;
+  --term-border: #1c1c1c;
+}
+
+html {
+  font-size: 15px;
+}
+
 body {
   -webkit-tap-highlight-color: transparent;
-  background-color: #0a0a0a;
-  color: #e5e5e5;
+  background-color: var(--term-bg);
+  color: #d1fae5;
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, 'SFMono-Regular',
+    Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+}
+
+/* Terminal-style scrollbars */
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--term-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: #1f2937;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #22c55e44;
+}
+
+/* Terminal text selection */
+::selection {
+  background: rgba(74, 222, 128, 0.25);
+  color: #86efac;
 }

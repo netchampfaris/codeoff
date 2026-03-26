@@ -11,7 +11,7 @@ export const session = reactive({
     onSuccess(data: any) {
       sessionUser.value = getSessionUserFromCookie()
       session.login.reset()
-      router.replace(data.default_route || '/')
+      router.replace(data?.default_route || '/')
     },
   }),
   logout: useCall({

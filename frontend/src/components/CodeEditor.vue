@@ -12,7 +12,7 @@ import {
 import { EditorState } from '@codemirror/state'
 import { python } from '@codemirror/lang-python'
 import { defaultKeymap, indentWithTab } from '@codemirror/commands'
-import { oneDark } from '@codemirror/theme-one-dark'
+import { barf } from 'thememirror'
 import { basicSetup } from 'codemirror'
 
 const props = defineProps<{
@@ -36,12 +36,16 @@ onMounted(() => {
   const extensions = [
     basicSetup,
     python(),
-    oneDark,
+    barf,
     EditorView.theme({
       '&': { height: '100%', fontSize: props.fontSize || '14px' },
       '.cm-scroller': { overflow: 'auto' },
-      '.cm-content': { fontFamily: 'JetBrains Mono, Menlo, Monaco, monospace' },
-      '.cm-gutters': { fontFamily: 'JetBrains Mono, Menlo, Monaco, monospace' },
+      '.cm-content': {
+        fontFamily: 'JetBrains Mono, Fira Code, Menlo, Monaco, monospace',
+      },
+      '.cm-gutters': {
+        fontFamily: 'JetBrains Mono, Fira Code, Menlo, Monaco, monospace',
+      },
     }),
   ]
 

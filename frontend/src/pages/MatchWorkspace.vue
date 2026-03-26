@@ -1,13 +1,13 @@
 <template>
   <div
     v-if="loading"
-    class="bg-gray-950 flex h-full items-center justify-center"
+    class="flex h-full items-center justify-center bg-term-bg font-mono"
   >
-    <div class="text-gray-500">Loading match...</div>
+    <div class="text-green-800">loading match...</div>
   </div>
   <div
     v-else-if="error"
-    class="bg-gray-950 flex h-full items-center justify-center"
+    class="flex h-full items-center justify-center bg-term-bg font-mono"
   >
     <div class="text-red-400">{{ error }}</div>
   </div>
@@ -18,75 +18,96 @@
     :player1="state.player_1"
     :player2="state.player_2"
   />
-  <div v-else-if="state" class="bg-gray-950 flex h-full flex-col text-gray-200">
+  <div
+    v-else-if="state"
+    class="flex h-full flex-col bg-term-bg font-mono text-green-200"
+  >
     <!-- Top bar -->
     <div
-      class="flex items-center justify-between border-b border-gray-800 px-4 py-2"
+      class="flex items-center justify-between border-b border-term-border px-4 py-2"
     >
       <div class="flex items-center gap-3">
-        <span class="text-sm font-medium text-gray-200">
-          {{ state.problem?.title || state.match_id }}
+        <span class="text-xs uppercase tracking-widest text-green-700">
+          round {{ state.round_number }} · match {{ state.bracket_position }}
         </span>
-        <Badge :theme="statusTheme" variant="subtle" size="sm">
-          {{ state.status }}
-        </Badge>
+        <span
+          v-if="state.status === 'Finished' && winnerName"
+          class="bg-green-950/40 border border-term-green px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-term-green"
+        >
+          {{ winnerName }} [winner]
+        </span>
       </div>
       <div class="flex items-center gap-3">
         <span
           v-if="bestScore"
-          class="rounded bg-gray-800 px-2.5 py-1 font-mono text-sm"
+          class="border border-term-border bg-term-surface px-2.5 py-1 font-mono text-sm"
           :class="
             bestScore.passed_tests === bestScore.total_tests
-              ? 'text-green-400'
+              ? 'text-term-green'
               : 'text-yellow-400'
           "
         >
-          Best: {{ bestScore.passed_tests }}/{{ bestScore.total_tests }}
+          best: {{ bestScore.passed_tests }}/{{ bestScore.total_tests }}
         </span>
         <div
           v-if="state.status === 'Live'"
-          class="font-mono text-lg font-semibold"
-          :class="remaining < 60 ? 'text-red-400' : 'text-white'"
+          class="font-mono text-3xl font-bold tabular-nums"
+          :class="remaining < 60 ? 'text-red-400' : 'text-term-green'"
         >
           {{ formatted }}
         </div>
-        <Button
+        <button
           v-if="state.status === 'Live'"
-          variant="subtle"
-          size="sm"
-          :loading="runningTests"
+          class="border border-term-border px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-green-600 transition-colors hover:border-green-600 hover:text-green-400 disabled:cursor-not-allowed disabled:opacity-40"
+          :disabled="runningTests || remaining === 0"
           @click="runTests"
         >
-          Run Tests
-        </Button>
-        <Button
+          {{ runningTests ? '[running...]' : '[run tests]' }}
+        </button>
+        <button
           v-if="state.status === 'Live'"
-          variant="solid"
-          size="sm"
-          :loading="submitting"
+          class="bg-green-950/30 hover:bg-green-950/60 border border-term-green px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-term-green transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+          :disabled="submitting || remaining === 0"
           @click="submitCode"
         >
-          Submit
-        </Button>
+          {{
+            remaining === 0
+              ? '[time up]'
+              : submitting
+                ? '[submitting...]'
+                : '[submit]'
+          }}
+        </button>
+        <span v-if="submitError" class="text-xs text-red-400">{{
+          submitError
+        }}</span>
       </div>
     </div>
 
     <!-- Main content -->
-    <div class="flex flex-1 overflow-hidden">
+    <div ref="mainEl" class="flex flex-1 overflow-hidden">
       <!-- Left: Problem statement -->
       <div
-        class="w-[400px] flex-shrink-0 overflow-hidden border-r border-gray-800"
+        :style="{ width: problemPanelWidth + 'px' }"
+        class="flex-shrink-0 overflow-hidden"
       >
-        <ProblemPanel
-          v-if="state.problem"
-          :problem="state.problem"
-          :submissions="mySubmissions"
-        />
+        <ProblemPanel v-if="state.problem" :problem="state.problem" />
+      </div>
+
+      <!-- Horizontal drag handle -->
+      <div
+        class="group relative z-10 w-1 flex-shrink-0 cursor-col-resize bg-term-border transition-colors hover:bg-green-700 active:bg-green-500"
+        @mousedown.prevent="startDragH"
+      >
+        <div class="absolute inset-y-0 -left-1 -right-1" />
       </div>
 
       <!-- Right: Code editor + test results -->
       <div class="relative flex flex-1 flex-col overflow-hidden">
-        <div class="relative flex-1 overflow-hidden">
+        <div
+          class="relative overflow-hidden"
+          :style="{ height: `calc(100% - ${bottomPanelHeight}px - 1px)` }"
+        >
           <CodeEditor
             v-model="code"
             @cursor-change="onCursorChange"
@@ -95,60 +116,68 @@
           />
           <div
             v-if="state.status !== 'Live'"
-            class="absolute inset-0 flex items-center justify-center bg-black/60"
+            class="absolute inset-0 flex items-center justify-center bg-black/70"
           >
-            <div class="rounded-lg bg-gray-900 px-8 py-6 text-center">
+            <div
+              class="border border-term-border bg-term-surface px-10 py-8 text-center font-mono"
+            >
               <div
                 v-if="state.status === 'Finished'"
-                class="text-lg font-semibold text-green-400"
+                class="text-2xl font-bold tracking-tight"
+                :class="isWinner ? 'text-term-green' : 'text-red-400'"
               >
-                Match Over — {{ winnerName }} wins!
+                {{
+                  isWinner
+                    ? 'you win!'
+                    : winnerName
+                      ? winnerName + ' wins'
+                      : 'match over'
+                }}
               </div>
               <div
                 v-else-if="state.status === 'Review'"
-                class="text-lg font-semibold text-orange-400"
+                class="text-2xl font-bold text-orange-400"
               >
-                Match Over — Under Review
+                match under review
               </div>
               <div
                 v-if="state.winning_reason"
-                class="mt-1 text-sm text-gray-400"
+                class="mt-2 text-sm text-green-700"
               >
                 {{ state.winning_reason }}
               </div>
             </div>
           </div>
         </div>
-        <TestResultsPanel :test-results="testResults" />
-      </div>
-    </div>
 
-    <!-- Winner banner -->
-    <div
-      v-if="state.status === 'Finished' || state.status === 'Review'"
-      class="border-t border-gray-800 px-4 py-3 text-center"
-    >
-      <template v-if="state.status === 'Finished'">
-        <span class="text-lg font-semibold text-green-400">
-          {{ winnerName }} wins!
-        </span>
-        <span class="ml-2 text-sm text-gray-400">
-          {{ state.winning_reason }}
-        </span>
-      </template>
-      <template v-else>
-        <span class="text-lg font-semibold text-orange-400">
-          Match under review
-        </span>
-      </template>
+        <!-- Vertical drag handle -->
+        <div
+          class="z-10 h-1 flex-shrink-0 cursor-row-resize bg-term-border transition-colors hover:bg-green-700 active:bg-green-500"
+          @mousedown.prevent="startDragV"
+        />
+
+        <div
+          :style="{ height: bottomPanelHeight + 'px' }"
+          class="flex-shrink-0 overflow-y-auto"
+        >
+          <TestResultsPanel
+            :test-results="testResults"
+            :submissions="mySubmissions"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useCall } from 'frappe-ui'
 import { useMatchState, useMatchTimer } from '@/data/match'
+import { useLobbyPoll } from '@/data/useLobbyPoll'
+import { useMatchPlayers } from '@/data/useMatchPlayers'
+import { useCodeDraft } from '@/data/useCodeDraft'
+import { useResizablePanels } from '@/data/useResizablePanels'
 import CodeEditor from '@/components/CodeEditor.vue'
 import WaitingLobby from '@/components/WaitingLobby.vue'
 import ProblemPanel from '@/components/ProblemPanel.vue'
@@ -162,13 +191,63 @@ const props = defineProps<{
 const { state, loading, error, reload } = useMatchState(props.matchId)
 const { remaining, formatted } = useMatchTimer(state)
 
-const STORAGE_KEY = `codeoff_code_${props.matchId}`
-const code = ref(localStorage.getItem(STORAGE_KEY) || '')
 const testResults = ref<any>(null)
 const runningTests = ref(false)
 const submitting = ref(false)
+const submitError = ref<string | null>(null)
 
-// Join match when player opens the page (once)
+// --- Resizable panels ---
+const { problemPanelWidth, bottomPanelHeight, startDragH, startDragV } =
+  useResizablePanels()
+
+// --- Lobby polling ---
+useLobbyPoll(
+  computed(() => state.value?.status),
+  reload,
+)
+
+// --- Player identity ---
+function findMyPlayerId(): string | null {
+  if (!state.value) return null
+  const user = session.user as string | null
+  if (!user) return null
+  if (state.value.player_1?.user === user) return state.value.player_1.id
+  if (state.value.player_2?.user === user) return state.value.player_2.id
+  return null
+}
+
+// --- Code draft ---
+const { code, onCursorChange } = useCodeDraft(
+  props.matchId,
+  state,
+  findMyPlayerId,
+)
+
+// --- Match players ---
+const { winnerName, player1Submissions } = useMatchPlayers(state)
+
+const mySubmissions = computed(() => {
+  if (!state.value) return []
+  const myId = findMyPlayerId()
+  return (state.value.submissions || []).filter((s) => s.player === myId)
+})
+
+const bestScore = computed(() => {
+  const judged = mySubmissions.value.filter((s) => s.total_tests > 0)
+  if (!judged.length) return null
+  return judged.reduce(
+    (best, s) => (s.passed_tests > best.passed_tests ? s : best),
+    judged[0],
+  )
+})
+
+const isWinner = computed(() => {
+  if (!state.value?.winner) return false
+  const user = session.user as string | null
+  return !!user && state.value.winner === user
+})
+
+// --- Join match ---
 let joined = false
 const joinMatch = useCall({
   url: '/api/v2/method/codeoff.api.contest.join_match',
@@ -185,76 +264,7 @@ watch(state, (s) => {
   }
 })
 
-// Poll for state updates while on lobby screen
-let lobbyPoll: ReturnType<typeof setInterval> | null = null
-watch(
-  () => state.value?.status,
-  (status) => {
-    if (status === 'Ready' && !lobbyPoll) {
-      lobbyPoll = setInterval(reload, 2000)
-    } else if (status !== 'Ready' && lobbyPoll) {
-      clearInterval(lobbyPoll)
-      lobbyPoll = null
-    }
-  },
-  { immediate: true },
-)
-
-// Throttled draft update
-let draftTimeout: ReturnType<typeof setTimeout> | null = null
-const updateDraft = useCall({
-  url: '/api/v2/method/codeoff.api.contest.update_draft',
-  immediate: false,
-})
-
-function onCursorChange(line: number, column: number) {
-  scheduleDraftUpdate(line, column)
-}
-
-let lastCursor = { line: 0, column: 0 }
-function scheduleDraftUpdate(line: number, column: number) {
-  lastCursor = { line, column }
-  if (draftTimeout) clearTimeout(draftTimeout)
-  draftTimeout = setTimeout(() => {
-    updateDraft.submit({
-      match_id: props.matchId,
-      source_code: code.value,
-      cursor_line: lastCursor.line,
-      cursor_column: lastCursor.column,
-    })
-  }, 400)
-}
-
-watch(code, () => {
-  localStorage.setItem(STORAGE_KEY, code.value)
-  scheduleDraftUpdate(lastCursor.line, lastCursor.column)
-})
-
-// Initialize code from localStorage, server draft, or starter code
-watch(
-  state,
-  (s) => {
-    if (!s || code.value) return
-    const playerId = findMyPlayerId()
-    if (playerId && s.drafts[playerId]) {
-      code.value = s.drafts[playerId].source_code
-    } else if (s.problem?.starter_code) {
-      code.value = s.problem.starter_code
-    }
-  },
-  { immediate: true },
-)
-
-function findMyPlayerId(): string | null {
-  if (!state.value) return null
-  const user = session.user.value
-  if (!user) return null
-  if (state.value.player_1?.user === user) return state.value.player_1.id
-  if (state.value.player_2?.user === user) return state.value.player_2.id
-  return null
-}
-
-// Run sample tests
+// --- Run sample tests ---
 const runSampleTests = useCall({
   url: '/api/v2/method/codeoff.api.contest.run_sample_tests',
   immediate: false,
@@ -270,65 +280,27 @@ const runSampleTests = useCall({
 function runTests() {
   runningTests.value = true
   testResults.value = null
-  runSampleTests.submit({
-    match_id: props.matchId,
-    source_code: code.value,
-  })
+  runSampleTests.submit({ match_id: props.matchId, source_code: code.value })
 }
 
-// Submit code
+// --- Submit code ---
 const submitCodeCall = useCall({
   url: '/api/v2/method/codeoff.api.contest.submit_code',
   immediate: false,
   onSuccess() {
     submitting.value = false
+    submitError.value = null
+    reload()
   },
-  onError() {
+  onError(err: any) {
     submitting.value = false
+    submitError.value =
+      err?.messages?.[0]?.message || err?.message || 'Submission failed'
   },
 })
 
 function submitCode() {
   submitting.value = true
-  submitCodeCall.submit({
-    match_id: props.matchId,
-    source_code: code.value,
-  })
+  submitCodeCall.submit({ match_id: props.matchId, source_code: code.value })
 }
-
-const mySubmissions = computed(() => {
-  if (!state.value) return []
-  return state.value.submissions || []
-})
-
-const bestScore = computed(() => {
-  const judged = mySubmissions.value.filter((s) => s.total_tests > 0)
-  if (!judged.length) return null
-  return judged.reduce(
-    (best, s) => (s.passed_tests > best.passed_tests ? s : best),
-    judged[0],
-  )
-})
-
-const statusTheme = computed(() => {
-  switch (state.value?.status) {
-    case 'Live':
-      return 'green'
-    case 'Finished':
-      return 'blue'
-    case 'Review':
-      return 'orange'
-    default:
-      return 'gray'
-  }
-})
-
-const winnerName = computed(() => {
-  if (!state.value?.winner) return ''
-  if (state.value.player_1.id === state.value.winner)
-    return state.value.player_1.name
-  if (state.value.player_2.id === state.value.winner)
-    return state.value.player_2.name
-  return state.value.winner
-})
 </script>

@@ -1,51 +1,70 @@
 <template>
-  <div class="flex flex-1 flex-col overflow-hidden">
+  <div class="flex flex-1 flex-col overflow-hidden font-mono">
     <!-- Header -->
     <div
-      class="flex items-center justify-between border-b border-gray-800 px-8 py-6"
+      class="flex items-center justify-between border-b border-term-border bg-term-surface px-8 py-5"
     >
-      <div>
-        <h1 class="text-3xl font-bold text-white">
+      <div class="flex-1 text-center">
+        <div class="mb-0.5 text-base uppercase tracking-widest text-green-700">
+          // tournament
+        </div>
+        <h1 class="text-[2rem] font-bold tracking-tight text-green-300">
           {{ data.tournament_name }}
         </h1>
-        <div class="mt-2 text-base text-gray-400">
-          Round {{ data.current_round || 1 }} of {{ data.total_rounds }}
+        <div class="mt-1 text-base text-green-700">
+          round
+          <span class="text-term-green">{{ data.current_round || 1 }}</span>
+          <span class="text-green-800"> / </span>
+          {{ data.total_rounds }}
         </div>
       </div>
-      <Badge
-        :theme="data.status === 'In Progress' ? 'green' : 'gray'"
-        variant="subtle"
-        size="lg"
-      >
-        {{ data.status }}
-      </Badge>
     </div>
 
     <!-- Bracket visualization -->
     <div
+      ref="bracketContainer"
       class="flex flex-1 items-center justify-center overflow-x-auto px-8 py-10"
     >
-      <div class="flex items-center gap-12">
+      <div class="relative flex items-center gap-16">
+        <!-- Connector lines -->
+        <svg
+          v-if="connectors.length"
+          class="pointer-events-none absolute inset-0"
+          :style="{ width: svgWidth + 'px', height: svgHeight + 'px' }"
+        >
+          <path
+            v-for="(c, i) in connectors"
+            :key="i"
+            :d="c"
+            fill="none"
+            stroke="rgb(22 101 52)"
+            stroke-width="1.5"
+          />
+        </svg>
         <div
           v-for="round in sortedRounds"
           :key="round.number"
           class="flex flex-col items-center gap-4"
         >
           <div
-            class="mb-3 text-sm font-semibold uppercase tracking-wider text-gray-400"
+            class="mb-3 text-base font-bold uppercase tracking-[0.2em] text-green-600"
           >
-            {{ getRoundLabel(round.number) }}
+            [ {{ getRoundLabel(round.number) }} ]
           </div>
           <div
             class="flex flex-col justify-around"
             :style="{ gap: `${roundGap(round.number)}px` }"
           >
-            <BracketMatchCard
+            <div
               v-for="m in round.matches"
               :key="m.name"
-              :match="m"
-              @spectate="$emit('spectate', $event)"
-            />
+              :ref="(el: any) => setMatchRef(m.name, el)"
+            >
+              <BracketMatchCard
+                :match="m"
+                @spectate="$emit('spectate', $event)"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -54,8 +73,10 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import BracketMatchCard from './BracketMatchCard.vue'
+import { useBracketRounds } from '@/data/useBracketRounds'
+import { useBracketConnectors } from '@/data/useBracketConnectors'
 
 const props = defineProps<{
   data: {
@@ -72,22 +93,15 @@ defineEmits<{
   spectate: [matchId: string]
 }>()
 
-const sortedRounds = computed(() => {
-  return Object.keys(props.data.rounds)
-    .map(Number)
-    .sort((a, b) => a - b)
-    .map((n) => ({ number: n, matches: props.data.rounds[n] }))
-})
+const bracketContainer = ref<HTMLElement>()
 
-function getRoundLabel(round: number): string {
-  const total = props.data.total_rounds
-  if (round === total) return 'Final'
-  if (round === total - 1) return 'Semi-Finals'
-  if (round === total - 2) return 'Quarter-Finals'
-  return `Round ${round}`
-}
+const { sortedRounds, getRoundLabel, roundGap } = useBracketRounds(
+  () => props.data.rounds,
+  () => props.data.total_rounds,
+)
 
-function roundGap(round: number): number {
-  return 24 + (round - 1) * 96
-}
+const { connectors, svgWidth, svgHeight, setMatchRef } = useBracketConnectors(
+  bracketContainer,
+  sortedRounds,
+)
 </script>

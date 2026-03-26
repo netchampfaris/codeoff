@@ -1,25 +1,12 @@
 <template>
-  <div class="flex flex-1 flex-col" :class="borderClass">
-    <div
-      class="flex items-center justify-between border-b border-gray-800 px-4 py-2.5"
-    >
-      <span class="text-base font-semibold text-white">{{ playerName }}</span>
-      <div class="flex items-center gap-3">
-        <span
-          v-if="bestScore"
-          class="rounded bg-gray-800 px-2.5 py-1 font-mono text-sm"
-          :class="
-            bestScore.passed_tests === bestScore.total_tests
-              ? 'text-green-400'
-              : 'text-yellow-400'
-          "
-        >
-          Best: {{ bestScore.passed_tests }}/{{ bestScore.total_tests }}
-        </span>
-      </div>
-    </div>
+  <div class="flex flex-1 flex-col font-mono" :class="borderClass">
     <div class="flex-1 overflow-hidden">
-      <CodeEditor :model-value="code" readonly fontSize="18px" />
+      <CodeEditor
+        :model-value="code"
+        readonly
+        fontSize="18px"
+        placeholder="# waiting for player to start coding..."
+      />
     </div>
   </div>
 </template>
@@ -41,7 +28,7 @@ const props = defineProps<{
 }>()
 
 const borderClass = computed(() => {
-  return props.side === 'left' ? 'border-r border-gray-800' : ''
+  return props.side === 'left' ? 'border-r border-term-border' : ''
 })
 
 const bestScore = computed(() => {
