@@ -63,6 +63,47 @@ class CodeoffMatch(Document):
 			execute_after=duration,
 		)
 
+	@frappe.whitelist()
+	def force_finish(self, winner_player: str):
+		"""Organizer override: force-finish a Live or Review match."""
+		if self.status not in ("Live", "Review"):
+			frappe.throw("Match must be Live or Review to force-finish")
+		if winner_player not in (self.player_1, self.player_2):
+			frappe.throw("Winner must be one of the match players")
+		from codeoff.services.match_engine import finalize_match
+
+		finalize_match(self, winner_player, "Manual Override")
+		frappe.msgprint(f"Match finished — winner set to {winner_player}")
+
+	@frappe.whitelist()
+	def reset_match(self):
+		"""Reset this match to Ready/Draft state, deleting all submissions."""
+		submissions = frappe.get_all("Codeoff Submission", filters={"match": self.name}, pluck="name")
+		for sub in submissions:
+			frappe.delete_doc("Codeoff Submission", sub, ignore_permissions=True)
+
+		new_status = "Ready" if (self.player_1 and self.player_2 and self.problem) else "Draft"
+		frappe.db.set_value(
+			"Codeoff Match",
+			self.name,
+			{
+				"status": new_status,
+				"winner": None,
+				"winning_reason": None,
+				"start_time": None,
+				"deadline": None,
+				"best_score_player_1": 0,
+				"best_score_player_2": 0,
+				"wrong_submissions_player_1": 0,
+				"wrong_submissions_player_2": 0,
+				"player_1_joined": 0,
+				"player_2_joined": 0,
+				"tie_break_metadata": None,
+			},
+		)
+		frappe.db.commit()
+		frappe.msgprint(f"Match reset to {new_status}")
+
 	def get_next_match_position(self):
 		"""Compute the next round match position for bracket advancement."""
 		next_round = self.round_number + 1

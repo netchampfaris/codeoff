@@ -8,11 +8,18 @@
       <span class="truncate text-base" :class="playerTextClass(match.player_1)">
         {{ match.player_1_name || 'tbd' }}
       </span>
-      <span
-        v-if="match.winner === match.player_1"
-        class="text-base font-bold text-term-green"
-        >[W]</span
-      >
+      <div class="flex items-center gap-2">
+        <span
+          v-if="showScores && match.best_score_player_1 > 0"
+          class="text-xs tabular-nums text-green-600"
+          >{{ match.best_score_player_1 }}</span
+        >
+        <span
+          v-if="match.winner === match.player_1"
+          class="text-base font-bold text-term-green"
+          >[W]</span
+        >
+      </div>
     </div>
     <!-- Player 2 -->
     <div
@@ -22,11 +29,18 @@
       <span class="truncate text-base" :class="playerTextClass(match.player_2)">
         {{ match.player_2_name || 'tbd' }}
       </span>
-      <span
-        v-if="match.winner === match.player_2"
-        class="text-base font-bold text-term-green"
-        >[W]</span
-      >
+      <div class="flex items-center gap-2">
+        <span
+          v-if="showScores && match.best_score_player_2 > 0"
+          class="text-xs tabular-nums text-green-600"
+          >{{ match.best_score_player_2 }}</span
+        >
+        <span
+          v-if="match.winner === match.player_2"
+          class="text-base font-bold text-term-green"
+          >[W]</span
+        >
+      </div>
     </div>
     <!-- Status bar -->
     <div
@@ -41,6 +55,11 @@
           class="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-term-green"
         />
         {{ match.status }}
+        <span
+          v-if="match.status === 'Live' && remaining > 0"
+          class="font-mono tabular-nums"
+          >{{ timerFormatted }}</span
+        >
       </span>
       <button
         v-if="match.status === 'Live' || match.status === 'Ready'"
@@ -54,7 +73,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 
 const props = defineProps<{
   match: {
@@ -65,6 +84,9 @@ const props = defineProps<{
     player_1_name: string | null
     player_2_name: string | null
     winner: string | null
+    deadline: string | null
+    best_score_player_1: number
+    best_score_player_2: number
   }
 }>()
 
@@ -88,6 +110,37 @@ const statusClass = computed(() => {
     return 'border-term-border bg-term-surface text-green-800'
   return 'border-term-border bg-term-surface text-green-900'
 })
+
+const remaining = ref(0)
+let timerId: ReturnType<typeof setInterval> | null = null
+
+function updateTimer() {
+  if (!props.match.deadline || props.match.status !== 'Live') {
+    remaining.value = 0
+    return
+  }
+  const deadlineMs = new Date(props.match.deadline).getTime()
+  remaining.value = Math.max(0, Math.floor((deadlineMs - Date.now()) / 1000))
+}
+
+onMounted(() => {
+  updateTimer()
+  timerId = setInterval(updateTimer, 1000)
+})
+
+onUnmounted(() => {
+  if (timerId) clearInterval(timerId)
+})
+
+const timerFormatted = computed(() => {
+  const m = Math.floor(remaining.value / 60)
+  const s = remaining.value % 60
+  return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+})
+
+const showScores = computed(
+  () => props.match.status === 'Live' || props.match.status === 'Finished',
+)
 
 function playerBgClass(playerId: string | null): string {
   if (props.match.winner && props.match.winner === playerId)

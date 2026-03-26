@@ -10,6 +10,7 @@
   "format",
   "match_duration_seconds",
   "sync_judging",
+  "enable_dev_login",
   "column_break_1",
   "current_round",
   "started_on",
@@ -56,6 +57,13 @@
    "fieldname": "sync_judging",
    "fieldtype": "Check",
    "label": "Sync Judging (Test Mode)"
+  },
+  {
+   "default": "0",
+   "description": "Show 'Login as player' dropdown on the home page (disable in production)",
+   "fieldname": "enable_dev_login",
+   "fieldtype": "Check",
+   "label": "Enable Dev Login"
   },
   {
    "fieldname": "column_break_1",

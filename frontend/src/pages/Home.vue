@@ -83,7 +83,7 @@
 
     <!-- Login-as dropdown (dev/testing) -->
     <div
-      v-if="players.data?.length"
+      v-if="bracket.data?.enable_dev_login && players.data?.length"
       class="absolute bottom-4 right-4 flex items-center gap-2"
     >
       {{ sessionUser }}
@@ -113,7 +113,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, onUnmounted, ref } from 'vue'
 import { useCall } from 'frappe-ui'
 import { useMyMatch } from '@/data/match'
 import { sessionUser } from '@/data/session'
@@ -146,4 +146,13 @@ async function loginAs(email: string) {
     loggingIn.value = false
   }
 }
+
+// Auto-refresh bracket every 5 s so timers and scores stay live
+let bracketTimer: ReturnType<typeof setInterval> | null = null
+onMounted(() => {
+  bracketTimer = setInterval(() => bracket.submit(), 5_000)
+})
+onUnmounted(() => {
+  if (bracketTimer) clearInterval(bracketTimer)
+})
 </script>

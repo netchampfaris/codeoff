@@ -305,7 +305,7 @@ def get_tournament_bracket():
 	"""Get tournament bracket data for display."""
 	tournament = frappe.get_all(
 		"Codeoff Tournament",
-		fields=["name", "tournament_name", "status", "current_round"],
+		fields=["name", "tournament_name", "status", "current_round", "enable_dev_login"],
 		order_by="creation desc",
 		limit=1,
 		ignore_permissions=True,
@@ -325,6 +325,9 @@ def get_tournament_bracket():
 			"player_1",
 			"player_2",
 			"winner",
+			"deadline",
+			"best_score_player_1",
+			"best_score_player_2",
 		],
 		order_by="round_number asc, bracket_position asc",
 		ignore_permissions=True,
@@ -352,6 +355,7 @@ def get_tournament_bracket():
 		"tournament_id": t.name,
 		"status": t.status,
 		"current_round": t.current_round,
+		"enable_dev_login": bool(t.enable_dev_login),
 		"total_rounds": total_rounds,
 		"rounds": rounds,
 	}

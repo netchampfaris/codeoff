@@ -60,6 +60,27 @@ class CodeoffTournament(Document):
 		frappe.msgprint(f"Bracket generated: {total_rounds} rounds, {num_players - 1} matches")
 
 	@frappe.whitelist()
+	def start_round(self):
+		"""Start all Ready matches in the current round simultaneously."""
+		matches = frappe.get_all(
+			"Codeoff Match",
+			filters={
+				"tournament": self.name,
+				"round_number": self.current_round,
+				"status": "Ready",
+			},
+			fields=["name"],
+		)
+		if not matches:
+			frappe.throw(f"No Ready matches found in round {self.current_round}")
+
+		for m in matches:
+			match_doc = frappe.get_doc("Codeoff Match", m.name)
+			match_doc.start_match()
+
+		frappe.msgprint(f"Round {self.current_round}: {len(matches)} match(es) started")
+
+	@frappe.whitelist()
 	def finish_round_with_random_winners(self):
 		"""Test helper: randomly pick a winner for every Live/Ready match in the current round."""
 		matches = frappe.get_all(

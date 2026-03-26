@@ -31,6 +31,11 @@
           round {{ state.round_number }} · match {{ state.bracket_position }}
         </span>
         <span
+          v-if="myPlayerName"
+          class="text-xs uppercase tracking-widest text-green-800"
+          >// {{ myPlayerName }}</span
+        >
+        <span
           v-if="state.status === 'Finished' && winnerName"
           class="bg-green-950/40 border border-term-green px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-term-green"
         >
@@ -260,6 +265,15 @@ const isWinner = computed(() => {
   if (!state.value?.winner) return false
   const user = session.user as string | null
   return !!user && state.value.winner === user
+})
+
+const myPlayerName = computed(() => {
+  if (!state.value) return null
+  const user = session.user as string | null
+  if (!user) return null
+  if (state.value.player_1?.user === user) return state.value.player_1.name
+  if (state.value.player_2?.user === user) return state.value.player_2.name
+  return null
 })
 
 // --- Join match ---
