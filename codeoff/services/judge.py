@@ -149,6 +149,7 @@ def run_tests(source_code, function_name, test_cases, time_limit=2.0, memory_lim
 		"total_tests": total,
 		"runtime_ms": elapsed_ms,
 		"details": output.get("details", []),
+		"stdout": output.get("stdout", ""),
 	}
 
 
@@ -170,6 +171,8 @@ def _build_runner_script(source_code, function_name, test_cases):
 	runner = f"""
 import json
 import sys
+import io
+import traceback
 
 # --- User code ---
 {source_code}
@@ -180,22 +183,31 @@ def _run_tests():
     results = []
     passed = 0
     total = len(tests)
+    all_stdout = ""
 
     for i, test in enumerate(tests):
         try:
             args = test["input"]
             if not isinstance(args, list):
                 args = [args]
-            actual = {function_name}(*args)
+            _capture = io.StringIO()
+            sys.stdout = _capture
+            try:
+                actual = {function_name}(*args)
+            finally:
+                sys.stdout = sys.__stdout__
+                all_stdout += _capture.getvalue()
             expected = test["expected"]
             is_pass = actual == expected
             if is_pass:
                 passed += 1
             results.append({{"test": i, "passed": is_pass, "expected": expected, "actual": actual}})
         except Exception as e:
-            results.append({{"test": i, "passed": False, "error": str(e)}})
+            sys.stdout = sys.__stdout__
+            tb = traceback.format_exc()
+            results.append({{"test": i, "passed": False, "error": str(e), "traceback": tb}})
 
-    output = {{"passed": passed, "total": total, "details": results}}
+    output = {{"passed": passed, "total": total, "details": results, "stdout": all_stdout}}
     print(json.dumps(output))
 
 _run_tests()
