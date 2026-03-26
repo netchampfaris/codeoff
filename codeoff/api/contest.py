@@ -6,9 +6,12 @@ API methods for contestant and spectator interactions.
 """
 
 import json
+import uuid
 
 import frappe
 from frappe.utils import now_datetime
+
+ALLOWED_REACTIONS = ["🔥", "💀", "👀", "🎉", "😬"]
 
 
 @frappe.whitelist()
@@ -115,14 +118,92 @@ def join_match(match_id: str):
 	# Broadcast updated match state
 	publish_match_state(match_id)
 
-	# If both players have joined, start the match
+	# Return fresh status
 	match.reload()
-	if match.player_1_joined and match.player_2_joined and match.status == "Ready":
-		match.start_match()
-		frappe.db.commit()
-
-	# Return fresh status after potential start
 	return {"status": match.status}
+
+
+@frappe.whitelist()
+def start_match_now(match_id: str):
+	"""Organizer-only: start a Ready match manually."""
+	if "System Manager" not in frappe.get_roles():
+		frappe.throw("Only organizers can start a match", frappe.PermissionError)
+	match = frappe.get_doc("Codeoff Match", match_id)
+	if match.status != "Ready":
+		frappe.throw("Match is not in Ready status")
+	match.start_match()
+	frappe.db.commit()
+	return {"status": "Live"}
+
+
+@frappe.whitelist(allow_guest=True)
+def vote_for_player(match_id: str, player_id: str):
+	"""Cast an audience vote for a player. One vote per match enforced client-side."""
+	match = frappe.db.get_value(
+		"Codeoff Match",
+		match_id,
+		["status", "player_1", "player_2", "votes_player_1", "votes_player_2"],
+		as_dict=True,
+	)
+	if not match:
+		frappe.throw("Match not found")
+	if match.status != "Ready":
+		frappe.throw("Voting is only open while the match is in the lobby")
+	if player_id not in (match.player_1, match.player_2):
+		frappe.throw("Invalid player for this match")
+
+	if player_id == match.player_1:
+		frappe.db.sql(
+			"UPDATE `tabCodeoff Match` SET `votes_player_1` = COALESCE(`votes_player_1`, 0) + 1 WHERE name = %s",
+			(match_id,),
+		)
+	else:
+		frappe.db.sql(
+			"UPDATE `tabCodeoff Match` SET `votes_player_2` = COALESCE(`votes_player_2`, 0) + 1 WHERE name = %s",
+			(match_id,),
+		)
+	frappe.db.commit()
+
+	updated = frappe.db.get_value(
+		"Codeoff Match", match_id, ["votes_player_1", "votes_player_2"], as_dict=True
+	)
+	votes_1 = updated.votes_player_1 or 0
+	votes_2 = updated.votes_player_2 or 0
+	_broadcast_match_event(
+		match_id,
+		{
+			"event_type": "vote_update",
+			"votes_1": votes_1,
+			"votes_2": votes_2,
+		},
+	)
+	return {"votes_1": votes_1, "votes_2": votes_2}
+
+
+@frappe.whitelist(allow_guest=True)
+def send_reaction(match_id: str, emoji: str, player_id: str | None = None, client_id: str | None = None):
+	"""Broadcast an ephemeral emoji reaction to all spectators."""
+	if emoji not in ALLOWED_REACTIONS:
+		frappe.throw("Invalid reaction")
+	# Sanitize client_id — it's echoed back for dedup; reject oversized values
+	if client_id and len(str(client_id)) > 128:
+		client_id = None
+	# Validate player_id belongs to this match if provided
+	if player_id:
+		players = frappe.db.get_value("Codeoff Match", match_id, ["player_1", "player_2"], as_dict=True)
+		if not players or player_id not in (players.player_1, players.player_2):
+			player_id = None
+	_broadcast_match_event(
+		match_id,
+		{
+			"event_type": "reaction",
+			"emoji": emoji,
+			"player_id": player_id,
+			"client_id": client_id,
+			"id": str(uuid.uuid4()),
+		},
+	)
+	return {"ok": True}
 
 
 @frappe.whitelist(allow_guest=True)
@@ -203,6 +284,9 @@ def _build_match_state(match_id: str):
 			"total_test_cases": len(active_cases),
 		}
 
+	votes_1 = match.votes_player_1 or 0
+	votes_2 = match.votes_player_2 or 0
+
 	# Get submissions
 	submissions = frappe.get_all(
 		"Codeoff Submission",
@@ -221,9 +305,12 @@ def _build_match_state(match_id: str):
 		ignore_permissions=True,
 	)
 
+	is_organizer = "System Manager" in frappe.get_roles()
+
 	return {
 		"match_id": match.name,
 		"status": match.status,
+		"is_organizer": is_organizer,
 		"start_time": str(match.start_time) if match.start_time else None,
 		"deadline": str(match.deadline) if match.deadline else None,
 		"player_1": {
@@ -245,6 +332,8 @@ def _build_match_state(match_id: str):
 		"drafts": drafts,
 		"problem": problem_data,
 		"submissions": submissions,
+		"votes_1": votes_1,
+		"votes_2": votes_2,
 	}
 
 
@@ -284,6 +373,60 @@ def get_my_match():
 	}
 
 
+@frappe.whitelist(allow_guest=True)
+def get_live_matches():
+	"""Return Live and Ready matches for the spectate lobby. Public API."""
+	matches = frappe.get_all(
+		"Codeoff Match",
+		filters={"status": ("in", ["Ready", "Live"])},
+		fields=[
+			"name",
+			"status",
+			"tournament",
+			"player_1",
+			"player_2",
+			"problem",
+			"round_number",
+			"bracket_position",
+		],
+		order_by="round_number asc, bracket_position asc",
+	)
+	# Batch-fetch player names and problem titles to avoid N+1 queries
+	player_ids = {m[f] for m in matches for f in ("player_1", "player_2") if m.get(f)}
+	problem_ids = {m["problem"] for m in matches if m.get("problem")}
+	player_name_map = (
+		{
+			p.name: p.player_name
+			for p in frappe.get_all(
+				"Codeoff Player",
+				filters={"name": ["in", list(player_ids)]},
+				fields=["name", "player_name"],
+			)
+		}
+		if player_ids
+		else {}
+	)
+	problem_title_map = (
+		{
+			p.name: p.title
+			for p in frappe.get_all(
+				"Codeoff Problem",
+				filters={"name": ["in", list(problem_ids)]},
+				fields=["name", "title"],
+			)
+		}
+		if problem_ids
+		else {}
+	)
+	for m in matches:
+		for field in ("player_1", "player_2"):
+			if m[field]:
+				m[f"{field}_name"] = player_name_map.get(m[field])
+		if m["problem"]:
+			m["problem_title"] = problem_title_map.get(m["problem"])
+	return matches
+
+
 @frappe.whitelist()
 def get_active_matches():
 	"""Get all active (Live/Ready) matches. For organizer dashboard."""
@@ -293,10 +436,23 @@ def get_active_matches():
 		fields=["name", "status", "tournament", "player_1", "player_2", "problem", "start_time", "deadline"],
 		order_by="creation asc",
 	)
+	player_ids = {m[f] for m in matches for f in ("player_1", "player_2") if m.get(f)}
+	player_name_map = (
+		{
+			p.name: p.player_name
+			for p in frappe.get_all(
+				"Codeoff Player",
+				filters={"name": ["in", list(player_ids)]},
+				fields=["name", "player_name"],
+			)
+		}
+		if player_ids
+		else {}
+	)
 	for m in matches:
 		for field in ("player_1", "player_2"):
 			if m[field]:
-				m[f"{field}_name"] = frappe.db.get_value("Codeoff Player", m[field], "player_name")
+				m[f"{field}_name"] = player_name_map.get(m[field])
 	return matches
 
 

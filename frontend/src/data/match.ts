@@ -19,6 +19,7 @@ interface Draft {
 export interface MatchState {
   match_id: string
   status: string
+  is_organizer: boolean
   round_number: number | null
   bracket_position: number | null
   start_time: string | null
@@ -49,6 +50,8 @@ export interface MatchState {
     score: number
     submitted_at: string
   }>
+  votes_1: number
+  votes_2: number
 }
 
 export function useMatchState(matchId: string) {
@@ -89,6 +92,12 @@ export function useMatchState(matchId: string) {
         cursor_column: data.cursor_column,
         updated_at: data.updated_at,
       }
+      return
+    }
+
+    if (data.event_type === 'vote_update') {
+      state.value.votes_1 = data.votes_1
+      state.value.votes_2 = data.votes_2
       return
     }
 

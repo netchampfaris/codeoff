@@ -44,6 +44,20 @@
           >
             {{ player1?.joined ? 'connected' : 'waiting...' }}
           </div>
+          <div v-if="votes1 !== undefined" class="mt-3">
+            <button
+              class="border px-3 py-1 text-xs font-bold uppercase tracking-widest transition-colors"
+              :class="
+                hasVoted
+                  ? 'cursor-not-allowed border-green-900 text-green-800'
+                  : 'cursor-pointer border-green-700 text-green-400 hover:border-term-green hover:text-term-green'
+              "
+              :disabled="hasVoted"
+              @click="vote(player1?.id || '')"
+            >
+              [vote] {{ votes1 }}
+            </button>
+          </div>
         </div>
         <div
           class="font-bold tracking-widest text-green-800"
@@ -78,21 +92,73 @@
           >
             {{ player2?.joined ? 'connected' : 'waiting...' }}
           </div>
+          <div v-if="votes2 !== undefined" class="mt-3">
+            <button
+              class="border px-3 py-1 text-xs font-bold uppercase tracking-widest transition-colors"
+              :class="
+                hasVoted
+                  ? 'cursor-not-allowed border-green-900 text-green-800'
+                  : 'cursor-pointer border-green-700 text-green-400 hover:border-term-green hover:text-term-green'
+              "
+              :disabled="hasVoted"
+              @click="vote(player2?.id || '')"
+            >
+              [vote] {{ votes2 }}
+            </button>
+          </div>
         </div>
       </div>
-      <div class="text-sm uppercase tracking-widest text-green-800">
+      <div class="mt-6 text-sm uppercase tracking-widest text-green-800">
         <span class="animate-pulse text-term-green">_</span>
         waiting for both players to connect
+      </div>
+      <!-- Organizer start button -->
+      <div v-if="isOrganizer" class="mt-6">
+        <button
+          class="border px-6 py-2 text-sm font-bold uppercase tracking-widest transition-colors"
+          :class="
+            bothJoined
+              ? 'hover:bg-green-950/40 cursor-pointer border-term-green text-term-green'
+              : 'cursor-not-allowed border-green-900 text-green-800'
+          "
+          :disabled="!bothJoined"
+          @click="emit('start')"
+        >
+          {{ bothJoined ? '[start match]' : '[waiting for players]' }}
+        </button>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { ref, computed } from 'vue'
+
+const props = defineProps<{
   title: string
-  player1: { name: string; joined: boolean } | null
-  player2: { name: string; joined: boolean } | null
+  player1: { id?: string; name: string; joined: boolean } | null
+  player2: { id?: string; name: string; joined: boolean } | null
   large?: boolean
+  matchId?: string
+  votes1?: number
+  votes2?: number
+  isOrganizer?: boolean
 }>()
+
+const emit = defineEmits<{ vote: [playerId: string]; start: [] }>()
+
+const bothJoined = computed(
+  () => !!props.player1?.joined && !!props.player2?.joined,
+)
+
+const hasVoted = ref(
+  !!props.matchId && !!localStorage.getItem(`codeoff_voted_${props.matchId}`),
+)
+
+function vote(playerId: string) {
+  if (hasVoted.value || !props.matchId || !playerId) return
+  hasVoted.value = true
+  localStorage.setItem(`codeoff_voted_${props.matchId}`, playerId)
+  emit('vote', playerId)
+}
 </script>
