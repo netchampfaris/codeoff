@@ -9,12 +9,15 @@
   "status",
   "format",
   "match_duration_seconds",
+  "sync_judging",
   "column_break_1",
   "current_round",
   "started_on",
   "completed_on",
   "section_break_players",
-  "players"
+  "players",
+  "section_break_round_durations",
+  "round_durations"
  ],
  "fields": [
   {
@@ -44,8 +47,15 @@
   {
    "fieldname": "match_duration_seconds",
    "fieldtype": "Int",
-   "label": "Match Duration (seconds)",
+   "label": "Default Match Duration (seconds)",
    "reqd": 1
+  },
+  {
+   "default": "0",
+   "description": "Run judge synchronously on submission (for local testing — skip background worker)",
+   "fieldname": "sync_judging",
+   "fieldtype": "Check",
+   "label": "Sync Judging (Test Mode)"
   },
   {
    "fieldname": "column_break_1",
@@ -79,6 +89,18 @@
    "fieldtype": "Table",
    "label": "Players",
    "options": "Codeoff Tournament Player"
+  },
+  {
+   "fieldname": "section_break_round_durations",
+   "fieldtype": "Section Break",
+   "label": "Round Durations"
+  },
+  {
+   "fieldname": "round_durations",
+   "fieldtype": "Table",
+   "label": "Round Durations",
+   "options": "Codeoff Round Duration",
+   "description": "Set duration per round. Falls back to Default Match Duration if a round is not listed."
   }
  ],
  "index_web_pages_for_search": 0,
