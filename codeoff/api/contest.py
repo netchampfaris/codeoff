@@ -25,20 +25,19 @@ def submit_code(match_id: str, source_code: str):
 	submission.insert(ignore_permissions=True)
 	frappe.db.commit()
 
-	# Publish submission received event
-	frappe.publish_realtime(
-		f"codeoff_match_{match_id}",
-		{
-			"event_type": "submission_received",
-			"match_id": match_id,
-			"submission_id": submission.name,
-			"player_id": player.name,
-			"submitted_at": str(submission.submitted_at),
-			"status": "Queued",
-		},
-	)
+	# Broadcast updated match state
+	publish_match_state(match_id)
 
-	# Enqueue judging
+	# Enqueue or run synchronously based on tournament setting
+	tournament = frappe.db.get_value("Codeoff Match", match_id, "tournament")
+	sync_judging = frappe.db.get_value("Codeoff Tournament", tournament, "sync_judging")
+
+	if sync_judging:
+		from codeoff.services.judge import judge_submission
+
+		judge_submission(submission.name)
+		return {"submission_id": submission.name, "status": "Completed"}
+
 	frappe.enqueue(
 		"codeoff.services.judge.judge_submission",
 		submission_id=submission.name,
@@ -84,14 +83,7 @@ def update_draft(match_id: str, source_code: str, cursor_line: int = 0, cursor_c
 	cache_key = f"codeoff_draft:{match_id}:{player.name}"
 	frappe.cache.set_value(cache_key, frappe.as_json(draft_data))
 
-	# Broadcast to spectators
-	frappe.publish_realtime(
-		f"codeoff_match_{match_id}",
-		{
-			"event_type": "draft_updated",
-			**draft_data,
-		},
-	)
+	_broadcast_match_event(match_id, {"event_type": "draft_updated", **draft_data})
 
 
 @frappe.whitelist()
@@ -120,16 +112,8 @@ def join_match(match_id: str):
 	frappe.db.set_value("Codeoff Match", match_id, f"{slot}_joined", 1)
 	frappe.db.commit()
 
-	# Notify spectators & the other player
-	frappe.publish_realtime(
-		f"codeoff_match_{match_id}",
-		{
-			"event_type": "player_joined",
-			"match_id": match_id,
-			"player_id": player.name,
-			"slot": slot,
-		},
-	)
+	# Broadcast updated match state
+	publish_match_state(match_id)
 
 	# If both players have joined, start the match
 	match.reload()
@@ -144,6 +128,31 @@ def join_match(match_id: str):
 @frappe.whitelist(allow_guest=True)
 def get_match_state(match_id: str):
 	"""Get current match state for spectator or contestant. Public API."""
+	return _build_match_state(match_id)
+
+
+def publish_match_state(match_id: str):
+	"""Build full match state and broadcast it via realtime."""
+	state = _build_match_state(match_id)
+	state["event_type"] = "match_state"
+	_broadcast_match_event(match_id, state)
+
+
+def _broadcast_match_event(match_id: str, message: dict):
+	"""Broadcast to room 'all' (spectators/organizer) + each player's user room (Website Users)."""
+	event = f"codeoff_match_{match_id}"
+	frappe.publish_realtime(event, message)
+	players = frappe.db.get_value("Codeoff Match", match_id, ["player_1", "player_2"], as_dict=True)
+	for player_field in ("player_1", "player_2"):
+		player_id = players.get(player_field)
+		if player_id:
+			user = frappe.db.get_value("Codeoff Player", player_id, "user")
+			if user:
+				frappe.publish_realtime(event, message, user=user)
+
+
+def _build_match_state(match_id: str):
+	"""Internal: build the full match state dict."""
 	match = frappe.get_doc("Codeoff Match", match_id)
 
 	# Get draft states from Redis
@@ -176,9 +185,10 @@ def get_match_state(match_id: str):
 	problem_data = None
 	if match.problem:
 		problem = frappe.get_doc("Codeoff Problem", match.problem)
+		active_cases = [tc for tc in problem.test_cases if tc.is_active]
 		sample_cases = [
 			{"input": tc.input_data, "expected_output": tc.expected_output}
-			for tc in problem.test_cases
+			for tc in active_cases
 			if tc.visibility == "Sample"
 		]
 		problem_data = {
@@ -190,6 +200,7 @@ def get_match_state(match_id: str):
 			"function_signature": problem.function_signature,
 			"starter_code": problem.starter_code,
 			"sample_test_cases": sample_cases,
+			"total_test_cases": len(active_cases),
 		}
 
 	# Get submissions
@@ -229,6 +240,8 @@ def get_match_state(match_id: str):
 		},
 		"winner": match.winner,
 		"winning_reason": match.winning_reason,
+		"round_number": match.round_number,
+		"bracket_position": match.bracket_position,
 		"drafts": drafts,
 		"problem": problem_data,
 		"submissions": submissions,
@@ -342,6 +355,16 @@ def get_tournament_bracket():
 		"total_rounds": total_rounds,
 		"rounds": rounds,
 	}
+
+
+@frappe.whitelist()
+def get_all_players():
+	"""Return all Codeoff Players (for dev login-as dropdown)."""
+	return frappe.get_all(
+		"Codeoff Player",
+		fields=["name", "player_name", "user"],
+		order_by="player_name asc",
+	)
 
 
 def _get_current_player():

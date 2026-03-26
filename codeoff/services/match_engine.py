@@ -79,17 +79,12 @@ def determine_winner_by_score(match):
 				"wrong_submissions_player_2": w2,
 			}
 		)
-		match.save()
+		match.save(ignore_permissions=True)
 
-		frappe.publish_realtime(
-			f"codeoff_match_{match.name}",
-			{
-				"event_type": "match_review_required",
-				"match_id": match.name,
-				"status": "Review",
-				"reason": "Equal best score and equal wrong submission count",
-			},
-		)
+		from codeoff.api.contest import publish_match_state
+
+		frappe.db.commit()
+		publish_match_state(match.name)
 
 
 def finalize_match(match, winner, reason):
@@ -97,21 +92,13 @@ def finalize_match(match, winner, reason):
 	match.winner = winner
 	match.winning_reason = reason
 	match.status = "Finished"
-	match.save()
-
-	frappe.publish_realtime(
-		f"codeoff_match_{match.name}",
-		{
-			"event_type": "match_finished",
-			"match_id": match.name,
-			"status": "Finished",
-			"winner_id": winner,
-			"winning_reason": reason,
-			"finished_at": str(now_datetime()),
-		},
-	)
-
+	match.save(ignore_permissions=True)
 	advance_bracket(match, winner)
+
+	from codeoff.api.contest import publish_match_state
+
+	frappe.db.commit()
+	publish_match_state(match.name)
 
 
 def advance_bracket(match, winner):
@@ -129,24 +116,28 @@ def advance_bracket(match, winner):
 		tournament = frappe.get_doc("Codeoff Tournament", match.tournament)
 		tournament.status = "Completed"
 		tournament.completed_on = now_datetime()
-		tournament.save()
+		tournament.save(ignore_permissions=True)
 
 		# Mark winner in tournament player table
 		for tp in tournament.players:
 			if tp.player == winner:
 				tp.status = "Winner"
-				tp.save()
+				tp.save(ignore_permissions=True)
 
 		return
 
 	frappe.db.set_value("Codeoff Match", next_match, next_slot, winner)
 
-	# Check if next match now has both players
+	# Check if next match now has both players — reload to pick up the set_value above
 	next_match_doc = frappe.get_doc("Codeoff Match", next_match)
+	next_match_doc.reload()
 	if next_match_doc.player_1 and next_match_doc.player_2:
 		if next_match_doc.status == "Draft":
-			next_match_doc.status = "Ready" if next_match_doc.problem else "Draft"
-			next_match_doc.save()
+			# Inherit problem from the current match if none assigned yet
+			if not next_match_doc.problem and match.problem:
+				next_match_doc.problem = match.problem
+			next_match_doc.status = "Ready"
+			next_match_doc.save(ignore_permissions=True)
 
 
 def process_verdict(submission_id):
@@ -162,22 +153,6 @@ def process_verdict(submission_id):
 
 	if match.status != "Live":
 		return
-
-	# Publish verdict to realtime
-	frappe.publish_realtime(
-		f"codeoff_match_{match.name}",
-		{
-			"event_type": "verdict_updated",
-			"match_id": match.name,
-			"submission_id": submission.name,
-			"player_id": submission.player,
-			"verdict": submission.verdict,
-			"passed_tests": submission.passed_tests,
-			"total_tests": submission.total_tests,
-			"score": submission.score,
-			"runtime_ms": submission.runtime_ms,
-		},
-	)
 
 	# Check for immediate win
 	if submission.verdict == "Accepted":
@@ -206,4 +181,9 @@ def process_verdict(submission_id):
 	else:
 		# Update scores but don't finalize
 		recompute_scores(match)
-		match.save()
+		match.save(ignore_permissions=True)
+
+		from codeoff.api.contest import publish_match_state
+
+		frappe.db.commit()
+		publish_match_state(match.name)

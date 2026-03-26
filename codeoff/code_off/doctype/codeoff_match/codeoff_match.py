@@ -34,7 +34,13 @@ class CodeoffMatch(Document):
 			frappe.throw("A problem must be assigned")
 
 		tournament = frappe.get_doc("Codeoff Tournament", self.tournament)
-		duration = tournament.match_duration_seconds
+
+		# Use per-round duration if configured, else fall back to tournament default
+		round_entry = next(
+			(r for r in tournament.round_durations if r.round_number == self.round_number),
+			None,
+		)
+		duration = round_entry.duration_seconds if round_entry else tournament.match_duration_seconds
 
 		now = now_datetime()
 		self.start_time = now
@@ -42,18 +48,10 @@ class CodeoffMatch(Document):
 		self.status = "Live"
 		self.save(ignore_permissions=True)
 
-		frappe.publish_realtime(
-			f"codeoff_match_{self.name}",
-			{
-				"event_type": "match_started",
-				"match_id": self.name,
-				"status": "Live",
-				"start_time": str(self.start_time),
-				"deadline": str(self.deadline),
-				"duration_seconds": duration,
-				"problem_id": self.problem,
-			},
-		)
+		# Broadcast updated match state
+		from codeoff.api.contest import publish_match_state
+
+		publish_match_state(self.name)
 
 		# Schedule timeout resolution
 		frappe.enqueue(
