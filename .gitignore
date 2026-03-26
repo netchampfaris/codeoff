@@ -23,6 +23,10 @@ wheels/
 tags
 MANIFEST
 
+# Problems (kept private — use load_problems.dump() to generate problems_seed.json)
+problems/
+codeoff/problems_seed.json
+
 # Environments
 .env
 .venv
