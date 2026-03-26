@@ -258,8 +258,8 @@ const bestScore = computed(() => {
 
 const isWinner = computed(() => {
   if (!state.value?.winner) return false
-  const myId = findMyPlayerId()
-  return !!myId && state.value.winner === myId
+  const user = session.user as string | null
+  return !!user && state.value.winner === user
 })
 
 // --- Join match ---
