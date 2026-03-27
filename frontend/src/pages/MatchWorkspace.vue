@@ -1,18 +1,12 @@
 <template>
-  <div class="flex h-full flex-col bg-term-bg font-mono text-green-200">
+  <div class="bg-zinc-950 flex h-full flex-col font-mono text-green-200">
     <AppNavbar />
     <!-- Content area fills remaining height -->
     <div class="relative flex flex-1 flex-col overflow-hidden">
-      <div
-        v-if="loading"
-        class="flex h-full items-center justify-center"
-      >
+      <div v-if="loading" class="flex h-full items-center justify-center">
         <div class="text-green-800">loading match...</div>
       </div>
-      <div
-        v-else-if="error"
-        class="flex h-full items-center justify-center"
-      >
+      <div v-else-if="error" class="flex h-full items-center justify-center">
         <div class="text-red-400">{{ error }}</div>
       </div>
       <!-- Waiting lobby when match is Ready -->
@@ -24,160 +18,158 @@
         :is-organizer="state.is_organizer"
         @start="startMatch"
       />
-      <div
-        v-else-if="state"
-        class="flex h-full flex-col"
-      >
-    <!-- Top bar -->
-    <div
-      class="flex items-center justify-between border-b border-term-border px-4 py-2"
-    >
-      <div class="flex items-center gap-3">
-        <span class="text-xs uppercase tracking-widest text-green-700">
-          round {{ state.round_number }} · match {{ state.bracket_position }}
-        </span>
-        <span
-          v-if="myPlayerName"
-          class="text-xs uppercase tracking-widest text-green-800"
-          >// {{ myPlayerName }}</span
-        >
-        <span
-          v-if="state.status === 'Finished' && winnerName"
-          class="bg-green-950/40 border border-term-green px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-term-green"
-        >
-          {{ winnerName }} [winner]
-        </span>
-      </div>
-      <div class="flex items-center gap-3">
-        <span
-          v-if="bestScore"
-          class="border border-term-border bg-term-surface px-2.5 py-1 font-mono text-sm"
-          :class="
-            bestScore.passed_tests === bestScore.total_tests
-              ? 'text-term-green'
-              : 'text-yellow-400'
-          "
-        >
-          best: {{ bestScore.passed_tests }}/{{ bestScore.total_tests }}
-        </span>
+      <div v-else-if="state" class="flex h-full flex-col">
+        <!-- Top bar -->
         <div
-          v-if="state.status === 'Live'"
-          class="font-mono text-3xl font-bold tabular-nums"
-          :class="remaining < 60 ? 'text-red-400' : 'text-term-green'"
+          class="border-zinc-800 flex items-center justify-between border-b px-4 py-2"
         >
-          {{ formatted }}
-        </div>
-        <button
-          v-if="state.status === 'Live'"
-          class="border border-term-border px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-green-600 transition-colors hover:border-green-600 hover:text-green-400 disabled:cursor-not-allowed disabled:opacity-40"
-          :disabled="runningTests || remaining === 0"
-          @click="runTests"
-        >
-          {{ runningTests ? '[running...]' : '[run tests]' }}
-        </button>
-        <button
-          v-if="state.status === 'Live'"
-          class="bg-green-950/30 hover:bg-green-950/60 border border-term-green px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-term-green transition-colors disabled:cursor-not-allowed disabled:opacity-40"
-          :disabled="submitting || remaining === 0"
-          @click="submitCode"
-        >
-          {{
-            remaining === 0
-              ? '[time up]'
-              : submitting
-                ? '[submitting...]'
-                : '[submit]'
-          }}
-        </button>
-        <span v-if="submitError" class="text-xs text-red-400">{{
-          submitError
-        }}</span>
-      </div>
-    </div>
-
-    <!-- Main content -->
-    <div ref="mainEl" class="flex flex-1 overflow-hidden">
-      <!-- Left: Problem statement -->
-      <div
-        :style="{ width: problemPanelWidth + 'px' }"
-        class="flex-shrink-0 overflow-hidden"
-      >
-        <ProblemPanel v-if="state.problem" :problem="state.problem" />
-      </div>
-
-      <!-- Horizontal drag handle -->
-      <div
-        class="group relative z-10 w-1 flex-shrink-0 cursor-col-resize bg-term-border transition-colors hover:bg-green-700 active:bg-green-500"
-        @mousedown.prevent="startDragH"
-      >
-        <div class="absolute inset-y-0 -left-1 -right-1" />
-      </div>
-
-      <!-- Right: Code editor + test results -->
-      <div class="relative flex flex-1 flex-col overflow-hidden">
-        <div
-          class="relative overflow-hidden"
-          :style="{ height: `calc(100% - ${bottomPanelHeight}px - 1px)` }"
-        >
-          <CodeEditor
-            v-model="code"
-            @cursor-change="onCursorChange"
-            :readonly="state.status !== 'Live'"
-            placeholder="Write your solution here..."
-          />
-          <div
-            v-if="state.status !== 'Live'"
-            class="absolute inset-0 flex items-center justify-center bg-black/70"
-          >
-            <div
-              class="border border-term-border bg-term-surface px-10 py-8 text-center font-mono"
+          <div class="flex items-center gap-3">
+            <span class="text-xs uppercase tracking-widest text-green-700">
+              round {{ state.round_number }} · match
+              {{ state.bracket_position }}
+            </span>
+            <span
+              v-if="myPlayerName"
+              class="text-xs uppercase tracking-widest text-green-800"
+              >// {{ myPlayerName }}</span
             >
-              <div
-                v-if="state.status === 'Finished'"
-                class="text-2xl font-bold tracking-tight"
-                :class="isWinner ? 'text-term-green' : 'text-red-400'"
-              >
-                {{
-                  isWinner
-                    ? 'you win!'
-                    : winnerName
-                      ? winnerName + ' wins'
-                      : 'match over'
-                }}
-              </div>
-              <div
-                v-else-if="state.status === 'Review'"
-                class="text-2xl font-bold text-orange-400"
-              >
-                match under review
-              </div>
-              <div
-                v-if="state.winning_reason"
-                class="mt-2 text-sm text-green-700"
-              >
-                {{ state.winning_reason }}
-              </div>
+            <span
+              v-if="state.status === 'Finished' && winnerName"
+              class="bg-green-950/40 border border-green-400 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-green-400"
+            >
+              {{ winnerName }} [winner]
+            </span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span
+              v-if="bestScore"
+              class="border-zinc-800 bg-zinc-900 border px-2.5 py-1 font-mono text-sm"
+              :class="
+                bestScore.passed_tests === bestScore.total_tests
+                  ? 'text-green-400'
+                  : 'text-yellow-400'
+              "
+            >
+              best: {{ bestScore.passed_tests }}/{{ bestScore.total_tests }}
+            </span>
+            <div
+              v-if="state.status === 'Live'"
+              class="font-mono text-3xl font-bold tabular-nums"
+              :class="remaining < 60 ? 'text-red-400' : 'text-green-400'"
+            >
+              {{ formatted }}
             </div>
+            <button
+              v-if="state.status === 'Live'"
+              class="border-zinc-800 border px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-green-600 transition-colors hover:border-green-600 hover:text-green-400 disabled:cursor-not-allowed disabled:opacity-40"
+              :disabled="runningTests || remaining === 0"
+              @click="runTests"
+            >
+              {{ runningTests ? '[running...]' : '[run tests]' }}
+            </button>
+            <button
+              v-if="state.status === 'Live'"
+              class="bg-green-950/30 hover:bg-green-950/60 border border-green-400 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-green-400 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+              :disabled="submitting || remaining === 0"
+              @click="submitCode"
+            >
+              {{
+                remaining === 0
+                  ? '[time up]'
+                  : submitting
+                    ? '[submitting...]'
+                    : '[submit]'
+              }}
+            </button>
+            <span v-if="submitError" class="text-xs text-red-400">{{
+              submitError
+            }}</span>
           </div>
         </div>
 
-        <!-- Vertical drag handle -->
-        <div
-          class="z-10 h-1 flex-shrink-0 cursor-row-resize bg-term-border transition-colors hover:bg-green-700 active:bg-green-500"
-          @mousedown.prevent="startDragV"
-        />
+        <!-- Main content -->
+        <div ref="mainEl" class="flex flex-1 overflow-hidden">
+          <!-- Left: Problem statement -->
+          <div
+            :style="{ width: problemPanelWidth + 'px' }"
+            class="flex-shrink-0 overflow-hidden"
+          >
+            <ProblemPanel v-if="state.problem" :problem="state.problem" />
+          </div>
 
-        <div
-          :style="{ height: bottomPanelHeight + 'px' }"
-          class="flex-shrink-0 overflow-y-auto"
-        >
-          <TestResultsPanel
-            :test-results="testResults"
-            :submissions="mySubmissions"
-          />
+          <!-- Horizontal drag handle -->
+          <div
+            class="bg-zinc-800 group relative z-10 w-1 flex-shrink-0 cursor-col-resize transition-colors hover:bg-green-700 active:bg-green-500"
+            @mousedown.prevent="startDragH"
+          >
+            <div class="absolute inset-y-0 -left-1 -right-1" />
+          </div>
+
+          <!-- Right: Code editor + test results -->
+          <div class="relative flex flex-1 flex-col overflow-hidden">
+            <div
+              class="relative overflow-hidden"
+              :style="{ height: `calc(100% - ${bottomPanelHeight}px - 1px)` }"
+            >
+              <CodeEditor
+                v-model="code"
+                @cursor-change="onCursorChange"
+                :readonly="state.status !== 'Live'"
+                placeholder="Write your solution here..."
+              />
+              <div
+                v-if="state.status !== 'Live'"
+                class="absolute inset-0 flex items-center justify-center bg-black/70"
+              >
+                <div
+                  class="border-zinc-800 bg-zinc-900 border px-10 py-8 text-center font-mono"
+                >
+                  <div
+                    v-if="state.status === 'Finished'"
+                    class="text-2xl font-bold tracking-tight"
+                    :class="isWinner ? 'text-green-400' : 'text-red-400'"
+                  >
+                    {{
+                      isWinner
+                        ? 'you win!'
+                        : winnerName
+                          ? winnerName + ' wins'
+                          : 'match over'
+                    }}
+                  </div>
+                  <div
+                    v-else-if="state.status === 'Review'"
+                    class="text-2xl font-bold text-orange-400"
+                  >
+                    match under review
+                  </div>
+                  <div
+                    v-if="state.winning_reason"
+                    class="mt-2 text-sm text-green-700"
+                  >
+                    {{ state.winning_reason }}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Vertical drag handle -->
+            <div
+              class="bg-zinc-800 z-10 h-1 flex-shrink-0 cursor-row-resize transition-colors hover:bg-green-700 active:bg-green-500"
+              @mousedown.prevent="startDragV"
+            />
+
+            <div
+              :style="{ height: bottomPanelHeight + 'px' }"
+              class="flex-shrink-0 overflow-y-auto"
+            >
+              <TestResultsPanel
+                :test-results="testResults"
+                :submissions="mySubmissions"
+              />
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
       </div>
     </div>
   </div>

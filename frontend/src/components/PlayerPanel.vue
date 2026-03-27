@@ -28,7 +28,7 @@ const props = defineProps<{
 }>()
 
 const borderClass = computed(() => {
-  return props.side === 'left' ? 'border-r border-term-border' : ''
+  return props.side === 'left' ? 'border-r border-zinc-800' : ''
 })
 
 const bestScore = computed(() => {

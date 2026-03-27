@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AppLayout: typeof import('./src/components/AppLayout.vue')['default']
+    AppNavbar: typeof import('./src/components/AppNavbar.vue')['default']
     AppSidebar: typeof import('./src/components/AppSidebar.vue')['default']
     BracketMatchCard: typeof import('./src/components/BracketMatchCard.vue')['default']
     BracketView: typeof import('./src/components/BracketView.vue')['default']

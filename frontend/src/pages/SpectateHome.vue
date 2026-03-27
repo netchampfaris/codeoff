@@ -1,22 +1,22 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-term-bg font-mono text-green-200">
+  <div class="flex min-h-screen flex-col bg-zinc-950 font-mono text-green-200">
     <AppNavbar title="spectate">
       <template #actions>
         <template v-if="bracket.data?.enable_dev_login && players.data?.length">
           <span class="text-xs text-green-800">login as:</span>
           <select
-            class="border border-term-border bg-term-bg px-2 py-0.5 text-xs text-green-300 outline-none focus:border-term-green"
+            class="border border-zinc-800 bg-zinc-950 px-2 py-0.5 text-xs text-green-300 outline-none focus:border-green-400"
             :value="sessionUser || ''"
             @change="loginAs(($event.target as HTMLSelectElement).value)"
           >
-            <option value="" disabled class="bg-term-surface text-green-700">
+            <option value="" disabled class="bg-zinc-900 text-green-700">
               {{ sessionUser || 'guest' }}
             </option>
             <option
               v-for="p in players.data"
               :key="p.name"
               :value="p.user"
-              class="bg-term-surface"
+              class="bg-zinc-900"
             >
               {{ p.player_name || p.user }}
             </option>
@@ -58,7 +58,7 @@
         <button
           v-for="m in matches"
           :key="m.name"
-          class="hover:bg-green-950/30 group w-full border border-term-border bg-term-surface p-4 text-left transition-colors hover:border-green-600"
+          class="hover:bg-green-950/30 group w-full border border-zinc-800 bg-zinc-900 p-4 text-left transition-colors hover:border-green-600"
           @click="
             $router.push({ name: 'Spectate', params: { matchId: m.name } })
           "
@@ -67,7 +67,7 @@
             <span
               class="text-xs font-bold uppercase tracking-widest"
               :class="
-                m.status === 'Live' ? 'text-term-green' : 'text-green-700'
+                m.status === 'Live' ? 'text-green-400' : 'text-green-700'
               "
             >
               {{ m.status === 'Live' ? '● LIVE' : '○ LOBBY' }}

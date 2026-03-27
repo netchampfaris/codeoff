@@ -1,9 +1,9 @@
 <template>
   <nav
-    class="flex h-full w-52 flex-shrink-0 flex-col border-r border-term-border bg-term-surface font-mono"
+    class="flex h-full w-52 flex-shrink-0 flex-col border-r border-zinc-800 bg-zinc-900 font-mono"
   >
-    <div class="flex items-center gap-2 border-b border-term-border px-4 py-3">
-      <span class="text-xl font-bold tracking-tight text-term-green"
+    <div class="flex items-center gap-2 border-b border-zinc-800 px-4 py-3">
+      <span class="text-xl font-bold tracking-tight text-green-400"
         >&gt;_</span
       >
       <h1
@@ -20,16 +20,16 @@
         class="flex items-center gap-2 px-2 py-2 text-sm uppercase tracking-wider transition-colors"
         :class="[
           isActive(link.activeRegex)
-            ? 'border-l-2 border-term-green bg-term-overlay pl-[6px] text-term-green'
-            : 'border-l-2 border-transparent text-green-700 hover:bg-term-overlay hover:text-green-400',
+            ? 'border-l-2 border-green-400 bg-zinc-900 pl-[6px] text-green-400'
+            : 'border-l-2 border-transparent text-green-700 hover:bg-zinc-900 hover:text-green-400',
         ]"
       >
-        <span v-if="isActive(link.activeRegex)" class="text-term-green">›</span>
+        <span v-if="isActive(link.activeRegex)" class="text-green-400">›</span>
         <span v-else class="text-green-800">›</span>
         {{ link.name }}
       </router-link>
     </div>
-    <div class="border-t border-term-border px-3 py-3">
+    <div class="border-t border-zinc-800 px-3 py-3">
       <div class="flex items-center justify-between">
         <span class="truncate text-sm text-green-700">
           <span class="text-green-600">$</span> {{ session.user }}
