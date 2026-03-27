@@ -1,13 +1,18 @@
 <template>
   <div
-    class="flex h-10 shrink-0 items-center justify-between border-b border-term-border bg-term-surface px-4"
+    class="flex h-10 shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4"
   >
     <!-- Left: brand + page title -->
     <div class="flex items-center gap-2">
-      <span class="font-bold text-term-green">&gt;_</span>
-      <span class="text-xs font-semibold uppercase tracking-widest text-green-500"
-        >codeoff</span
+      <router-link
+        to="/"
+        class="flex items-center gap-2 transition-opacity hover:opacity-70"
       >
+        <span class="font-bold text-green-400">&gt;_</span>
+        <span class="text-xs font-semibold uppercase tracking-widest text-green-500"
+          >codeoff</span
+        >
+      </router-link>
       <span v-if="title" class="text-xs text-green-800">/ {{ title }}</span>
     </div>
 
