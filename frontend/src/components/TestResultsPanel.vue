@@ -1,14 +1,12 @@
 <template>
-  <div
-    class="flex flex-col border-t border-term-border bg-term-surface font-mono"
-  >
+  <div class="border-zinc-800 bg-zinc-900 flex flex-col border-t font-mono">
     <!-- Tab bar -->
-    <div class="flex border-b border-term-border">
+    <div class="border-zinc-800 flex border-b">
       <button
         class="px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors"
         :class="
           activeTab === 'tests'
-            ? 'border-b-2 border-term-green text-term-green'
+            ? 'border-b-2 border-green-400 text-green-400'
             : 'text-green-800 hover:text-green-500'
         "
         @click="activeTab = 'tests'"
@@ -22,7 +20,7 @@
         class="px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors"
         :class="
           activeTab === 'submissions'
-            ? 'border-b-2 border-term-green text-term-green'
+            ? 'border-b-2 border-green-400 text-green-400'
             : 'text-green-800 hover:text-green-500'
         "
         @click="activeTab = 'submissions'"
@@ -39,7 +37,7 @@
       <div v-if="testResults">
         <div
           v-if="testResults.stdout"
-          class="mb-3 border border-term-border bg-term-bg p-2"
+          class="border-zinc-800 bg-zinc-950 mb-3 border p-2"
         >
           <div
             class="mb-1 text-xs font-bold uppercase tracking-wider text-green-700"
@@ -53,11 +51,11 @@
         <div class="flex flex-col gap-1">
           <template v-for="(result, i) in testResults.details" :key="i">
             <div
-              class="flex items-start gap-3 border-b border-term-border py-1.5 text-sm last:border-0"
+              class="border-zinc-800 flex items-start gap-3 border-b py-1.5 text-sm last:border-0"
             >
               <span
                 class="w-14 shrink-0 font-bold"
-                :class="result.passed ? 'text-term-green' : 'text-red-400'"
+                :class="result.passed ? 'text-green-400' : 'text-red-400'"
                 >{{ result.passed ? '[ok]' : '[fail]' }}</span
               >
               <span class="shrink-0 text-green-700">test {{ i + 1 }}</span>
@@ -81,12 +79,11 @@
             >
           </template>
         </div>
-        <div
+        <pre
           v-if="testResults.error"
-          class="bg-red-950/20 mt-2 border border-red-900 p-2 text-sm text-red-400"
+          class="bg-red-950/20 mt-2 whitespace-pre-wrap border border-red-900 p-2 text-sm text-red-400"
+          >{{ testResults.error }}</pre
         >
-          {{ testResults.error }}
-        </div>
       </div>
       <div v-else class="py-4 text-center text-xs text-green-800">
         run tests to see results
@@ -99,14 +96,14 @@
         <div
           v-for="sub in submissions"
           :key="sub.name"
-          class="flex items-center justify-between border border-term-border bg-term-overlay p-2 text-sm"
+          class="border-zinc-800 bg-zinc-900 flex items-center justify-between border p-2 text-sm"
         >
           <div class="flex items-center gap-3">
             <span
               class="font-bold"
               :class="
                 sub.verdict === 'Accepted'
-                  ? 'text-term-green'
+                  ? 'text-green-400'
                   : !sub.verdict
                     ? 'text-green-600'
                     : 'text-red-400'

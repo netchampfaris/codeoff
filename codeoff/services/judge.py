@@ -135,10 +135,20 @@ def run_tests(source_code, function_name, test_cases, time_limit=2.0, memory_lim
 			"error": f"Could not parse judge output: {(result.stdout or '')[:500]}",
 		}
 
+	# Sanitize per-test tracebacks in case the temp path leaked via stderr
+	for detail in output.get("details", []):
+		if "traceback" in detail:
+			detail["traceback"] = _sanitize_error(detail["traceback"])
+		if "error" in detail:
+			detail["error"] = _sanitize_error(detail["error"])
+
 	passed = output.get("passed", 0)
 	total = output.get("total", len(test_cases))
+	top_error = output.get("error")
 
-	if passed == total:
+	if top_error:
+		verdict = "Compilation Error"
+	elif passed == total:
 		verdict = "Accepted"
 	else:
 		verdict = "Wrong Answer"
@@ -150,6 +160,7 @@ def run_tests(source_code, function_name, test_cases, time_limit=2.0, memory_lim
 		"runtime_ms": elapsed_ms,
 		"details": output.get("details", []),
 		"stdout": output.get("stdout", ""),
+		**(({"error": top_error}) if top_error else {}),
 	}
 
 
@@ -167,16 +178,20 @@ def _build_runner_script(source_code, function_name, test_cases):
 		]
 	)
 
-	# The runner script imports the user function and tests it
+	# compile() with a friendly filename so all tracebacks reference "<your code>"
+	# and line numbers are 1-based within the user's own code.
 	runner = f"""
 import json
 import sys
 import io
-import traceback
+import traceback as _tb
 
-# --- User code ---
-{source_code}
-# --- End user code ---
+_src = {repr(source_code)}
+try:
+    exec(compile(_src, "<your code>", "exec"), globals())
+except SyntaxError as _e:
+    print(json.dumps({{"passed": 0, "total": {len(test_cases)}, "details": [], "error": "SyntaxError on line " + str(_e.lineno) + ": " + str(_e.msg)}}))
+    sys.exit(0)
 
 def _run_tests():
     tests = json.loads('''{tests_json}''')
@@ -204,7 +219,7 @@ def _run_tests():
             results.append({{"test": i, "passed": is_pass, "expected": expected, "actual": actual}})
         except Exception as e:
             sys.stdout = sys.__stdout__
-            tb = traceback.format_exc()
+            tb = _tb.format_exc()
             results.append({{"test": i, "passed": False, "error": str(e), "traceback": tb}})
 
     output = {{"passed": passed, "total": total, "details": results, "stdout": all_stdout}}
@@ -239,9 +254,21 @@ def _execute_in_subprocess(script, time_limit, memory_limit_mb):
 			preexec_fn=set_limits,
 			env=_get_safe_env(),
 		)
+		result.stderr = _sanitize_error(result.stderr or "", script_path)
 		return result
 	finally:
 		os.unlink(script_path)
+
+
+def _sanitize_error(text: str, script_path: str = "") -> str:
+	"""Strip temp file paths from error output before surfacing to users."""
+	import re
+
+	if script_path:
+		text = text.replace(script_path, "<your code>")
+	# Catch any remaining tmp*.py paths (e.g. from nested tracebacks)
+	text = re.sub(r'"?/[^"\s]*tmp\w+\.py"?', '"<your code>"', text)
+	return text
 
 
 def _get_safe_env():
