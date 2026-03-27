@@ -23,8 +23,8 @@
             :class="[
               large ? 'mb-4 h-16 w-32' : 'mb-3 h-12 w-24',
               player1?.joined
-                ? 'bg-green-950/20 border-term-green text-term-green'
-                : 'border-green-900 bg-term-surface text-green-800',
+                ? 'bg-green-950/20 border-green-400 text-green-400'
+                : 'bg-zinc-900 border-green-900 text-green-800',
             ]"
           >
             {{ player1?.joined ? '[ready]' : '[wait]' }}
@@ -39,7 +39,7 @@
             class="mt-1"
             :class="[
               large ? 'text-sm' : 'text-xs',
-              player1?.joined ? 'text-term-green' : 'text-green-800',
+              player1?.joined ? 'text-green-400' : 'text-green-800',
             ]"
           >
             {{ player1?.joined ? 'connected' : 'waiting...' }}
@@ -50,7 +50,7 @@
               :class="
                 hasVoted
                   ? 'cursor-not-allowed border-green-900 text-green-800'
-                  : 'cursor-pointer border-green-700 text-green-400 hover:border-term-green hover:text-term-green'
+                  : 'cursor-pointer border-green-700 text-green-400 hover:border-green-400 hover:text-green-400'
               "
               :disabled="hasVoted"
               @click="vote(player1?.id || '')"
@@ -71,8 +71,8 @@
             :class="[
               large ? 'mb-4 h-16 w-32' : 'mb-3 h-12 w-24',
               player2?.joined
-                ? 'bg-green-950/20 border-term-green text-term-green'
-                : 'border-green-900 bg-term-surface text-green-800',
+                ? 'bg-green-950/20 border-green-400 text-green-400'
+                : 'bg-zinc-900 border-green-900 text-green-800',
             ]"
           >
             {{ player2?.joined ? '[ready]' : '[wait]' }}
@@ -87,7 +87,7 @@
             class="mt-1"
             :class="[
               large ? 'text-sm' : 'text-xs',
-              player2?.joined ? 'text-term-green' : 'text-green-800',
+              player2?.joined ? 'text-green-400' : 'text-green-800',
             ]"
           >
             {{ player2?.joined ? 'connected' : 'waiting...' }}
@@ -98,7 +98,7 @@
               :class="
                 hasVoted
                   ? 'cursor-not-allowed border-green-900 text-green-800'
-                  : 'cursor-pointer border-green-700 text-green-400 hover:border-term-green hover:text-term-green'
+                  : 'cursor-pointer border-green-700 text-green-400 hover:border-green-400 hover:text-green-400'
               "
               :disabled="hasVoted"
               @click="vote(player2?.id || '')"
@@ -108,9 +108,19 @@
           </div>
         </div>
       </div>
-      <div class="mt-6 text-sm uppercase tracking-widest text-green-800">
-        <span class="animate-pulse text-term-green">_</span>
-        waiting for both players to connect
+      <div class="mt-6 text-sm uppercase tracking-widest">
+        <template v-if="bothJoined">
+          <span v-if="isOrganizer" class="text-green-400">
+            <span class="animate-pulse">_</span> you can start the match now
+          </span>
+          <span v-else class="text-green-700">
+            <span class="animate-pulse">_</span> waiting for organizer to start
+          </span>
+        </template>
+        <span v-else class="text-green-800">
+          <span class="animate-pulse text-green-400">_</span>
+          waiting for both players to connect
+        </span>
       </div>
       <!-- Organizer start button -->
       <div v-if="isOrganizer" class="mt-6">
@@ -118,7 +128,7 @@
           class="border px-6 py-2 text-sm font-bold uppercase tracking-widest transition-colors"
           :class="
             bothJoined
-              ? 'hover:bg-green-950/40 cursor-pointer border-term-green text-term-green'
+              ? 'hover:bg-green-950/40 cursor-pointer border-green-400 text-green-400'
               : 'cursor-not-allowed border-green-900 text-green-800'
           "
           :disabled="!bothJoined"
