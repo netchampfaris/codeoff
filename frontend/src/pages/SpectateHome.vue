@@ -1,11 +1,11 @@
 <template>
-  <div class="flex min-h-screen flex-col bg-zinc-950 font-mono text-green-200">
+  <div class="bg-zinc-950 flex min-h-screen flex-col font-mono text-green-200">
     <AppNavbar title="spectate">
       <template #actions>
         <template v-if="bracket.data?.enable_dev_login && players.data?.length">
           <span class="text-xs text-green-800">login as:</span>
           <select
-            class="border border-zinc-800 bg-zinc-950 px-2 py-0.5 text-xs text-green-300 outline-none focus:border-green-400"
+            class="border-zinc-800 bg-zinc-950 border px-2 py-0.5 text-xs text-green-300 outline-none focus:border-green-400"
             :value="sessionUser || ''"
             @change="loginAs(($event.target as HTMLSelectElement).value)"
           >
@@ -21,7 +21,9 @@
               {{ p.player_name || p.user }}
             </option>
           </select>
-          <span v-if="loggingIn" class="animate-pulse text-xs text-green-700">...</span>
+          <span v-if="loggingIn" class="animate-pulse text-xs text-green-700"
+            >...</span
+          >
         </template>
       </template>
     </AppNavbar>
@@ -58,7 +60,7 @@
         <button
           v-for="m in matches"
           :key="m.name"
-          class="hover:bg-green-950/30 group w-full border border-zinc-800 bg-zinc-900 p-4 text-left transition-colors hover:border-green-600"
+          class="border-zinc-800 bg-zinc-900 hover:bg-green-950/30 group w-full border p-4 text-left font-mono transition-colors hover:border-green-600"
           @click="
             $router.push({ name: 'Spectate', params: { matchId: m.name } })
           "
@@ -66,9 +68,7 @@
           <div class="mb-2 flex items-center justify-between">
             <span
               class="text-xs font-bold uppercase tracking-widest"
-              :class="
-                m.status === 'Live' ? 'text-green-400' : 'text-green-700'
-              "
+              :class="m.status === 'Live' ? 'text-green-400' : 'text-green-700'"
             >
               {{ m.status === 'Live' ? '● LIVE' : '○ LOBBY' }}
             </span>

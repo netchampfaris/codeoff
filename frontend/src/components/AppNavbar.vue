@@ -1,6 +1,6 @@
 <template>
   <div
-    class="flex h-10 shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4"
+    class="border-zinc-800 bg-zinc-900 flex h-10 shrink-0 items-center justify-between border-b px-4"
   >
     <!-- Left: brand + page title -->
     <div class="flex items-center gap-2">
@@ -9,7 +9,8 @@
         class="flex items-center gap-2 transition-opacity hover:opacity-70"
       >
         <span class="font-bold text-green-400">&gt;_</span>
-        <span class="text-xs font-semibold uppercase tracking-widest text-green-500"
+        <span
+          class="text-xs font-semibold uppercase tracking-widest text-green-500"
           >codeoff</span
         >
       </router-link>
@@ -20,19 +21,21 @@
     <div class="flex items-center gap-3">
       <slot name="actions" />
       <span class="text-xs text-green-700">$ {{ sessionUser || 'guest' }}</span>
-      <button
+      <AppButton
         v-if="sessionUser"
-        class="text-xs font-bold uppercase tracking-widest text-green-800 transition-colors hover:text-green-600"
+        variant="inline"
+        class="text-green-800 hover:text-green-600"
         @click="session.logout.submit()"
       >
         [logout]
-      </button>
+      </AppButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { session, sessionUser } from '@/data/session'
+import AppButton from '@/components/AppButton.vue'
 
 defineProps<{
   title?: string

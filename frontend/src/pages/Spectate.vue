@@ -80,12 +80,12 @@
                     : state.status.toUpperCase()
                 }}
               </div>
-              <button
-                class="border border-green-900 px-2 py-1 text-xs font-bold uppercase tracking-widest text-green-700"
+              <AppButton
+                variant="ghost"
                 @click="$router.push({ name: 'SpectateHome' })"
               >
                 [home]
-              </button>
+              </AppButton>
             </div>
           </div>
 
@@ -276,23 +276,21 @@
                     : state.status.toUpperCase()
                 }}
               </div>
-              <button
-                class="mt-2 border px-3 py-1 text-xs font-bold uppercase tracking-widest transition-colors"
-                :class="
-                  showProblem
-                    ? 'border-green-400 text-green-400'
-                    : 'border-green-900 text-green-700 hover:border-green-600 hover:text-green-400'
-                "
+              <AppButton
+                variant="ghost"
+                :active="showProblem"
+                class="mt-2"
                 @click="showProblem = !showProblem"
               >
                 {{ showProblem ? '[hide problem]' : '[show problem]' }}
-              </button>
-              <button
-                class="mt-1 border border-green-900 px-3 py-1 text-xs font-bold uppercase tracking-widest text-green-700 transition-colors hover:border-green-600 hover:text-green-400"
+              </AppButton>
+              <AppButton
+                variant="ghost"
+                class="mt-1"
                 @click="$router.push({ name: 'SpectateHome' })"
               >
                 [home]
-              </button>
+              </AppButton>
             </div>
 
             <!-- Player 2 -->
@@ -352,8 +350,14 @@
           <!-- Problem drawer -->
           <div
             v-if="showProblem && state.problem"
-            class="h-[38%] flex-shrink-0 border-t-2 border-green-400"
+            class="flex-shrink-0 border-t-2 border-green-400"
+            :style="{ height: bottomPanelHeight + 'px' }"
           >
+            <!-- Drag handle -->
+            <div
+              class="group flex h-1.5 w-full cursor-row-resize items-center justify-center bg-green-400 transition-colors hover:bg-green-300"
+              @mousedown.prevent="startDragV"
+            />
             <div class="flex h-full flex-row overflow-hidden">
               <!-- Statement -->
               <div class="border-zinc-800 flex-1 overflow-auto border-r">
@@ -466,9 +470,11 @@ import { useMatchPlayers } from '@/data/useMatchPlayers'
 import { getSocket } from '@/data/socket'
 import { sessionUser } from '@/data/session'
 import AppNavbar from '@/components/AppNavbar.vue'
+import AppButton from '@/components/AppButton.vue'
 import WaitingLobby from '@/components/WaitingLobby.vue'
 import PlayerPanel from '@/components/PlayerPanel.vue'
 import ProblemPanel from '@/components/ProblemPanel.vue'
+import { useResizablePanels } from '@/data/useResizablePanels'
 
 const props = defineProps<{
   matchId: string
@@ -478,6 +484,11 @@ const { state, loading, reload } = useMatchState(props.matchId)
 const { remaining, formatted } = useMatchTimer(state)
 
 const showProblem = ref(false)
+const { bottomPanelHeight, startDragV } = useResizablePanels({
+  bottomMin: 120,
+  bottomMax: 700,
+  bottomDefault: Math.round(window.innerHeight * 0.38),
+})
 
 useLobbyPoll(
   computed(() => state.value?.status),

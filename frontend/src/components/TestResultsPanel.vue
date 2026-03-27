@@ -2,34 +2,26 @@
   <div class="border-zinc-800 bg-zinc-900 flex flex-col border-t font-mono">
     <!-- Tab bar -->
     <div class="border-zinc-800 flex border-b">
-      <button
-        class="px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors"
-        :class="
-          activeTab === 'tests'
-            ? 'border-b-2 border-green-400 text-green-400'
-            : 'text-green-800 hover:text-green-500'
-        "
+      <AppButton
+        variant="tab"
+        :active="activeTab === 'tests'"
         @click="activeTab = 'tests'"
       >
         console
         <span v-if="testResults" class="ml-1 text-green-700">
           {{ testResults.passed_tests }}/{{ testResults.total_tests }}
         </span>
-      </button>
-      <button
-        class="px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors"
-        :class="
-          activeTab === 'submissions'
-            ? 'border-b-2 border-green-400 text-green-400'
-            : 'text-green-800 hover:text-green-500'
-        "
+      </AppButton>
+      <AppButton
+        variant="tab"
+        :active="activeTab === 'submissions'"
         @click="activeTab = 'submissions'"
       >
         submissions
         <span v-if="submissions.length" class="ml-1 text-green-700">{{
           submissions.length
         }}</span>
-      </button>
+      </AppButton>
     </div>
 
     <!-- Test results tab -->
@@ -137,6 +129,7 @@
 
 <script setup lang="ts">
 import { ref, watch } from 'vue'
+import AppButton from '@/components/AppButton.vue'
 
 const props = defineProps<{
   testResults: {

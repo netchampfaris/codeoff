@@ -48,13 +48,9 @@
           {{ match.status === 'Live' ? 'live now' : 'coming up' }}
         </div>
         <div class="mb-6 text-sm text-green-700">{{ match.match_id }}</div>
-        <button
-          class="border px-6 py-2 text-sm font-bold uppercase tracking-widest transition-colors"
-          :class="
-            match.status === 'Live'
-              ? 'bg-green-950/30 hover:bg-green-950/60 border-green-400 text-green-400'
-              : 'border-green-700 text-green-600 hover:border-green-400 hover:text-green-300'
-          "
+        <AppButton
+          :variant="match.status === 'Live' ? 'primary' : 'ghost'"
+          size="md"
           @click="
             $router.push({
               name: 'MatchWorkspace',
@@ -63,7 +59,7 @@
           "
         >
           {{ match.status === 'Live' ? '[go to match]' : '[open workspace]' }}
-        </button>
+        </AppButton>
       </div>
     </div>
 
@@ -114,6 +110,7 @@ import { useCall } from 'frappe-ui'
 import { useMyMatch } from '@/data/match'
 import { sessionUser } from '@/data/session'
 import AppNavbar from '@/components/AppNavbar.vue'
+import AppButton from '@/components/AppButton.vue'
 import BracketView from '@/components/BracketView.vue'
 
 const { match, loading, reload } = useMyMatch()

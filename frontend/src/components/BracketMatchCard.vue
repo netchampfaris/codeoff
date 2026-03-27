@@ -62,20 +62,22 @@
         >
       </span>
       <div class="flex items-center gap-2">
-        <button
+        <AppButton
           v-if="isOrganizer && match.status === 'Draft'"
-          class="text-xs font-bold uppercase tracking-wider text-green-700 transition-colors hover:text-green-400"
+          variant="inline"
+          class="text-green-700 hover:text-green-400"
           @click="$emit('makeReady', match.name)"
         >
           [make ready]
-        </button>
-        <button
+        </AppButton>
+        <AppButton
           v-if="match.status === 'Live' || match.status === 'Ready'"
-          class="text-xs font-bold uppercase tracking-wider text-green-400 hover:text-green-300"
+          variant="inline"
+          class="text-green-400 hover:text-green-300"
           @click="$emit('spectate', match.name)"
         >
           [spectate]
-        </button>
+        </AppButton>
       </div>
     </div>
   </div>
@@ -83,6 +85,7 @@
 
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, ref } from 'vue'
+import AppButton from '@/components/AppButton.vue'
 
 const props = defineProps<{
   match: {

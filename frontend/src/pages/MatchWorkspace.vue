@@ -59,17 +59,19 @@
             >
               {{ formatted }}
             </div>
-            <button
+            <AppButton
               v-if="state.status === 'Live'"
-              class="border-zinc-800 border px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-green-600 transition-colors hover:border-green-600 hover:text-green-400 disabled:cursor-not-allowed disabled:opacity-40"
+              variant="ghost"
+              size="sm"
               :disabled="runningTests || remaining === 0"
               @click="runTests"
             >
               {{ runningTests ? '[running...]' : '[run tests]' }}
-            </button>
-            <button
+            </AppButton>
+            <AppButton
               v-if="state.status === 'Live'"
-              class="bg-green-950/30 hover:bg-green-950/60 border border-green-400 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-green-400 transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+              variant="primary"
+              size="sm"
               :disabled="submitting || remaining === 0"
               @click="submitCode"
             >
@@ -80,7 +82,7 @@
                     ? '[submitting...]'
                     : '[submit]'
               }}
-            </button>
+            </AppButton>
             <span v-if="submitError" class="text-xs text-red-400">{{
               submitError
             }}</span>
@@ -184,6 +186,7 @@ import { useMatchPlayers } from '@/data/useMatchPlayers'
 import { useCodeDraft } from '@/data/useCodeDraft'
 import { useResizablePanels } from '@/data/useResizablePanels'
 import AppNavbar from '@/components/AppNavbar.vue'
+import AppButton from '@/components/AppButton.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import WaitingLobby from '@/components/WaitingLobby.vue'
 import ProblemPanel from '@/components/ProblemPanel.vue'
