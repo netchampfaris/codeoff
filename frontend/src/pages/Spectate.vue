@@ -385,6 +385,32 @@
       </div>
     </div>
 
+    <!-- Dev login-as panel (both mobile and desktop, flag-gated) -->
+    <div
+      v-if="state.enable_dev_login && players.data?.length"
+      class="fixed right-2 top-2 z-[60] flex items-center gap-2 rounded border border-green-900 bg-term-surface/95 px-2 py-1 backdrop-blur-sm"
+    >
+      <span class="text-xs text-green-800">login as:</span>
+      <select
+        class="border border-term-border bg-term-bg px-2 py-0.5 text-xs text-green-300 outline-none focus:border-term-green"
+        :value="sessionUser || ''"
+        @change="loginAs(($event.target as HTMLSelectElement).value)"
+      >
+        <option value="" disabled class="bg-term-surface text-green-700">
+          {{ sessionUser || 'guest' }}
+        </option>
+        <option
+          v-for="p in players.data"
+          :key="p.name"
+          :value="p.user"
+          class="bg-term-surface"
+        >
+          {{ p.player_name || p.user }}
+        </option>
+      </select>
+      <span v-if="loggingIn" class="animate-pulse text-xs text-green-700">...</span>
+    </div>
+
     <!-- Reaction bar: desktop only (mobile uses inline buttons in player info bars) -->
     <div
       class="fixed bottom-0 left-0 right-0 z-50 hidden items-stretch border-t border-term-border bg-term-surface/90 backdrop-blur-sm md:flex"
@@ -428,6 +454,7 @@ import { useMatchState, useMatchTimer } from '@/data/match'
 import { useLobbyPoll } from '@/data/useLobbyPoll'
 import { useMatchPlayers } from '@/data/useMatchPlayers'
 import { getSocket } from '@/data/socket'
+import { sessionUser } from '@/data/session'
 import WaitingLobby from '@/components/WaitingLobby.vue'
 import PlayerPanel from '@/components/PlayerPanel.vue'
 import ProblemPanel from '@/components/ProblemPanel.vue'
@@ -485,6 +512,29 @@ const voteCall = useCall({
 
 function handleVote(playerId: string) {
   voteCall.submit({ match_id: props.matchId, player_id: playerId })
+}
+
+// ── Dev login-as ────────────────────────────────────────────────────────────
+const players = useCall({
+  url: '/api/v2/method/codeoff.api.contest.get_all_players',
+  immediate: true,
+})
+
+const loggingIn = ref(false)
+
+async function loginAs(email: string) {
+  if (!email || email === sessionUser.value) return
+  loggingIn.value = true
+  try {
+    await fetch('/api/method/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ usr: email, pwd: '123' }),
+    })
+    window.location.reload()
+  } catch {
+    loggingIn.value = false
+  }
 }
 
 // ── Reactions ────────────────────────────────────────────────────────────────

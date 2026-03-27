@@ -307,10 +307,18 @@ def _build_match_state(match_id: str):
 
 	is_organizer = "System Manager" in frappe.get_roles()
 
+	# Expose dev-login flag so the spectate UI can show the player-switcher
+	enable_dev_login = False
+	if match.tournament:
+		enable_dev_login = bool(
+			frappe.db.get_value("Codeoff Tournament", match.tournament, "enable_dev_login")
+		)
+
 	return {
 		"match_id": match.name,
 		"status": match.status,
 		"is_organizer": is_organizer,
+		"enable_dev_login": enable_dev_login,
 		"start_time": str(match.start_time) if match.start_time else None,
 		"deadline": str(match.deadline) if match.deadline else None,
 		"player_1": {
@@ -517,9 +525,10 @@ def get_tournament_bracket():
 	}
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_all_players():
-	"""Return all Codeoff Players (for dev login-as dropdown)."""
+	"""Return all Codeoff Players (for dev login-as dropdown). Guest-accessible
+	because spectators are guests; only shown when enable_dev_login is set."""
 	return frappe.get_all(
 		"Codeoff Player",
 		fields=["name", "player_name", "user"],

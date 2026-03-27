@@ -20,6 +20,7 @@ export interface MatchState {
   match_id: string
   status: string
   is_organizer: boolean
+  enable_dev_login: boolean
   round_number: number | null
   bracket_position: number | null
   start_time: string | null
