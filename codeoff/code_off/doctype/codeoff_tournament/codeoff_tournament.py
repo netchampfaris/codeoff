@@ -286,7 +286,7 @@ class CodeoffTournament(Document):
 				"Codeoff Match",
 				m.name,
 				{
-					"status": "Ready" if is_round1 else "Draft",
+					"status": "Draft",
 					"winner": None,
 					"winning_reason": None,
 					"start_time": None,

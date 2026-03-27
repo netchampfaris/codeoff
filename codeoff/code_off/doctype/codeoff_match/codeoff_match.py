@@ -147,3 +147,6 @@ class CodeoffMatch(Document):
 		"""Compute the next round match position for bracket advancement."""
 		next_round = self.round_number + 1
 		next_position = math.ceil(self.bracket_position / 2)
+		# Odd bracket positions feed into player_1, even into player_2
+		next_slot = "player_1" if self.bracket_position % 2 != 0 else "player_2"
+		return next_round, next_position, next_slot
