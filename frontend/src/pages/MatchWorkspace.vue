@@ -1,29 +1,33 @@
 <template>
-  <div
-    v-if="loading"
-    class="flex h-full items-center justify-center bg-term-bg font-mono"
-  >
-    <div class="text-green-800">loading match...</div>
-  </div>
-  <div
-    v-else-if="error"
-    class="flex h-full items-center justify-center bg-term-bg font-mono"
-  >
-    <div class="text-red-400">{{ error }}</div>
-  </div>
-  <!-- Waiting lobby when match is Ready -->
-  <WaitingLobby
-    v-else-if="state && state.status === 'Ready'"
-    :title="state.problem?.title || 'Match Lobby'"
-    :player1="state.player_1"
-    :player2="state.player_2"
-    :is-organizer="state.is_organizer"
-    @start="startMatch"
-  />
-  <div
-    v-else-if="state"
-    class="flex h-full flex-col bg-term-bg font-mono text-green-200"
-  >
+  <div class="flex h-full flex-col bg-term-bg font-mono text-green-200">
+    <AppNavbar />
+    <!-- Content area fills remaining height -->
+    <div class="relative flex flex-1 flex-col overflow-hidden">
+      <div
+        v-if="loading"
+        class="flex h-full items-center justify-center"
+      >
+        <div class="text-green-800">loading match...</div>
+      </div>
+      <div
+        v-else-if="error"
+        class="flex h-full items-center justify-center"
+      >
+        <div class="text-red-400">{{ error }}</div>
+      </div>
+      <!-- Waiting lobby when match is Ready -->
+      <WaitingLobby
+        v-else-if="state && state.status === 'Ready'"
+        :title="state.problem?.title || 'Match Lobby'"
+        :player1="state.player_1"
+        :player2="state.player_2"
+        :is-organizer="state.is_organizer"
+        @start="startMatch"
+      />
+      <div
+        v-else-if="state"
+        class="flex h-full flex-col"
+      >
     <!-- Top bar -->
     <div
       class="flex items-center justify-between border-b border-term-border px-4 py-2"
@@ -174,6 +178,8 @@
         </div>
       </div>
     </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -185,6 +191,7 @@ import { useLobbyPoll } from '@/data/useLobbyPoll'
 import { useMatchPlayers } from '@/data/useMatchPlayers'
 import { useCodeDraft } from '@/data/useCodeDraft'
 import { useResizablePanels } from '@/data/useResizablePanels'
+import AppNavbar from '@/components/AppNavbar.vue'
 import CodeEditor from '@/components/CodeEditor.vue'
 import WaitingLobby from '@/components/WaitingLobby.vue'
 import ProblemPanel from '@/components/ProblemPanel.vue'

@@ -1,7 +1,31 @@
 <template>
-  <div
-    class="relative flex h-full flex-col bg-term-bg font-mono text-green-200"
-  >
+  <div class="flex h-full flex-col bg-term-bg font-mono text-green-200">
+    <AppNavbar title="home">
+      <template #actions>
+        <template v-if="bracket.data?.enable_dev_login && players.data?.length">
+          <span class="text-xs text-green-800">login as:</span>
+          <select
+            class="border border-term-border bg-term-bg px-2 py-0.5 text-xs text-green-300 outline-none focus:border-term-green"
+            :value="sessionUser || ''"
+            @change="loginAs(($event.target as HTMLSelectElement).value)"
+          >
+            <option value="" disabled class="bg-term-surface text-green-700">
+              {{ sessionUser || 'guest' }}
+            </option>
+            <option
+              v-for="p in players.data"
+              :key="p.name"
+              :value="p.user"
+              class="bg-term-surface"
+            >
+              {{ p.player_name || p.user }}
+            </option>
+          </select>
+          <span v-if="loggingIn" class="animate-pulse text-xs text-green-700">...</span>
+        </template>
+      </template>
+    </AppNavbar>
+
     <div v-if="loading" class="flex flex-1 items-center justify-center">
       <div class="text-green-800">loading...</div>
     </div>
@@ -80,35 +104,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Login-as dropdown (dev/testing) -->
-    <div
-      v-if="bracket.data?.enable_dev_login && players.data?.length"
-      class="absolute bottom-4 right-4 flex items-center gap-2"
-    >
-      {{ sessionUser }}
-      <span class="text-xs text-green-800">login as:</span>
-      <select
-        class="border border-term-border bg-term-surface px-2 py-1 text-xs text-green-300 outline-none focus:border-term-green"
-        :value="sessionUser || ''"
-        @change="loginAs(($event.target as HTMLSelectElement).value)"
-      >
-        <option value="" disabled class="bg-term-surface text-green-700">
-          select player...
-        </option>
-        <option
-          v-for="p in players.data"
-          :key="p.name"
-          :value="p.user"
-          class="bg-term-surface"
-        >
-          {{ p.player_name || p.user }}
-        </option>
-      </select>
-      <span v-if="loggingIn" class="animate-pulse text-xs text-green-700"
-        >...</span
-      >
-    </div>
   </div>
 </template>
 
@@ -117,6 +112,7 @@ import { onMounted, onUnmounted, ref } from 'vue'
 import { useCall } from 'frappe-ui'
 import { useMyMatch } from '@/data/match'
 import { sessionUser } from '@/data/session'
+import AppNavbar from '@/components/AppNavbar.vue'
 import BracketView from '@/components/BracketView.vue'
 
 const { match, loading, reload } = useMyMatch()

@@ -1,27 +1,56 @@
 <template>
-  <div
-    v-if="loading"
-    class="flex h-screen items-center justify-center bg-term-bg font-mono"
-  >
-    <div class="text-green-800">loading match...</div>
-  </div>
-  <WaitingLobby
-    v-else-if="state && state.status === 'Ready'"
-    :title="state.problem?.title || state.match_id"
-    :player1="state.player_1"
-    :player2="state.player_2"
-    :votes1="state.votes_1"
-    :votes2="state.votes_2"
-    :match-id="props.matchId"
-    :is-organizer="state.is_organizer"
-    large
-    @vote="handleVote"
-    @start="startMatch"
-  />
-  <div
-    v-else-if="state"
-    class="relative flex h-[100dvh] flex-col bg-term-bg font-mono text-green-200"
-  >
+  <div class="flex h-[100dvh] flex-col bg-term-bg font-mono text-green-200">
+    <AppNavbar title="spectate">
+      <template #actions>
+        <template v-if="state?.enable_dev_login && players.data?.length">
+          <span class="text-xs text-green-800">login as:</span>
+          <select
+            class="border border-term-border bg-term-bg px-2 py-0.5 text-xs text-green-300 outline-none focus:border-term-green"
+            :value="sessionUser || ''"
+            @change="loginAs(($event.target as HTMLSelectElement).value)"
+          >
+            <option value="" disabled class="bg-term-surface text-green-700">
+              {{ sessionUser || 'guest' }}
+            </option>
+            <option
+              v-for="p in players.data"
+              :key="p.name"
+              :value="p.user"
+              class="bg-term-surface"
+            >
+              {{ p.player_name || p.user }}
+            </option>
+          </select>
+          <span v-if="loggingIn" class="animate-pulse text-xs text-green-700">...</span>
+        </template>
+      </template>
+    </AppNavbar>
+
+    <!-- Content area fills remaining height -->
+    <div class="relative flex flex-1 flex-col overflow-hidden">
+      <div
+        v-if="loading"
+        class="flex h-full items-center justify-center"
+      >
+        <div class="text-green-800">loading match...</div>
+      </div>
+      <WaitingLobby
+        v-else-if="state && state.status === 'Ready'"
+        :title="state.problem?.title || state.match_id"
+        :player1="state.player_1"
+        :player2="state.player_2"
+        :votes1="state.votes_1"
+        :votes2="state.votes_2"
+        :match-id="props.matchId"
+        :is-organizer="state.is_organizer"
+        large
+        @vote="handleVote"
+        @start="startMatch"
+      />
+      <div
+        v-else-if="state"
+        class="relative flex h-full flex-col"
+      >
     <!-- ══ Mobile layout (hidden md+) ══════════════════════════════ -->
     <div class="flex flex-1 flex-col overflow-hidden md:hidden">
       <!-- Mobile header -->
@@ -385,31 +414,7 @@
       </div>
     </div>
 
-    <!-- Dev login-as panel (both mobile and desktop, flag-gated) -->
-    <div
-      v-if="state.enable_dev_login && players.data?.length"
-      class="fixed right-2 top-2 z-[60] flex items-center gap-2 rounded border border-green-900 bg-term-surface/95 px-2 py-1 backdrop-blur-sm"
-    >
-      <span class="text-xs text-green-800">login as:</span>
-      <select
-        class="border border-term-border bg-term-bg px-2 py-0.5 text-xs text-green-300 outline-none focus:border-term-green"
-        :value="sessionUser || ''"
-        @change="loginAs(($event.target as HTMLSelectElement).value)"
-      >
-        <option value="" disabled class="bg-term-surface text-green-700">
-          {{ sessionUser || 'guest' }}
-        </option>
-        <option
-          v-for="p in players.data"
-          :key="p.name"
-          :value="p.user"
-          class="bg-term-surface"
-        >
-          {{ p.player_name || p.user }}
-        </option>
-      </select>
-      <span v-if="loggingIn" class="animate-pulse text-xs text-green-700">...</span>
-    </div>
+    <!-- Dev login-as panel removed — now in AppNavbar #actions slot -->
 
     <!-- Reaction bar: desktop only (mobile uses inline buttons in player info bars) -->
     <div
@@ -444,6 +449,8 @@
         }}</span>
       </div>
     </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -455,6 +462,7 @@ import { useLobbyPoll } from '@/data/useLobbyPoll'
 import { useMatchPlayers } from '@/data/useMatchPlayers'
 import { getSocket } from '@/data/socket'
 import { sessionUser } from '@/data/session'
+import AppNavbar from '@/components/AppNavbar.vue'
 import WaitingLobby from '@/components/WaitingLobby.vue'
 import PlayerPanel from '@/components/PlayerPanel.vue'
 import ProblemPanel from '@/components/ProblemPanel.vue'
