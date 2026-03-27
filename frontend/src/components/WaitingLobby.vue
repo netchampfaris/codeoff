@@ -17,86 +17,28 @@
         class="mb-10 flex items-center justify-center"
         :class="large ? 'gap-16' : 'gap-10'"
       >
-        <div class="text-center">
-          <div
-            class="mx-auto mb-3 flex items-center justify-center border text-sm font-bold uppercase"
-            :class="[
-              large ? 'mb-4 h-16 w-32' : 'mb-3 h-12 w-24',
-              player1?.joined
-                ? 'bg-green-950/20 border-green-400 text-green-400'
-                : 'bg-zinc-900 border-green-900 text-green-800',
-            ]"
-          >
-            {{ player1?.joined ? '[ready]' : '[wait]' }}
-          </div>
-          <div
-            class="font-mono uppercase tracking-wider text-green-300"
-            :class="large ? 'text-lg' : 'text-sm'"
-          >
-            {{ player1?.name || 'player_1' }}
-          </div>
-          <div
-            class="mt-1"
-            :class="[
-              large ? 'text-sm' : 'text-xs',
-              player1?.joined ? 'text-green-400' : 'text-green-800',
-            ]"
-          >
-            {{ player1?.joined ? 'connected' : 'waiting...' }}
-          </div>
-          <div v-if="votes1 !== undefined" class="mt-3">
-            <AppButton
-              variant="ghost"
-              :disabled="hasVoted"
-              @click="vote(player1?.id || '')"
-            >
-              [vote] {{ votes1 }}
-            </AppButton>
-          </div>
-        </div>
+        <LobbyPlayerCard
+          :player="player1"
+          :large="large"
+          :votes="votes1"
+          :has-voted="hasVoted"
+          default-name="player_1"
+          @vote="vote"
+        />
         <div
           class="font-bold tracking-widest text-green-800"
           :class="large ? 'text-4xl' : 'text-2xl'"
         >
           vs
         </div>
-        <div class="text-center">
-          <div
-            class="mx-auto mb-3 flex items-center justify-center border text-sm font-bold uppercase"
-            :class="[
-              large ? 'mb-4 h-16 w-32' : 'mb-3 h-12 w-24',
-              player2?.joined
-                ? 'bg-green-950/20 border-green-400 text-green-400'
-                : 'bg-zinc-900 border-green-900 text-green-800',
-            ]"
-          >
-            {{ player2?.joined ? '[ready]' : '[wait]' }}
-          </div>
-          <div
-            class="font-mono uppercase tracking-wider text-green-300"
-            :class="large ? 'text-lg' : 'text-sm'"
-          >
-            {{ player2?.name || 'player_2' }}
-          </div>
-          <div
-            class="mt-1"
-            :class="[
-              large ? 'text-sm' : 'text-xs',
-              player2?.joined ? 'text-green-400' : 'text-green-800',
-            ]"
-          >
-            {{ player2?.joined ? 'connected' : 'waiting...' }}
-          </div>
-          <div v-if="votes2 !== undefined" class="mt-3">
-            <AppButton
-              variant="ghost"
-              :disabled="hasVoted"
-              @click="vote(player2?.id || '')"
-            >
-              [vote] {{ votes2 }}
-            </AppButton>
-          </div>
-        </div>
+        <LobbyPlayerCard
+          :player="player2"
+          :large="large"
+          :votes="votes2"
+          :has-voted="hasVoted"
+          default-name="player_2"
+          @vote="vote"
+        />
       </div>
       <div class="mt-6 text-sm uppercase tracking-widest">
         <template v-if="bothJoined">
@@ -130,6 +72,7 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import AppButton from '@/components/AppButton.vue'
+import LobbyPlayerCard from '@/components/LobbyPlayerCard.vue'
 
 const props = defineProps<{
   title: string

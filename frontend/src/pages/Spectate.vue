@@ -2,29 +2,7 @@
   <div class="bg-zinc-950 flex h-[100dvh] flex-col font-mono text-green-200">
     <AppNavbar title="spectate">
       <template #actions>
-        <template v-if="state?.enable_dev_login && players.data?.length">
-          <span class="text-xs text-green-800">login as:</span>
-          <select
-            class="border-zinc-800 bg-zinc-950 border px-2 py-0.5 text-xs text-green-300 outline-none focus:border-green-400"
-            :value="sessionUser || ''"
-            @change="loginAs(($event.target as HTMLSelectElement).value)"
-          >
-            <option value="" disabled class="bg-zinc-900 text-green-700">
-              {{ sessionUser || 'guest' }}
-            </option>
-            <option
-              v-for="p in players.data"
-              :key="p.name"
-              :value="p.user"
-              class="bg-zinc-900"
-            >
-              {{ p.player_name || p.user }}
-            </option>
-          </select>
-          <span v-if="loggingIn" class="animate-pulse text-xs text-green-700"
-            >...</span
-          >
-        </template>
+        <DevLoginDropdown />
       </template>
     </AppNavbar>
 
@@ -105,36 +83,22 @@
                 <span class="text-xs font-bold text-green-600"
                   >▲ {{ state.votes_1 }}</span
                 >
-                <span
-                  v-if="
-                    state.status === 'Finished' &&
-                    state.winner === state.player_1?.id
-                  "
-                  class="border border-green-400 px-1.5 text-xs font-black uppercase tracking-widest text-green-400"
-                  >winner</span
-                >
+                <MatchVerdict
+                  :status="state.status"
+                  :winner="state.winner"
+                  :player-id="state.player_1?.id"
+                />
               </div>
               <div class="flex items-center gap-2">
-                <button
-                  v-for="emoji in EMOJIS"
-                  :key="'m1-' + emoji"
-                  class="text-xl active:scale-95"
-                  @click="sendReaction(emoji, state.player_1?.id)"
-                >
-                  {{ emoji }}
-                </button>
-                <div class="flex gap-0.5">
-                  <div
-                    v-for="i in state.problem?.total_test_cases || 0"
-                    :key="i"
-                    class="h-3 w-3 border transition-colors duration-300"
-                    :class="
-                      bestScore1 && i <= bestScore1.passed_tests
-                        ? 'border-green-400 bg-green-400'
-                        : 'border-green-900'
-                    "
-                  />
-                </div>
+                <EmojiButtonBar
+                  :player-id="state.player_1?.id"
+                  :active-emoji="activeEmoji"
+                  @react="sendReaction"
+                />
+                <TestCaseDots
+                  :total="state.problem?.total_test_cases || 0"
+                  :passed="bestScore1?.passed_tests || 0"
+                />
               </div>
             </div>
             <!-- Code -->
@@ -162,36 +126,22 @@
                 <span class="text-xs font-bold text-green-600"
                   >▲ {{ state.votes_2 }}</span
                 >
-                <span
-                  v-if="
-                    state.status === 'Finished' &&
-                    state.winner === state.player_2?.id
-                  "
-                  class="border border-green-400 px-1.5 text-xs font-black uppercase tracking-widest text-green-400"
-                  >winner</span
-                >
+                <MatchVerdict
+                  :status="state.status"
+                  :winner="state.winner"
+                  :player-id="state.player_2?.id"
+                />
               </div>
               <div class="flex items-center gap-2">
-                <button
-                  v-for="emoji in EMOJIS"
-                  :key="'m2-' + emoji"
-                  class="text-xl active:scale-95"
-                  @click="sendReaction(emoji, state.player_2?.id)"
-                >
-                  {{ emoji }}
-                </button>
-                <div class="flex gap-0.5">
-                  <div
-                    v-for="i in state.problem?.total_test_cases || 0"
-                    :key="i"
-                    class="h-3 w-3 border transition-colors duration-300"
-                    :class="
-                      bestScore2 && i <= bestScore2.passed_tests
-                        ? 'border-green-400 bg-green-400'
-                        : 'border-green-900'
-                    "
-                  />
-                </div>
+                <EmojiButtonBar
+                  :player-id="state.player_2?.id"
+                  :active-emoji="activeEmoji"
+                  @react="sendReaction"
+                />
+                <TestCaseDots
+                  :total="state.problem?.total_test_cases || 0"
+                  :passed="bestScore2?.passed_tests || 0"
+                />
               </div>
             </div>
             <!-- Code -->
@@ -224,35 +174,32 @@
                   ▲ {{ state.votes_1 }}
                 </div>
                 <div class="mt-2 flex items-center gap-3">
-                  <div class="flex items-center gap-1">
-                    <div
-                      v-for="i in state.problem?.total_test_cases || 0"
-                      :key="i"
-                      class="h-6 w-6 border-2 transition-colors duration-300"
-                      :class="
-                        bestScore1 && i <= bestScore1.passed_tests
-                          ? 'border-green-400 bg-green-400'
-                          : 'border-green-900 bg-transparent'
-                      "
-                    />
-                  </div>
-                  <span
-                    v-if="
-                      state.status === 'Finished' &&
-                      state.winner === state.player_1?.id
-                    "
-                    class="border-4 border-green-400 px-4 py-1 text-2xl font-black uppercase tracking-widest text-green-400"
-                  >
-                    winner
-                  </span>
+                  <TestCaseDots
+                    :total="state.problem?.total_test_cases || 0"
+                    :passed="bestScore1?.passed_tests || 0"
+                    large
+                  />
+                  <MatchVerdict
+                    :status="state.status"
+                    :winner="state.winner"
+                    :player-id="state.player_1?.id"
+                    large
+                  />
                 </div>
               </div>
             </div>
 
             <!-- Center: round + timer -->
             <div class="flex flex-col items-center justify-center">
-              <div class="text-xl uppercase tracking-[0.25em] text-green-400">
-                {{ state.problem?.title || state.match_id }}
+              <div class="flex items-center">
+                <AppButton
+                  variant="inline"
+                  :active="showProblem"
+                  class="!text-xl text-green-600 hover:text-green-400"
+                  @click="showProblem = !showProblem"
+                >
+                  [{{ state.problem?.title || state.match_id }}]
+                </AppButton>
               </div>
               <div
                 class="mb-1 text-base font-bold uppercase tracking-widest text-green-400"
@@ -276,21 +223,12 @@
                     : state.status.toUpperCase()
                 }}
               </div>
-              <AppButton
-                variant="ghost"
-                :active="showProblem"
-                class="mt-2"
-                @click="showProblem = !showProblem"
+              <div
+                v-if="state.status === 'Finished' && !state.winner"
+                class="mt-2 text-2xl font-black uppercase tracking-widest text-yellow-500"
               >
-                {{ showProblem ? '[hide problem]' : '[show problem]' }}
-              </AppButton>
-              <AppButton
-                variant="ghost"
-                class="mt-1"
-                @click="$router.push({ name: 'SpectateHome' })"
-              >
-                [home]
-              </AppButton>
+                — draw —
+              </div>
             </div>
 
             <!-- Player 2 -->
@@ -306,27 +244,17 @@
                   ▲ {{ state.votes_2 }}
                 </div>
                 <div class="mt-2 flex items-center justify-end gap-3">
-                  <span
-                    v-if="
-                      state.status === 'Finished' &&
-                      state.winner === state.player_2?.id
-                    "
-                    class="border-4 border-green-400 px-4 py-1 text-2xl font-black uppercase tracking-widest text-green-400"
-                  >
-                    winner
-                  </span>
-                  <div class="flex items-center gap-1">
-                    <div
-                      v-for="i in state.problem?.total_test_cases || 0"
-                      :key="i"
-                      class="h-6 w-6 border-2 transition-colors duration-300"
-                      :class="
-                        bestScore2 && i <= bestScore2.passed_tests
-                          ? 'border-green-400 bg-green-400'
-                          : 'border-green-900 bg-transparent'
-                      "
-                    />
-                  </div>
+                  <MatchVerdict
+                    :status="state.status"
+                    :winner="state.winner"
+                    :player-id="state.player_2?.id"
+                    large
+                  />
+                  <TestCaseDots
+                    :total="state.problem?.total_test_cases || 0"
+                    :passed="bestScore2?.passed_tests || 0"
+                    large
+                  />
                 </div>
               </div>
             </div>
@@ -412,10 +340,10 @@
           <div
             v-for="f in floaters"
             :key="f.id"
-            class="floater absolute bottom-14 text-3xl"
+            class="floater absolute bottom-14 text-4xl"
             :style="{ left: f.x + '%' }"
           >
-            {{ f.emoji }}
+            <span class="floater-emoji" :class="f.dir">{{ f.emoji }}</span>
           </div>
         </div>
 
@@ -432,24 +360,20 @@
               class="mr-1 text-xs uppercase tracking-widest text-green-800"
               >{{ state.player_1?.name }}</span
             >
-            <button
-              v-for="emoji in EMOJIS"
-              :key="'p1-' + emoji"
-              class="cursor-pointer text-2xl transition-transform hover:scale-125 active:scale-95"
-              @click="sendReaction(emoji, state.player_1?.id)"
-            >
-              {{ emoji }}
-            </button>
+            <EmojiButtonBar
+              :player-id="state.player_1?.id"
+              :active-emoji="activeEmoji"
+              large
+              @react="sendReaction"
+            />
           </div>
           <div class="flex flex-1 items-center justify-center gap-3 py-2">
-            <button
-              v-for="emoji in EMOJIS"
-              :key="'p2-' + emoji"
-              class="cursor-pointer text-2xl transition-transform hover:scale-125 active:scale-95"
-              @click="sendReaction(emoji, state.player_2?.id)"
-            >
-              {{ emoji }}
-            </button>
+            <EmojiButtonBar
+              :player-id="state.player_2?.id"
+              :active-emoji="activeEmoji"
+              large
+              @react="sendReaction"
+            />
             <span
               class="ml-1 text-xs uppercase tracking-widest text-green-800"
               >{{ state.player_2?.name }}</span
@@ -468,12 +392,15 @@ import { useMatchState, useMatchTimer } from '@/data/match'
 import { useLobbyPoll } from '@/data/useLobbyPoll'
 import { useMatchPlayers } from '@/data/useMatchPlayers'
 import { getSocket } from '@/data/socket'
-import { sessionUser } from '@/data/session'
 import AppNavbar from '@/components/AppNavbar.vue'
 import AppButton from '@/components/AppButton.vue'
 import WaitingLobby from '@/components/WaitingLobby.vue'
 import PlayerPanel from '@/components/PlayerPanel.vue'
 import ProblemPanel from '@/components/ProblemPanel.vue'
+import DevLoginDropdown from '@/components/DevLoginDropdown.vue'
+import TestCaseDots from '@/components/TestCaseDots.vue'
+import EmojiButtonBar from '@/components/EmojiButtonBar.vue'
+import MatchVerdict from '@/components/MatchVerdict.vue'
 import { useResizablePanels } from '@/data/useResizablePanels'
 
 const props = defineProps<{
@@ -536,40 +463,20 @@ function handleVote(playerId: string) {
   voteCall.submit({ match_id: props.matchId, player_id: playerId })
 }
 
-// ── Dev login-as ────────────────────────────────────────────────────────────
-const players = useCall({
-  url: '/api/v2/method/codeoff.api.contest.get_all_players',
-  immediate: true,
-})
-
-const loggingIn = ref(false)
-
-async function loginAs(email: string) {
-  if (!email || email === sessionUser.value) return
-  loggingIn.value = true
-  try {
-    await fetch('/api/method/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usr: email, pwd: '123' }),
-    })
-    window.location.reload()
-  } catch {
-    loggingIn.value = false
-  }
-}
-
 // ── Reactions ────────────────────────────────────────────────────────────────
-const EMOJIS = ['🔥', '💀', '👀', '🎉', '😬']
 
 interface Floater {
   id: string
   emoji: string
   x: number
+  dir: 'left' | 'right'
 }
 
 const floaters = ref<Floater[]>([])
 const reactionThrottle: Record<string, string> = {}
+
+// key: `${emoji}-${playerId}` — briefly true after firing for button burst animation
+const activeEmoji = ref<Record<string, boolean>>({})
 
 const reactionCall = useCall({
   url: '/api/v2/method/codeoff.api.contest.send_reaction',
@@ -584,10 +491,11 @@ function playerSideX(playerId: string | null | undefined): number {
 }
 
 function addFloater(emoji: string, id: string, playerId?: string | null) {
-  floaters.value.push({ id, emoji, x: playerSideX(playerId) })
+  const dir = Math.random() < 0.5 ? 'left' : 'right'
+  floaters.value.push({ id, emoji, x: playerSideX(playerId), dir })
   setTimeout(() => {
     floaters.value = floaters.value.filter((f) => f.id !== id)
-  }, 2500)
+  }, 2800)
 }
 
 // IDs of floaters we spawned locally — skip their socket echo
@@ -598,6 +506,13 @@ function sendReaction(emoji: string, playerId?: string | null) {
   const now = Date.now()
   if (now - parseInt(reactionThrottle[key] || '0') < 1000) return
   reactionThrottle[key] = String(now)
+
+  // Burst animation on the button
+  activeEmoji.value[key] = true
+  setTimeout(() => {
+    delete activeEmoji.value[key]
+  }, 350)
+
   // Spawn immediate local floater and pass its ID to the server so the echo can be skipped
   const localId = `local-${now}-${Math.random()}`
   localFloaterIds.add(localId)
@@ -633,21 +548,63 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
+/* ── Floating emoji overlay ─────────────────────────────────────────────── */
 @keyframes float-up {
   0% {
-    transform: translateY(0) scale(1);
+    transform: translateY(0);
+    opacity: 0;
+  }
+  8% {
     opacity: 1;
   }
-  70% {
+  80% {
     opacity: 0.9;
   }
   100% {
-    transform: translateY(-50vh) scale(1.3);
+    transform: translateY(-58vh);
     opacity: 0;
   }
 }
 
+/* Inner: horizontal sway + rotation — gives a curved bubble path */
+@keyframes sway-right {
+  0% {
+    transform: translateX(0) rotate(-4deg) scale(1.25);
+  }
+  30% {
+    transform: translateX(18px) rotate(5deg);
+  }
+  65% {
+    transform: translateX(7px) rotate(-2deg);
+  }
+  100% {
+    transform: translateX(14px) rotate(4deg) scale(0.85);
+  }
+}
+@keyframes sway-left {
+  0% {
+    transform: translateX(0) rotate(4deg) scale(1.25);
+  }
+  30% {
+    transform: translateX(-18px) rotate(-5deg);
+  }
+  65% {
+    transform: translateX(-7px) rotate(2deg);
+  }
+  100% {
+    transform: translateX(-14px) rotate(-4deg) scale(0.85);
+  }
+}
+
 .floater {
-  animation: float-up 2.2s ease-out forwards;
+  animation: float-up 2.8s cubic-bezier(0.25, 0.8, 0.4, 1) forwards;
+}
+
+.floater-emoji {
+  display: inline-block;
+  animation: sway-right 2.8s ease-in-out forwards;
+}
+.floater-emoji.left {
+  animation-name: sway-left;
 }
 </style>

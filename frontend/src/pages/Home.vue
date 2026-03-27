@@ -2,29 +2,7 @@
   <div class="bg-zinc-950 flex h-full flex-col font-mono text-green-200">
     <AppNavbar title="home">
       <template #actions>
-        <template v-if="bracket.data?.enable_dev_login && players.data?.length">
-          <span class="text-xs text-green-800">login as:</span>
-          <select
-            class="border-zinc-800 bg-zinc-950 border px-2 py-0.5 text-xs text-green-300 outline-none focus:border-green-400"
-            :value="sessionUser || ''"
-            @change="loginAs(($event.target as HTMLSelectElement).value)"
-          >
-            <option value="" disabled class="bg-zinc-900 text-green-700">
-              {{ sessionUser || 'guest' }}
-            </option>
-            <option
-              v-for="p in players.data"
-              :key="p.name"
-              :value="p.user"
-              class="bg-zinc-900"
-            >
-              {{ p.player_name || p.user }}
-            </option>
-          </select>
-          <span v-if="loggingIn" class="animate-pulse text-xs text-green-700"
-            >...</span
-          >
-        </template>
+        <DevLoginDropdown />
       </template>
     </AppNavbar>
 
@@ -105,16 +83,17 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { useCall } from 'frappe-ui'
 import { useMyMatch } from '@/data/match'
-import { sessionUser } from '@/data/session'
+import { useTournament } from '@/data/useTournament'
 import AppNavbar from '@/components/AppNavbar.vue'
 import AppButton from '@/components/AppButton.vue'
 import BracketView from '@/components/BracketView.vue'
+import DevLoginDropdown from '@/components/DevLoginDropdown.vue'
 
 const { match, loading, reload } = useMyMatch()
-const loggingIn = ref(false)
+const { bracket } = useTournament()
 
 const makeReadyCall = useCall({
   url: '/api/v2/method/codeoff.api.contest.make_match_ready',
@@ -126,31 +105,6 @@ const makeReadyCall = useCall({
 
 function makeMatchReady(matchId: string) {
   makeReadyCall.submit({ match_id: matchId })
-}
-
-const bracket = useCall({
-  url: '/api/v2/method/codeoff.api.contest.get_tournament_bracket',
-  immediate: true,
-})
-
-const players = useCall({
-  url: '/api/v2/method/codeoff.api.contest.get_all_players',
-  immediate: true,
-})
-
-async function loginAs(email: string) {
-  if (!email || email === sessionUser.value) return
-  loggingIn.value = true
-  try {
-    await fetch('/api/method/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usr: email, pwd: '123' }),
-    })
-    window.location.reload()
-  } catch {
-    loggingIn.value = false
-  }
 }
 
 // Auto-refresh bracket every 5 s so timers and scores stay live

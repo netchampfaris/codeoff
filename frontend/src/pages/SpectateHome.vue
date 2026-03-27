@@ -2,29 +2,7 @@
   <div class="bg-zinc-950 flex min-h-screen flex-col font-mono text-green-200">
     <AppNavbar title="spectate">
       <template #actions>
-        <template v-if="bracket.data?.enable_dev_login && players.data?.length">
-          <span class="text-xs text-green-800">login as:</span>
-          <select
-            class="border-zinc-800 bg-zinc-950 border px-2 py-0.5 text-xs text-green-300 outline-none focus:border-green-400"
-            :value="sessionUser || ''"
-            @change="loginAs(($event.target as HTMLSelectElement).value)"
-          >
-            <option value="" disabled class="bg-zinc-900 text-green-700">
-              {{ sessionUser || 'guest' }}
-            </option>
-            <option
-              v-for="p in players.data"
-              :key="p.name"
-              :value="p.user"
-              class="bg-zinc-900"
-            >
-              {{ p.player_name || p.user }}
-            </option>
-          </select>
-          <span v-if="loggingIn" class="animate-pulse text-xs text-green-700"
-            >...</span
-          >
-        </template>
+        <DevLoginDropdown />
       </template>
     </AppNavbar>
 
@@ -102,8 +80,8 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useCall } from 'frappe-ui'
-import { sessionUser } from '@/data/session'
 import AppNavbar from '@/components/AppNavbar.vue'
+import DevLoginDropdown from '@/components/DevLoginDropdown.vue'
 
 interface LiveMatch {
   name: string
@@ -120,34 +98,6 @@ interface LiveMatch {
 
 const matches = ref<LiveMatch[]>([])
 const loading = ref(true)
-
-// Dev login-as — fetched once on mount; flag checked before rendering
-const bracket = useCall({
-  url: '/api/v2/method/codeoff.api.contest.get_tournament_bracket',
-  immediate: true,
-})
-
-const players = useCall({
-  url: '/api/v2/method/codeoff.api.contest.get_all_players',
-  immediate: true,
-})
-
-const loggingIn = ref(false)
-
-async function loginAs(email: string) {
-  if (!email || email === sessionUser.value) return
-  loggingIn.value = true
-  try {
-    await fetch('/api/method/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ usr: email, pwd: '123' }),
-    })
-    window.location.reload()
-  } catch {
-    loggingIn.value = false
-  }
-}
 
 const fetch = useCall({
   url: '/api/v2/method/codeoff.api.contest.get_live_matches',
