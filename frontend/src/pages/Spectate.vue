@@ -1,6 +1,12 @@
 <template>
   <div class="bg-zinc-950 flex h-[100dvh] flex-col font-mono text-green-200">
-    <AppNavbar title="spectate">
+    <AppNavbar
+      :title="
+        state
+          ? `spectate / round ${state.round_number} . match ${state.bracket_position}`
+          : 'spectate'
+      "
+    >
       <template #actions>
         <DevLoginDropdown />
       </template>
@@ -386,7 +392,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useCall } from 'frappe-ui'
 import { useMatchState, useMatchTimer } from '@/data/match'
 import { useLobbyPoll } from '@/data/useLobbyPoll'
@@ -409,6 +415,20 @@ const props = defineProps<{
 
 const { state, loading, reload } = useMatchState(props.matchId)
 const { remaining, formatted } = useMatchTimer(state)
+
+// Poll for status change after timer expires (server processes asynchronously)
+watch(remaining, (r) => {
+  if (r === 0 && state.value?.status === 'Live') {
+    const t = setInterval(() => {
+      if (!state.value || state.value.status !== 'Live') {
+        clearInterval(t)
+        return
+      }
+      reload()
+    }, 2000)
+    onUnmounted(() => clearInterval(t))
+  }
+})
 
 const showProblem = ref(false)
 const { bottomPanelHeight, startDragV } = useResizablePanels({

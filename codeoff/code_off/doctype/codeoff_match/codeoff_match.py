@@ -143,6 +143,35 @@ class CodeoffMatch(Document):
 		frappe.db.commit()
 		frappe.msgprint(f"Match reset to {new_status}")
 
+	@frappe.whitelist()
+	def add_time(self, seconds: int):
+		"""Extend the deadline of a Live match by N seconds."""
+		if self.status != "Live":
+			frappe.throw("Match must be Live to add time")
+		seconds = int(seconds)
+		if seconds <= 0:
+			frappe.throw("Seconds must be a positive integer")
+
+		current_deadline = frappe.db.get_value("Codeoff Match", self.name, "deadline")
+		new_deadline = current_deadline + timedelta(seconds=seconds)
+		frappe.db.set_value("Codeoff Match", self.name, "deadline", new_deadline)
+		frappe.db.commit()
+
+		from codeoff.api.contest import publish_match_state
+
+		publish_match_state(self.name)
+		frappe.msgprint(f"{seconds}s added — new deadline: {new_deadline}")
+
+	@frappe.whitelist()
+	def resolve_now(self):
+		"""Synchronously run match timeout resolution — use if the background job didn't fire."""
+		if self.status != "Live":
+			frappe.throw("Match must be Live to resolve")
+		from codeoff.services.match_engine import resolve_match_timeout
+
+		resolve_match_timeout(self.name)
+		frappe.msgprint("Match resolved")
+
 	def get_next_match_position(self):
 		"""Compute the next round match position for bracket advancement."""
 		next_round = self.round_number + 1
