@@ -1,27 +1,29 @@
 <template>
-  <div class="flex h-full flex-col bg-term-bg font-mono text-green-200">
+  <div class="bg-zinc-950 flex h-full flex-col font-mono text-green-200">
     <AppNavbar title="home">
       <template #actions>
         <template v-if="bracket.data?.enable_dev_login && players.data?.length">
           <span class="text-xs text-green-800">login as:</span>
           <select
-            class="border border-term-border bg-term-bg px-2 py-0.5 text-xs text-green-300 outline-none focus:border-term-green"
+            class="border-zinc-800 bg-zinc-950 border px-2 py-0.5 text-xs text-green-300 outline-none focus:border-green-400"
             :value="sessionUser || ''"
             @change="loginAs(($event.target as HTMLSelectElement).value)"
           >
-            <option value="" disabled class="bg-term-surface text-green-700">
+            <option value="" disabled class="bg-zinc-900 text-green-700">
               {{ sessionUser || 'guest' }}
             </option>
             <option
               v-for="p in players.data"
               :key="p.name"
               :value="p.user"
-              class="bg-term-surface"
+              class="bg-zinc-900"
             >
               {{ p.player_name || p.user }}
             </option>
           </select>
-          <span v-if="loggingIn" class="animate-pulse text-xs text-green-700">...</span>
+          <span v-if="loggingIn" class="animate-pulse text-xs text-green-700"
+            >...</span
+          >
         </template>
       </template>
     </AppNavbar>
@@ -41,9 +43,7 @@
         </div>
         <div
           class="mb-3 text-3xl font-bold tracking-tight"
-          :class="
-            match.status === 'Live' ? 'text-term-green' : 'text-green-300'
-          "
+          :class="match.status === 'Live' ? 'text-green-400' : 'text-green-300'"
         >
           {{ match.status === 'Live' ? 'live now' : 'coming up' }}
         </div>
@@ -52,7 +52,7 @@
           class="border px-6 py-2 text-sm font-bold uppercase tracking-widest transition-colors"
           :class="
             match.status === 'Live'
-              ? 'bg-green-950/30 hover:bg-green-950/60 border-term-green text-term-green'
+              ? 'bg-green-950/30 hover:bg-green-950/60 border-green-400 text-green-400'
               : 'border-green-700 text-green-600 hover:border-green-400 hover:text-green-300'
           "
           @click="
@@ -84,6 +84,7 @@
         @spectate="
           $router.push({ name: 'Spectate', params: { matchId: $event } })
         "
+        @makeReady="makeMatchReady($event)"
       />
       <div v-else class="flex flex-1 items-center justify-center">
         <div class="text-sm text-green-800">no tournament found.</div>
@@ -117,6 +118,18 @@ import BracketView from '@/components/BracketView.vue'
 
 const { match, loading, reload } = useMyMatch()
 const loggingIn = ref(false)
+
+const makeReadyCall = useCall({
+  url: '/api/v2/method/codeoff.api.contest.make_match_ready',
+  immediate: false,
+  onSuccess() {
+    bracket.submit()
+  },
+})
+
+function makeMatchReady(matchId: string) {
+  makeReadyCall.submit({ match_id: matchId })
+}
 
 const bracket = useCall({
   url: '/api/v2/method/codeoff.api.contest.get_tournament_bracket',

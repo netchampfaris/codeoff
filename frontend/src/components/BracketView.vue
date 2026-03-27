@@ -2,7 +2,7 @@
   <div class="flex flex-1 flex-col overflow-hidden font-mono">
     <!-- Header -->
     <div
-      class="flex items-center justify-between border-b border-term-border bg-term-surface px-8 py-5"
+      class="border-zinc-800 bg-zinc-900 flex items-center justify-between border-b px-8 py-5"
     >
       <div class="flex-1 text-center">
         <div class="mb-0.5 text-base uppercase tracking-widest text-green-700">
@@ -13,7 +13,7 @@
         </h1>
         <div class="mt-1 text-base text-green-700">
           round
-          <span class="text-term-green">{{ data.current_round || 1 }}</span>
+          <span class="text-green-400">{{ data.current_round || 1 }}</span>
           <span class="text-green-800"> / </span>
           {{ data.total_rounds }}
         </div>
@@ -62,7 +62,9 @@
             >
               <BracketMatchCard
                 :match="m"
+                :isOrganizer="data.is_organizer"
                 @spectate="$emit('spectate', $event)"
+                @makeReady="$emit('makeReady', $event)"
               />
             </div>
           </div>
@@ -85,12 +87,14 @@ const props = defineProps<{
     status: string
     current_round: number | null
     total_rounds: number
+    is_organizer?: boolean
     rounds: Record<string, any[]>
   }
 }>()
 
 defineEmits<{
   spectate: [matchId: string]
+  makeReady: [matchId: string]
 }>()
 
 const bracketContainer = ref<HTMLElement>()

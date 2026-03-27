@@ -136,6 +136,19 @@ def start_match_now(match_id: str):
 	return {"status": "Live"}
 
 
+@frappe.whitelist()
+def make_match_ready(match_id: str):
+	"""Organizer-only: force a Draft match to Ready status."""
+	if "System Manager" not in frappe.get_roles():
+		frappe.throw("Only organizers can make a match ready", frappe.PermissionError)
+	match = frappe.get_doc("Codeoff Match", match_id)
+	if match.status != "Draft":
+		frappe.throw("Match is not in Draft status")
+	frappe.db.set_value("Codeoff Match", match_id, "status", "Ready")
+	frappe.db.commit()
+	return {"status": "Ready"}
+
+
 @frappe.whitelist(allow_guest=True)
 def vote_for_player(match_id: str, player_id: str):
 	"""Cast an audience vote for a player. One vote per match enforced client-side."""
@@ -514,12 +527,15 @@ def get_tournament_bracket():
 
 	total_rounds = max(rounds.keys()) if rounds else 0
 
+	is_organizer = "System Manager" in frappe.get_roles()
+
 	return {
 		"tournament_name": t.tournament_name,
 		"tournament_id": t.name,
 		"status": t.status,
 		"current_round": t.current_round,
 		"enable_dev_login": bool(t.enable_dev_login),
+		"is_organizer": is_organizer,
 		"total_rounds": total_rounds,
 		"rounds": rounds,
 	}
