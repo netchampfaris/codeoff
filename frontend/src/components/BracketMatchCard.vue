@@ -56,6 +56,11 @@
         />
         {{ match.status }}
         <span
+          v-if="match.status === 'Finished' && !match.winner"
+          class="text-yellow-500"
+        >— draw —</span
+        >
+        <span
           v-if="match.status === 'Live' && remaining > 0"
           class="font-mono tabular-nums"
           >{{ timerFormatted }}</span
