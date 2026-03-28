@@ -19,6 +19,11 @@
           class="text-base font-bold text-green-400"
           >[W]</span
         >
+        <span
+          v-if="match.status === 'Finished' && !match.winner"
+          class="text-base font-bold text-yellow-500"
+          >[D]</span
+        >
       </div>
     </div>
     <!-- Player 2 -->
@@ -40,6 +45,11 @@
           class="text-base font-bold text-green-400"
           >[W]</span
         >
+        <span
+          v-if="match.status === 'Finished' && !match.winner"
+          class="text-base font-bold text-yellow-500"
+          >[D]</span
+        >
       </div>
     </div>
     <!-- Status bar -->
@@ -55,11 +65,6 @@
           class="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-green-400"
         />
         {{ match.status }}
-        <span
-          v-if="match.status === 'Finished' && !match.winner"
-          class="text-yellow-500"
-        >— draw —</span
-        >
         <span
           v-if="match.status === 'Live' && remaining > 0"
           class="font-mono tabular-nums"

@@ -5,10 +5,7 @@
       class="border-zinc-800 bg-zinc-900 flex items-center justify-between border-b px-5 py-3"
     >
       <div class="flex-1 text-center">
-        <div class="mb-0.5 text-base uppercase tracking-widest text-green-700">
-          // tournament
-        </div>
-        <h1 class="text-[2rem] font-bold tracking-tight text-green-300">
+        <h1 class="text-xl font-bold tracking-tight text-green-300">
           {{ data.tournament_name }}
         </h1>
       </div>
