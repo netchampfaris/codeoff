@@ -61,6 +61,21 @@ frappe.ui.form.on('Codeoff Tournament', {
 				__('Actions'),
 			)
 		}
+
+		if (!frm.is_new()) {
+			frm.add_custom_button(
+				__('Clear Tournament Data'),
+				() => {
+					frappe.confirm(
+						__(
+							'This will permanently delete all matches, submissions, and draft states for this tournament and reset it to Draft. Player entries and round settings will be kept. Continue?',
+						),
+						() => frm.call('clear_tournament_data').then(() => frm.reload_doc()),
+					)
+				},
+				__('Actions'),
+			)
+		}
 	},
 })
 

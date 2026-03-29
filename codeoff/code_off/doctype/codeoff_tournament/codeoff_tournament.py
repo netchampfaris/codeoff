@@ -316,3 +316,58 @@ class CodeoffTournament(Document):
 		self.save(ignore_permissions=True)
 
 		frappe.msgprint(f"Reset {len(matches)} match(es) and {len(submissions)} submission(s)")
+
+	@frappe.whitelist()
+	def clear_tournament_data(self):
+		"""Delete all runtime data for this tournament while keeping tournament configuration."""
+		matches = frappe.get_all(
+			"Codeoff Match",
+			filters={"tournament": self.name},
+			fields=["name"],
+			order_by="round_number desc, bracket_position desc",
+		)
+		match_names = [m.name for m in matches]
+
+		submissions_deleted = 0
+		draft_states_deleted = 0
+		matches_deleted = 0
+
+		if match_names:
+			submissions = frappe.get_all(
+				"Codeoff Submission", filters={"match": ["in", match_names]}, pluck="name"
+			)
+			for sub in submissions:
+				frappe.delete_doc("Codeoff Submission", sub, ignore_permissions=True)
+			submissions_deleted = len(submissions)
+
+			draft_states = frappe.get_all(
+				"Codeoff Draft State", filters={"match": ["in", match_names]}, pluck="name"
+			)
+			for draft_state in draft_states:
+				frappe.delete_doc("Codeoff Draft State", draft_state, ignore_permissions=True)
+			draft_states_deleted = len(draft_states)
+
+			for match_name in match_names:
+				frappe.cache.delete_keys(f"codeoff_draft:{match_name}:")
+				frappe.delete_doc("Codeoff Match", match_name, ignore_permissions=True)
+			matches_deleted = len(match_names)
+
+		for player in self.players:
+			player.status = "Registered"
+
+		self.current_round = None
+		self.started_on = None
+		self.completed_on = None
+		self.status = "Draft"
+		self.save(ignore_permissions=True)
+		frappe.db.commit()
+
+		frappe.msgprint(
+			f"Cleared {matches_deleted} match(es), {submissions_deleted} submission(s), "
+			f"and {draft_states_deleted} draft state record(s) for tournament {self.name}."
+		)
+		return {
+			"matches_deleted": matches_deleted,
+			"submissions_deleted": submissions_deleted,
+			"draft_states_deleted": draft_states_deleted,
+		}

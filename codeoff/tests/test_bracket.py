@@ -2,7 +2,13 @@ import frappe
 from frappe.tests import IntegrationTestCase
 
 from codeoff.services.match_engine import finalize_match
-from codeoff.tests.utils import cleanup_test_data, create_players, create_problem, create_tournament
+from codeoff.tests.utils import (
+	cleanup_test_data,
+	create_players,
+	create_problem,
+	create_submission,
+	create_tournament,
+)
 
 
 class TestCodeoffBracket(IntegrationTestCase):
@@ -180,3 +186,54 @@ class TestCodeoffBracket(IntegrationTestCase):
 		tournament.reload()
 		self.assertEqual(tournament.status, "Completed")
 		self.assertIsNotNone(tournament.completed_on)
+
+	def test_clear_tournament_data_deletes_runtime_records(self):
+		"""Clearing tournament data should remove matches and dependent records but keep the tournament."""
+		players = create_players(4)
+		problem = create_problem()
+		tournament = create_tournament(players)
+		tournament.generate_bracket()
+
+		match_name = frappe.get_value(
+			"Codeoff Match",
+			{"tournament": tournament.name, "round_number": 1, "bracket_position": 1},
+		)
+		match = frappe.get_doc("Codeoff Match", match_name)
+		match.problem = problem.name
+		match.save()
+		match.start_match()
+		match.reload()
+
+		create_submission(match, players[0])
+		frappe.get_doc(
+			{
+				"doctype": "Codeoff Draft State",
+				"match": match.name,
+				"player": players[0].name,
+				"language": "python",
+				"source_code": "def add(a, b):\n    return a + b",
+				"cursor_line": 1,
+				"cursor_column": 0,
+			}
+		).insert(ignore_permissions=True)
+		frappe.cache.set_value(f"codeoff_draft:{match.name}:{players[0].name}", {"source_code": "draft"})
+
+		tournament.players[0].status = "Winner"
+		tournament.status = "Completed"
+		tournament.current_round = 2
+		tournament.save(ignore_permissions=True)
+
+		summary = tournament.clear_tournament_data()
+		tournament.reload()
+
+		self.assertEqual(summary["matches_deleted"], 3)
+		self.assertEqual(summary["submissions_deleted"], 1)
+		self.assertEqual(summary["draft_states_deleted"], 1)
+		self.assertEqual(tournament.status, "Draft")
+		self.assertFalse(tournament.current_round)
+		self.assertIsNone(tournament.completed_on)
+		self.assertTrue(all(row.status == "Registered" for row in tournament.players))
+		self.assertFalse(frappe.db.exists("Codeoff Match", {"tournament": tournament.name}))
+		self.assertFalse(frappe.db.exists("Codeoff Submission", {"match": match.name}))
+		self.assertFalse(frappe.db.exists("Codeoff Draft State", {"match": match.name}))
+		self.assertIsNone(frappe.cache.get_value(f"codeoff_draft:{match.name}:{players[0].name}"))
