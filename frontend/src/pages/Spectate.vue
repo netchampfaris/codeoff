@@ -33,17 +33,23 @@
         @start="startMatch"
       />
       <div v-else-if="state" class="relative flex h-full min-h-0 flex-col">
-        <div class="pointer-events-none absolute inset-x-0 top-2 z-50 flex flex-col gap-2 px-3 md:top-3 md:px-6">
+        <div
+          class="pointer-events-none absolute inset-x-0 top-2 z-50 flex flex-col gap-2 px-3 md:top-3 md:px-6"
+        >
           <transition name="banner-fade">
             <div
               v-if="activeBanner"
               class="momentum-banner mx-auto w-full max-w-xl border px-4 py-2"
               :class="activeBanner.tone"
             >
-              <div class="text-[10px] uppercase tracking-[0.35em] text-current/70">
+              <div
+                class="text-current/70 text-[10px] uppercase tracking-[0.35em]"
+              >
                 {{ activeBanner.label }}
               </div>
-              <div class="text-sm font-bold uppercase tracking-wide text-current md:text-base">
+              <div
+                class="text-sm font-bold uppercase tracking-wide text-current md:text-base"
+              >
                 {{ activeBanner.message }}
               </div>
             </div>
@@ -77,10 +83,14 @@
           >
             <div>
               <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <div class="text-sm font-bold uppercase tracking-wide text-green-400">
+                <div
+                  class="text-sm font-bold uppercase tracking-wide text-green-400"
+                >
                   {{ state.problem?.title || state.match_id }}
                 </div>
-                <div class="text-[10px] uppercase tracking-[0.3em] text-green-700">
+                <div
+                  class="text-[10px] uppercase tracking-[0.3em] text-green-700"
+                >
                   {{ mobileRoundMatchLabel }}
                 </div>
               </div>
@@ -88,8 +98,12 @@
                 v-if="predictionStatusLabel || headerHintLabel"
                 class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] uppercase tracking-widest"
               >
-                <span v-if="predictionStatusLabel" class="text-green-700">{{ predictionStatusLabel }}</span>
-                <span v-if="headerHintLabel" class="text-green-800">{{ headerHintLabel }}</span>
+                <span v-if="predictionStatusLabel" class="text-green-700">{{
+                  predictionStatusLabel
+                }}</span>
+                <span v-if="headerHintLabel" class="text-green-800">{{
+                  headerHintLabel
+                }}</span>
               </div>
             </div>
             <div class="flex items-center gap-3">
@@ -620,7 +634,9 @@ const predictionStatusLabel = computed(() => {
 const hasCrowdSplit = computed(() => predictionStats.value.total > 0)
 
 const showCrowdSplit = computed(
-  () => hasCrowdSplit.value && (!!selectedPlayerId.value || !!state.value?.is_organizer),
+  () =>
+    hasCrowdSplit.value &&
+    (!!selectedPlayerId.value || !!state.value?.is_organizer),
 )
 
 const leftCrowdSplit = computed(() =>
@@ -644,7 +660,9 @@ const mobileRoundMatchLabel = computed(() => {
 
 const headerHintLabel = computed(() => {
   if (state.value?.status === 'Ready') {
-    return state.value.is_organizer ? 'organizer view' : 'pick to reveal crowd split'
+    return state.value.is_organizer
+      ? 'organizer view'
+      : 'pick to reveal crowd split'
   }
   return ''
 })
@@ -717,8 +735,10 @@ const localFloaterIds = new Set<string>()
 
 function playerNameFor(playerId: string | null | undefined): string {
   if (!state.value || !playerId) return 'crowd'
-  if (playerId === state.value.player_1?.id) return state.value.player_1?.name || 'player 1'
-  if (playerId === state.value.player_2?.id) return state.value.player_2?.name || 'player 2'
+  if (playerId === state.value.player_1?.id)
+    return state.value.player_1?.name || 'player 1'
+  if (playerId === state.value.player_2?.id)
+    return state.value.player_2?.name || 'player 2'
   return 'crowd'
 }
 
@@ -766,7 +786,9 @@ function pushMomentumBanner(
 
 function triggerReactionSpike(playerId: string) {
   const spikeId = `${playerId}-${Date.now()}`
-  activeSpikes.value = activeSpikes.value.filter((spike) => spike.playerId !== playerId)
+  activeSpikes.value = activeSpikes.value.filter(
+    (spike) => spike.playerId !== playerId,
+  )
   activeSpikes.value.push({
     id: spikeId,
     playerId,
@@ -774,7 +796,9 @@ function triggerReactionSpike(playerId: string) {
   })
 
   setTimeout(() => {
-    activeSpikes.value = activeSpikes.value.filter((spike) => spike.id !== spikeId)
+    activeSpikes.value = activeSpikes.value.filter(
+      (spike) => spike.id !== spikeId,
+    )
   }, REACTION_SPIKE_DURATION_MS)
 }
 
@@ -789,8 +813,8 @@ function noteReaction(playerId: string | null | undefined) {
   reactionWindowByPlayer[playerId] = recent
 
   if (
-    recent.length >= REACTION_SPIKE_THRESHOLD
-    && now - (spikeCooldownByPlayer[playerId] || 0) > REACTION_SPIKE_COOLDOWN_MS
+    recent.length >= REACTION_SPIKE_THRESHOLD &&
+    now - (spikeCooldownByPlayer[playerId] || 0) > REACTION_SPIKE_COOLDOWN_MS
   ) {
     spikeCooldownByPlayer[playerId] = now
     triggerReactionSpike(playerId)
@@ -798,15 +822,24 @@ function noteReaction(playerId: string | null | undefined) {
 }
 
 function isSpikeActive(playerId: string | null | undefined) {
-  return !!playerId && activeSpikes.value.some((spike) => spike.playerId === playerId)
+  return (
+    !!playerId &&
+    activeSpikes.value.some((spike) => spike.playerId === playerId)
+  )
 }
 
-const leftSpike = computed(() =>
-  activeSpikes.value.find((spike) => spike.playerId === state.value?.player_1?.id) || null,
+const leftSpike = computed(
+  () =>
+    activeSpikes.value.find(
+      (spike) => spike.playerId === state.value?.player_1?.id,
+    ) || null,
 )
 
-const rightSpike = computed(() =>
-  activeSpikes.value.find((spike) => spike.playerId === state.value?.player_2?.id) || null,
+const rightSpike = computed(
+  () =>
+    activeSpikes.value.find(
+      (spike) => spike.playerId === state.value?.player_2?.id,
+    ) || null,
 )
 
 function leaderForScores(
@@ -842,9 +875,9 @@ watch(momentumSnapshot, (next, prev) => {
   if (!next || !prev) return
 
   if (
-    next.winner
-    && next.winner !== prev.winner
-    && next.winningReason === 'First Accepted'
+    next.winner &&
+    next.winner !== prev.winner &&
+    next.winningReason === 'First Accepted'
   ) {
     pushMomentumBanner(
       'solve landed',
@@ -861,9 +894,20 @@ watch(momentumSnapshot, (next, prev) => {
     return
   }
 
-  const scoresChanged = next.score1 !== prev.score1 || next.score2 !== prev.score2
-  const previousLeader = leaderForScores(prev.score1, prev.score2, prev.player1Id, prev.player2Id)
-  const nextLeader = leaderForScores(next.score1, next.score2, next.player1Id, next.player2Id)
+  const scoresChanged =
+    next.score1 !== prev.score1 || next.score2 !== prev.score2
+  const previousLeader = leaderForScores(
+    prev.score1,
+    prev.score2,
+    prev.player1Id,
+    prev.player2Id,
+  )
+  const nextLeader = leaderForScores(
+    next.score1,
+    next.score2,
+    next.player1Id,
+    next.player2Id,
+  )
 
   if (scoresChanged && nextLeader && nextLeader !== previousLeader) {
     pushMomentumBanner(
@@ -877,7 +921,11 @@ watch(momentumSnapshot, (next, prev) => {
     return
   }
 
-  if (prev.submissionsCount === 0 && next.submissionsCount > 0 && next.lastSubmissionPlayerId) {
+  if (
+    prev.submissionsCount === 0 &&
+    next.submissionsCount > 0 &&
+    next.lastSubmissionPlayerId
+  ) {
     pushMomentumBanner(
       'first blood',
       `${playerNameFor(next.lastSubmissionPlayerId)} lands first blood`,
@@ -895,7 +943,11 @@ watch(
       return
     }
 
-    if (!finalMinuteShown.value && secondsLeft <= 60 && (!previous || previous[1] > 60)) {
+    if (
+      !finalMinuteShown.value &&
+      secondsLeft <= 60 &&
+      (!previous || previous[1] > 60)
+    ) {
       finalMinuteShown.value = true
       pushMomentumBanner('time pressure', 'final minute', 'warning', 65, 2600)
     }
@@ -965,22 +1017,30 @@ onUnmounted(() => {
 
 @keyframes panel-spike-pulse {
   0% {
-    box-shadow: inset 0 0 0 0 rgba(74, 222, 128, 0), 0 0 0 0 rgba(74, 222, 128, 0);
+    box-shadow:
+      inset 0 0 0 0 rgba(74, 222, 128, 0),
+      0 0 0 0 rgba(74, 222, 128, 0);
     background: rgba(34, 197, 94, 0);
   }
   30% {
-    box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.8), 0 0 18px rgba(74, 222, 128, 0.18);
+    box-shadow:
+      inset 0 0 0 1px rgba(74, 222, 128, 0.8),
+      0 0 18px rgba(74, 222, 128, 0.18);
     background: rgba(34, 197, 94, 0.08);
   }
   100% {
-    box-shadow: inset 0 0 0 0 rgba(74, 222, 128, 0), 0 0 0 0 rgba(74, 222, 128, 0);
+    box-shadow:
+      inset 0 0 0 0 rgba(74, 222, 128, 0),
+      0 0 0 0 rgba(74, 222, 128, 0);
     background: rgba(34, 197, 94, 0);
   }
 }
 
 .banner-fade-enter-active,
 .banner-fade-leave-active {
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transition:
+    opacity 0.18s ease,
+    transform 0.18s ease;
 }
 
 .banner-fade-enter-from,

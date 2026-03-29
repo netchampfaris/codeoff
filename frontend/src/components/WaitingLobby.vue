@@ -149,10 +149,15 @@ const rightSplit = computed(() =>
 )
 
 const predictionLocked = computed(
-  () => !!props.selectedPlayerId || !!props.predictionPending || !!props.isOrganizer,
+  () =>
+    !!props.selectedPlayerId ||
+    !!props.predictionPending ||
+    !!props.isOrganizer,
 )
 
-const showPredictionSplit = computed(() => !!props.selectedPlayerId || !!props.isOrganizer)
+const showPredictionSplit = computed(
+  () => !!props.selectedPlayerId || !!props.isOrganizer,
+)
 
 function pick(playerId: string) {
   if (predictionLocked.value || !props.matchId || !playerId) return
