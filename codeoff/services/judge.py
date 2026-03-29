@@ -147,7 +147,7 @@ def run_tests(source_code, function_name, test_cases, time_limit=2.0, memory_lim
 	top_error = output.get("error")
 
 	if top_error:
-		verdict = "Compilation Error"
+		verdict = "Runtime Error"
 	elif passed == total:
 		verdict = "Accepted"
 	else:

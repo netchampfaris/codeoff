@@ -73,51 +73,46 @@ def determine_winner_by_score(match):
 	elif w2 < w1:
 		finalize_match(match, match.player_2, "Best Score")
 	else:
-		# Both had partial progress but equal — enter review
-		match.status = "Review"
-		match.tie_break_metadata = frappe.as_json(
-			{
-				"reason": "Equal best score and equal wrong submission count",
-				"best_score_player_1": s1,
-				"best_score_player_2": s2,
-				"wrong_submissions_player_1": w1,
-				"wrong_submissions_player_2": w2,
-			}
-		)
-		match.save(ignore_permissions=True)
-
-		from codeoff.api.contest import publish_match_state
-
-		frappe.db.commit()
-		publish_match_state(match.name)
+		# Both had partial progress but equal — require organizer follow-up.
+		_mark_match_for_review(match, "Equal best score and equal wrong submission count")
 
 
 def draw_match(match):
-	"""Neither player solved the problem — mark as a draw (Finished, no winner)."""
-	match.status = "Finished"
+	"""Neither player solved the problem — require a rematch or organizer decision."""
+	_mark_match_for_review(match, "No submissions from either player")
+
+
+def _mark_match_for_review(match, reason):
+	"""Persist a review state for outcomes that need manual follow-up or a rematch."""
+	match.status = "Review"
 	match.winner = None
-	match.winning_reason = "Draw"
+	match.winning_reason = "Tie Review"
+	match.tie_break_metadata = frappe.as_json(
+		{
+			"reason": reason,
+			"best_score_player_1": match.best_score_player_1 or 0,
+			"best_score_player_2": match.best_score_player_2 or 0,
+			"wrong_submissions_player_1": match.wrong_submissions_player_1 or 0,
+			"wrong_submissions_player_2": match.wrong_submissions_player_2 or 0,
+			"rematch_required": True,
+		}
+	)
 	match.save(ignore_permissions=True)
 
 	from codeoff.api.contest import _broadcast_match_event, publish_match_state
 
 	frappe.db.commit()
 	publish_match_state(match.name)
-
-	# Notify organizers when a tournament match draws so they can advance
-	# the bracket manually (no winner = bracket slot stays empty).
-	if match.tournament:
-		_broadcast_match_event(
-			match.name,
-			{
-				"event_type": "draw_needs_resolution",
-				"match_id": match.name,
-				"tournament": match.tournament,
-				"message": (
-					f"Match {match.name} ended in a draw. Manually assign a winner to continue the bracket."
-				),
-			},
-		)
+	_broadcast_match_event(
+		match.name,
+		{
+			"event_type": "match_review_required",
+			"match_id": match.name,
+			"status": "Review",
+			"reason": reason,
+			"rematch_required": True,
+		},
+	)
 
 
 def finalize_match(match, winner, reason):

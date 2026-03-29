@@ -1,6 +1,7 @@
 import frappe
 from frappe.tests import IntegrationTestCase
 
+from codeoff.services.match_engine import determine_winner_by_score, finalize_match, recompute_scores
 from codeoff.tests.utils import (
 	cleanup_test_data,
 	create_live_match,
@@ -106,3 +107,74 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 		# Allow 2-second tolerance for test execution time
 		delta = abs((match.deadline - expected_deadline).total_seconds())
 		self.assertLessEqual(delta, 2)
+
+	def test_review_match_can_create_rematch_with_different_problem(self):
+		"""A review match can spawn one ready rematch with a new problem."""
+		match, players, problem, _ = self._setup_match()
+		alternate_problem = create_problem(title="Alternate Test Problem")
+		match.problem = problem.name
+		match.save()
+		match.start_match()
+
+		recompute_scores(match)
+		determine_winner_by_score(match)
+
+		match.reload()
+		self.assertEqual(match.status, "Review")
+
+		result = match.create_rematch()
+		rematch = frappe.get_doc("Codeoff Match", result["rematch_match_id"])
+		metadata = frappe.parse_json(match.tie_break_metadata)
+
+		self.assertEqual(rematch.status, "Ready")
+		self.assertEqual(rematch.player_1, match.player_1)
+		self.assertEqual(rematch.player_2, match.player_2)
+		self.assertEqual(rematch.problem, alternate_problem.name)
+		self.assertEqual(metadata["rematch_match_id"], rematch.name)
+		self.assertTrue(metadata["rematch_required"])
+
+	def test_rematch_winner_advances_bracket(self):
+		"""The rematch winner should advance to the next bracket slot."""
+		players = create_players(4, prefix="rematchtest")
+		problem = create_problem(title="Round One Problem")
+		create_problem(title="Round One Rematch Problem")
+		tournament = create_tournament(players)
+		tournament.generate_bracket()
+
+		match_name = frappe.get_value(
+			"Codeoff Match", {"tournament": tournament.name, "round_number": 1, "bracket_position": 1}
+		)
+		match = frappe.get_doc("Codeoff Match", match_name)
+		match.problem = problem.name
+		match.save()
+		match.start_match()
+
+		recompute_scores(match)
+		determine_winner_by_score(match)
+		match.reload()
+
+		rematch_info = match.create_rematch()
+		rematch = frappe.get_doc("Codeoff Match", rematch_info["rematch_match_id"])
+		finalize_match(rematch, players[0].name, "Best Score")
+
+		next_match_name = frappe.get_value(
+			"Codeoff Match", {"tournament": tournament.name, "round_number": 2, "bracket_position": 1}
+		)
+		next_match = frappe.get_doc("Codeoff Match", next_match_name)
+		self.assertEqual(next_match.player_1, players[0].name)
+
+	def test_review_match_with_rematch_cannot_force_finish(self):
+		"""Once a rematch exists, the original review match cannot also be manually finished."""
+		match, players, problem, _ = self._setup_match()
+		create_problem(title="Force Finish Guard Problem")
+		match.problem = problem.name
+		match.save()
+		match.start_match()
+
+		recompute_scores(match)
+		determine_winner_by_score(match)
+		match.reload()
+		match.create_rematch()
+
+		with self.assertRaises(frappe.ValidationError):
+			match.force_finish(players[0].name)

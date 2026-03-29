@@ -105,12 +105,103 @@ class CodeoffMatch(Document):
 		"""Organizer override: force-finish a Live or Review match."""
 		if self.status not in ("Live", "Review"):
 			frappe.throw("Match must be Live or Review to force-finish")
+		if self.status == "Review" and self._get_existing_rematch():
+			frappe.throw("A rematch already exists for this review match")
 		if winner_player not in (self.player_1, self.player_2):
 			frappe.throw("Winner must be one of the match players")
 		from codeoff.services.match_engine import finalize_match
 
 		finalize_match(self, winner_player, "Manual Override")
 		frappe.msgprint(f"Match finished — winner set to {winner_player}")
+
+	def _get_tie_break_metadata(self):
+		if not self.tie_break_metadata:
+			return {}
+		if isinstance(self.tie_break_metadata, dict):
+			return dict(self.tie_break_metadata)
+		return frappe.parse_json(self.tie_break_metadata) or {}
+
+	def _get_existing_rematch(self):
+		metadata = self._get_tie_break_metadata()
+		rematch_id = metadata.get("rematch_match_id")
+		if rematch_id and frappe.db.exists("Codeoff Match", rematch_id):
+			return rematch_id
+		return None
+
+	def _pick_rematch_problem(self):
+		used_problem_rows = frappe.get_all(
+			"Codeoff Match",
+			filters={
+				"tournament": self.tournament,
+				"round_number": self.round_number,
+				"bracket_position": self.bracket_position,
+				"player_1": self.player_1,
+				"player_2": self.player_2,
+			},
+			fields=["problem"],
+		)
+		used_problem_ids = sorted({row.problem for row in used_problem_rows if row.problem})
+		candidate_filters = {"name": ["not in", used_problem_ids]} if used_problem_ids else {}
+		candidates = frappe.get_all(
+			"Codeoff Problem",
+			filters=candidate_filters,
+			fields=["name"],
+			order_by="creation asc",
+		)
+		if not candidates:
+			frappe.throw("No alternate problem is available for a rematch")
+		return candidates[0].name
+
+	@frappe.whitelist()
+	def create_rematch(self):
+		"""Create a new ready match for the same slot using a different problem."""
+		if self.status != "Review":
+			frappe.throw("Only review matches can create a rematch")
+		if not self.player_1 or not self.player_2:
+			frappe.throw("Both players must be assigned before creating a rematch")
+		existing_rematch = self._get_existing_rematch()
+		if existing_rematch:
+			frappe.throw(f"Rematch already created: {existing_rematch}")
+
+		rematch = frappe.new_doc("Codeoff Match")
+		rematch.tournament = self.tournament
+		rematch.round_number = self.round_number
+		rematch.bracket_position = self.bracket_position
+		rematch.player_1 = self.player_1
+		rematch.player_2 = self.player_2
+		rematch.problem = self._pick_rematch_problem()
+		rematch.duration_seconds = self.duration_seconds
+		rematch.status = "Ready"
+		rematch.tie_break_metadata = frappe.as_json(
+			{
+				"rematch_of": self.name,
+				"source_match_id": self.name,
+				"original_problem": self.problem,
+			}
+		)
+		rematch.insert(ignore_permissions=True)
+
+		metadata = self._get_tie_break_metadata()
+		metadata.update(
+			{
+				"rematch_required": True,
+				"rematch_match_id": rematch.name,
+				"rematch_problem": rematch.problem,
+			}
+		)
+		self.tie_break_metadata = frappe.as_json(metadata)
+		self.save(ignore_permissions=True)
+
+		from codeoff.api.contest import publish_match_state
+
+		frappe.db.commit()
+		publish_match_state(self.name)
+		publish_match_state(rematch.name)
+		return {
+			"rematch_match_id": rematch.name,
+			"problem": rematch.problem,
+			"status": rematch.status,
+		}
 
 	@frappe.whitelist()
 	def reset_match(self):

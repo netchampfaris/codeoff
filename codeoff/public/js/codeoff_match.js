@@ -1,5 +1,27 @@
 frappe.ui.form.on('Codeoff Match', {
 	refresh(frm) {
+		if (frm.doc.status === 'Review') {
+			frm.add_custom_button(
+				__('Create Rematch'),
+				() => {
+					frappe.confirm(
+						__('Create a rematch for this bracket slot using a different problem?'),
+						() => {
+							frm.call('create_rematch').then((response) => {
+								const rematchId = response.message?.rematch_match_id
+								if (rematchId) {
+									frappe.set_route('Form', 'Codeoff Match', rematchId)
+									return
+								}
+								frm.reload_doc()
+							})
+						},
+					)
+				},
+				__('Actions'),
+			)
+		}
+
 		if (['Live', 'Review'].includes(frm.doc.status)) {
 			frm.add_custom_button(
 				__('Set Winner'),
