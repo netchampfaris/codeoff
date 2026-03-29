@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-zinc-950 flex h-full flex-col font-mono text-green-200">
+  <div class="flex h-full flex-col bg-zinc-950 font-mono text-green-200">
     <AppNavbar :show-audience-count="false" />
     <!-- Content area fills remaining height -->
     <div class="relative flex flex-1 flex-col overflow-hidden">
@@ -21,7 +21,7 @@
       <div v-else-if="state" class="flex h-full flex-col">
         <!-- Top bar -->
         <div
-          class="border-zinc-800 flex items-center justify-between border-b px-4 py-2"
+          class="flex items-center justify-between border-b border-zinc-800 px-4 py-2"
         >
           <div class="flex items-center gap-3">
             <span class="text-xs uppercase tracking-widest text-green-700">
@@ -35,7 +35,7 @@
             >
             <span
               v-if="state.status === 'Finished' && winnerName"
-              class="bg-green-950/40 border border-green-400 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-green-400"
+              class="border border-green-400 bg-green-950/40 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-green-400"
             >
               {{ winnerName }} [winner]
             </span>
@@ -43,7 +43,7 @@
           <div class="flex items-center gap-3">
             <span
               v-if="bestScore"
-              class="border-zinc-800 bg-zinc-900 border px-2.5 py-1 font-mono text-sm"
+              class="border border-zinc-800 bg-zinc-900 px-2.5 py-1 font-mono text-sm"
               :class="
                 bestScore.passed_tests === bestScore.total_tests
                   ? 'text-green-400'
@@ -101,7 +101,7 @@
 
           <!-- Horizontal drag handle -->
           <div
-            class="bg-zinc-800 group relative z-10 w-1 flex-shrink-0 cursor-col-resize transition-colors hover:bg-green-700 active:bg-green-500"
+            class="group relative z-10 w-1 flex-shrink-0 cursor-col-resize bg-zinc-800 transition-colors hover:bg-green-700 active:bg-green-500"
             @mousedown.prevent="startDragH"
           >
             <div class="absolute inset-y-0 -left-1 -right-1" />
@@ -124,7 +124,7 @@
                 class="absolute inset-0 flex items-center justify-center bg-black/70"
               >
                 <div
-                  class="border-zinc-800 bg-zinc-900 border px-10 py-8 text-center font-mono"
+                  class="border border-zinc-800 bg-zinc-900 px-10 py-8 text-center font-mono"
                 >
                   <div
                     v-if="state.status === 'Finished'"
@@ -157,7 +157,7 @@
 
             <!-- Vertical drag handle -->
             <div
-              class="bg-zinc-800 z-10 h-1 flex-shrink-0 cursor-row-resize transition-colors hover:bg-green-700 active:bg-green-500"
+              class="z-10 h-1 flex-shrink-0 cursor-row-resize bg-zinc-800 transition-colors hover:bg-green-700 active:bg-green-500"
               @mousedown.prevent="startDragV"
             />
 

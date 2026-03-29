@@ -24,7 +24,7 @@ const props = withDefaults(
     tag?: string
   }>(),
   {
-    variant: 'outline',
+    variant: 'ghost',
     size: 'xs',
     tag: 'button',
   },
@@ -32,7 +32,7 @@ const props = withDefaults(
 
 const computedClasses = computed(() => {
   const classes: string[] = [
-    'font-bold uppercase tracking-widest transition-colors',
+    'rounded-none font-bold uppercase tracking-widest transition-colors',
   ]
 
   if (props.variant === 'inline') {

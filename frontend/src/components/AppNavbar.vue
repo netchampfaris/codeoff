@@ -1,6 +1,6 @@
 <template>
   <div
-    class="border-zinc-800 bg-zinc-900 flex h-10 shrink-0 items-center justify-between border-b px-4"
+    class="flex h-10 shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4"
   >
     <!-- Left: brand + page title -->
     <div class="flex items-center gap-2">
@@ -21,7 +21,7 @@
     <div class="flex items-center gap-3">
       <span
         v-if="showAudienceCount"
-        class="border-zinc-800 bg-zinc-950 border px-2 py-1 text-[10px] font-semibold uppercase tracking-widest"
+        class="border border-zinc-800 bg-zinc-950 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest"
         :class="audienceAvailable ? 'text-green-500' : 'text-green-800'"
       >
         live audience {{ audienceLabel }}
@@ -48,9 +48,9 @@ import AppButton from '@/components/AppButton.vue'
 
 const props = withDefaults(
   defineProps<{
-  title?: string
-  showAudienceCount?: boolean
-}>(),
+    title?: string
+    showAudienceCount?: boolean
+  }>(),
   {
     showAudienceCount: true,
   },

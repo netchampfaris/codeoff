@@ -3,9 +3,7 @@
     class="flex h-full w-52 flex-shrink-0 flex-col border-r border-zinc-800 bg-zinc-900 font-mono"
   >
     <div class="flex items-center gap-2 border-b border-zinc-800 px-4 py-3">
-      <span class="text-xl font-bold tracking-tight text-green-400"
-        >&gt;_</span
-      >
+      <span class="text-xl font-bold tracking-tight text-green-400">&gt;_</span>
       <h1
         class="text-base font-semibold uppercase tracking-widest text-green-300"
       >
@@ -34,7 +32,12 @@
         <span class="truncate text-sm text-green-700">
           <span class="text-green-600">$</span> {{ session.user }}
         </span>
-        <Button variant="ghost" size="sm" @click="session.logout.submit()">
+        <Button
+          variant="ghost"
+          size="sm"
+          class="rounded-none"
+          @click="session.logout.submit()"
+        >
           <LucideLogOut class="h-4 w-4 text-green-700" />
         </Button>
       </div>

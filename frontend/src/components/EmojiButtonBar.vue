@@ -2,7 +2,7 @@
   <button
     v-for="emoji in EMOJIS"
     :key="emoji"
-    class="emoji-btn"
+    class="emoji-btn rounded-none"
     :class="[
       large ? 'cursor-pointer text-2xl' : 'px-1 text-xl',
       { fired: activeEmoji[`${emoji}-${playerId}`] },
