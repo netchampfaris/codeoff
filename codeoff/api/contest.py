@@ -205,7 +205,7 @@ def get_audience_count():
 
 @frappe.whitelist(allow_guest=True)
 def vote_for_player(match_id: str, player_id: str):
-	"""Cast an audience vote for a player. One vote per match enforced client-side."""
+	"""Cast a spectator crowd pick for a player while the match is Ready."""
 	match = frappe.db.get_value(
 		"Codeoff Match",
 		match_id,
@@ -483,6 +483,7 @@ def get_my_match():
 @frappe.whitelist(allow_guest=True)
 def get_live_matches():
 	"""Return Live and Ready matches for the spectate lobby. Public API."""
+	is_organizer = "System Manager" in frappe.get_roles()
 	matches = frappe.get_all(
 		"Codeoff Match",
 		filters={"status": ("in", ["Ready", "Live"])},
@@ -495,6 +496,8 @@ def get_live_matches():
 			"problem",
 			"round_number",
 			"bracket_position",
+			"votes_player_1",
+			"votes_player_2",
 		],
 		order_by="round_number asc, bracket_position asc",
 	)
@@ -531,6 +534,9 @@ def get_live_matches():
 				m[f"{field}_name"] = player_name_map.get(m[field])
 		if m["problem"]:
 			m["problem_title"] = problem_title_map.get(m["problem"])
+		m["votes_1"] = m.get("votes_player_1") or 0
+		m["votes_2"] = m.get("votes_player_2") or 0
+		m["is_organizer"] = is_organizer
 	return matches
 
 

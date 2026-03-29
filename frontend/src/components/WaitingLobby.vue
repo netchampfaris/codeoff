@@ -14,16 +14,39 @@
         {{ title }}
       </h2>
       <div
+        v-if="predictionOpen"
+        class="mx-auto mb-6 max-w-2xl border border-green-950 bg-zinc-950 px-4 py-4 sm:px-5"
+      >
+        <div
+          class="text-lg font-bold uppercase tracking-wide text-green-200 sm:text-xl"
+        >
+          {{
+            selectedPlayerName
+              ? `you picked ${selectedPlayerName}`
+              : isOrganizer
+                ? 'crowd split'
+                : 'pick a side'
+          }}
+        </div>
+      </div>
+      <div
         class="mb-8 flex w-full flex-col items-center justify-center"
-        :class="large ? 'gap-5 sm:flex-row sm:items-stretch sm:gap-10' : 'gap-4 sm:flex-row sm:items-stretch sm:gap-8'"
+        :class="
+          large
+            ? 'gap-5 sm:flex-row sm:items-stretch sm:gap-10'
+            : 'gap-4 sm:flex-row sm:items-stretch sm:gap-8'
+        "
       >
         <LobbyPlayerCard
           :player="player1"
           :large="large"
           :votes="votes1"
-          :has-voted="hasVoted"
+          :locked="predictionLocked"
+          :is-picked="selectedPlayerId === player1?.id"
+          :view-only="isOrganizer"
+          :prediction-percent="showPredictionSplit ? leftSplit : ''"
           default-name="player_1"
-          @vote="vote"
+          @vote="pick"
         />
         <div
           class="font-bold tracking-[0.3em] text-green-800"
@@ -35,12 +58,17 @@
           :player="player2"
           :large="large"
           :votes="votes2"
-          :has-voted="hasVoted"
+          :locked="predictionLocked"
+          :is-picked="selectedPlayerId === player2?.id"
+          :view-only="isOrganizer"
+          :prediction-percent="showPredictionSplit ? rightSplit : ''"
           default-name="player_2"
-          @vote="vote"
+          @vote="pick"
         />
       </div>
-      <div class="mx-auto mt-4 max-w-md text-sm uppercase tracking-widest sm:mt-6">
+      <div
+        class="mx-auto mt-4 max-w-md text-sm uppercase tracking-widest sm:mt-6"
+      >
         <template v-if="bothJoined">
           <span v-if="isOrganizer" class="text-green-400">
             <span class="animate-pulse">_</span> you can start the match now
@@ -71,9 +99,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import AppButton from '@/components/AppButton.vue'
 import LobbyPlayerCard from '@/components/LobbyPlayerCard.vue'
+import { getPredictionStats } from '@/data/predictions'
 
 const props = defineProps<{
   title: string
@@ -84,22 +113,49 @@ const props = defineProps<{
   votes1?: number
   votes2?: number
   isOrganizer?: boolean
+  selectedPlayerId?: string | null
+  predictionPending?: boolean
 }>()
 
-const emit = defineEmits<{ vote: [playerId: string]; start: [] }>()
+const emit = defineEmits<{ pick: [playerId: string]; start: [] }>()
 
 const bothJoined = computed(
   () => !!props.player1?.joined && !!props.player2?.joined,
 )
 
-const hasVoted = ref(
-  !!props.matchId && !!localStorage.getItem(`codeoff_voted_${props.matchId}`),
+const predictionOpen = computed(
+  () =>
+    !!props.matchId && props.votes1 !== undefined && props.votes2 !== undefined,
 )
 
-function vote(playerId: string) {
-  if (hasVoted.value || !props.matchId || !playerId) return
-  hasVoted.value = true
-  localStorage.setItem(`codeoff_voted_${props.matchId}`, playerId)
-  emit('vote', playerId)
+const predictionStats = computed(() =>
+  getPredictionStats(props.votes1, props.votes2),
+)
+
+const selectedPlayerName = computed(() => {
+  if (props.selectedPlayerId === props.player1?.id)
+    return props.player1?.name || 'player_1'
+  if (props.selectedPlayerId === props.player2?.id)
+    return props.player2?.name || 'player_2'
+  return ''
+})
+
+const leftSplit = computed(() =>
+  predictionStats.value.total ? `${predictionStats.value.percent1}%` : '--',
+)
+
+const rightSplit = computed(() =>
+  predictionStats.value.total ? `${predictionStats.value.percent2}%` : '--',
+)
+
+const predictionLocked = computed(
+  () => !!props.selectedPlayerId || !!props.predictionPending || !!props.isOrganizer,
+)
+
+const showPredictionSplit = computed(() => !!props.selectedPlayerId || !!props.isOrganizer)
+
+function pick(playerId: string) {
+  if (predictionLocked.value || !props.matchId || !playerId) return
+  emit('pick', playerId)
 }
 </script>

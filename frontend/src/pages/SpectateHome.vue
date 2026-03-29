@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-zinc-950 flex min-h-screen flex-col font-mono text-green-200">
+  <div class="flex min-h-screen flex-col bg-zinc-950 font-mono text-green-200">
     <AppNavbar title="spectate">
       <template #actions>
         <DevLoginDropdown />
@@ -38,7 +38,7 @@
         <button
           v-for="m in matches"
           :key="m.name"
-          class="border-zinc-800 bg-zinc-900 hover:bg-green-950/30 group w-full border p-4 text-left font-mono transition-colors hover:border-green-600"
+          class="group w-full rounded-none border border-zinc-800 bg-zinc-900 p-4 text-left font-mono transition-colors hover:border-green-600 hover:bg-green-950/30"
           @click="
             $router.push({ name: 'Spectate', params: { matchId: m.name } })
           "
@@ -67,6 +67,44 @@
             {{ m.problem_title }}
           </div>
           <div
+            v-if="m.status === 'Ready'"
+            class="mt-3 border-t border-green-950 pt-3 text-xs uppercase tracking-widest"
+          >
+            <div class="text-green-600">crowd pick open</div>
+            <div
+              class="mt-2 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-3"
+            >
+              <div class="text-left">
+                <div
+                  class="text-[9px] uppercase tracking-[0.3em] text-green-700"
+                >
+                  {{ m.player_1_name || 'player 1' }}
+                </div>
+                <div class="mt-1 font-mono text-2xl font-bold text-green-300">
+                  {{ predictionLeftPercent(m) }}
+                </div>
+              </div>
+              <div
+                class="pb-1 text-[10px] uppercase tracking-[0.3em] text-green-900"
+              >
+                vs
+              </div>
+              <div class="text-right">
+                <div
+                  class="text-[9px] uppercase tracking-[0.3em] text-green-700"
+                >
+                  {{ m.player_2_name || 'player 2' }}
+                </div>
+                <div class="mt-1 font-mono text-2xl font-bold text-green-300">
+                  {{ predictionRightPercent(m) }}
+                </div>
+              </div>
+            </div>
+            <div class="mt-1 text-green-900">
+              {{ predictionCountLabel(m) }}
+            </div>
+          </div>
+          <div
             class="mt-2 text-xs uppercase tracking-widest text-green-900 transition-colors group-hover:text-green-600"
           >
             [watch →]
@@ -80,12 +118,14 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useCall } from 'frappe-ui'
+import { getPredictionStats, getStoredPrediction } from '@/data/predictions'
 import AppNavbar from '@/components/AppNavbar.vue'
 import DevLoginDropdown from '@/components/DevLoginDropdown.vue'
 
 interface LiveMatch {
   name: string
   status: 'Live' | 'Ready'
+  is_organizer: boolean
   round_number: number
   bracket_position: number
   player_1: string | null
@@ -94,6 +134,8 @@ interface LiveMatch {
   player_2_name: string | null
   problem: string | null
   problem_title: string | null
+  votes_1: number
+  votes_2: number
 }
 
 const matches = ref<LiveMatch[]>([])
@@ -113,9 +155,29 @@ const fetch = useCall({
 
 let pollTimer: ReturnType<typeof setInterval> | null = null
 
+function predictionLeftPercent(match: LiveMatch) {
+  if (!match.is_organizer && !getStoredPrediction(match.name)) return '--'
+  const stats = getPredictionStats(match.votes_1, match.votes_2)
+  return stats.total ? `${stats.percent1}%` : '--'
+}
+
+function predictionRightPercent(match: LiveMatch) {
+  if (!match.is_organizer && !getStoredPrediction(match.name)) return '--'
+  const stats = getPredictionStats(match.votes_1, match.votes_2)
+  return stats.total ? `${stats.percent2}%` : '--'
+}
+
+function predictionCountLabel(match: LiveMatch) {
+  if (!match.is_organizer && !getStoredPrediction(match.name)) {
+    return 'pick to reveal crowd split'
+  }
+  const total = getPredictionStats(match.votes_1, match.votes_2).total
+  return `${total} pick${total === 1 ? '' : 's'}`
+}
+
 onMounted(() => {
-  fetch.submit({})
-  pollTimer = setInterval(() => fetch.submit({}), 5000)
+  fetch.submit()
+  pollTimer = setInterval(() => fetch.submit(), 5000)
 })
 
 onUnmounted(() => {

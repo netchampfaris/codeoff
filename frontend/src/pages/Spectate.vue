@@ -26,25 +26,70 @@
         :votes2="state.votes_2"
         :match-id="props.matchId"
         :is-organizer="state.is_organizer"
+        :selected-player-id="selectedPlayerId"
+        :prediction-pending="predictionPending"
         large
-        @vote="handleVote"
+        @pick="handlePredictionPick"
         @start="startMatch"
       />
-      <div v-else-if="state" class="relative flex h-full flex-col">
+      <div v-else-if="state" class="relative flex h-full min-h-0 flex-col">
+        <div class="pointer-events-none absolute inset-x-0 top-2 z-50 flex flex-col gap-2 px-3 md:top-3 md:px-6">
+          <transition name="banner-fade">
+            <div
+              v-if="activeBanner"
+              class="momentum-banner mx-auto w-full max-w-xl border px-4 py-2"
+              :class="activeBanner.tone"
+            >
+              <div class="text-[10px] uppercase tracking-[0.35em] text-current/70">
+                {{ activeBanner.label }}
+              </div>
+              <div class="text-sm font-bold uppercase tracking-wide text-current md:text-base">
+                {{ activeBanner.message }}
+              </div>
+            </div>
+          </transition>
+
+          <div class="flex items-start justify-between gap-3">
+            <transition name="banner-fade">
+              <div
+                v-if="leftSpike"
+                class="reaction-spike-chip border px-3 py-1 text-left text-[10px] uppercase tracking-[0.3em]"
+              >
+                {{ leftSpike.message }}
+              </div>
+            </transition>
+            <transition name="banner-fade">
+              <div
+                v-if="rightSpike"
+                class="reaction-spike-chip border px-3 py-1 text-right text-[10px] uppercase tracking-[0.3em]"
+              >
+                {{ rightSpike.message }}
+              </div>
+            </transition>
+          </div>
+        </div>
+
         <!-- ══ Mobile layout (hidden md+) ══════════════════════════════ -->
-        <div class="flex flex-1 flex-col overflow-hidden md:hidden">
+        <div class="flex min-h-0 flex-1 flex-col overflow-hidden md:hidden">
           <!-- Mobile header -->
           <div
-            class="border-zinc-800 bg-zinc-900 flex shrink-0 items-center justify-between border-b px-4 py-2"
+            class="flex shrink-0 items-center justify-between border-b border-zinc-800 bg-zinc-900 px-4 py-2"
           >
             <div>
-              <div class="text-xs uppercase tracking-widest text-green-700">
-                r{{ state.round_number }} · m{{ state.bracket_position }}
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <div class="text-sm font-bold uppercase tracking-wide text-green-400">
+                  {{ state.problem?.title || state.match_id }}
+                </div>
+                <div class="text-[10px] uppercase tracking-[0.3em] text-green-700">
+                  {{ mobileRoundMatchLabel }}
+                </div>
               </div>
               <div
-                class="text-sm font-bold uppercase tracking-wide text-green-400"
+                v-if="predictionStatusLabel || headerHintLabel"
+                class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[10px] uppercase tracking-widest"
               >
-                {{ state.problem?.title || state.match_id }}
+                <span v-if="predictionStatusLabel" class="text-green-700">{{ predictionStatusLabel }}</span>
+                <span v-if="headerHintLabel" class="text-green-800">{{ headerHintLabel }}</span>
               </div>
             </div>
             <div class="flex items-center gap-3">
@@ -75,20 +120,24 @@
 
           <!-- Player 1 panel (top half) -->
           <div
-            class="border-zinc-800 flex flex-1 flex-col overflow-hidden border-b"
+            class="flex min-h-0 flex-1 flex-col overflow-hidden border-b border-zinc-800"
+            :class="{ 'panel-spike': isSpikeActive(state.player_1?.id) }"
           >
             <!-- Player 1 info bar -->
             <div
-              class="bg-zinc-900 flex shrink-0 items-center justify-between px-3 py-1.5"
+              class="flex shrink-0 items-center justify-between bg-zinc-900 px-3 py-1.5"
             >
               <div class="flex items-center gap-2">
                 <span
                   class="text-xs font-bold uppercase tracking-wide text-green-300"
                   >{{ state.player_1?.name }}</span
                 >
-                <span class="text-xs font-bold text-green-600"
-                  >▲ {{ state.votes_1 }}</span
+                <span
+                  v-if="showCrowdSplit"
+                  class="text-[10px] uppercase tracking-[0.25em] text-green-800"
                 >
+                  {{ leftCrowdSplit }}
+                </span>
                 <MatchVerdict
                   :status="state.status"
                   :winner="state.winner"
@@ -108,30 +157,37 @@
               </div>
             </div>
             <!-- Code -->
-            <div class="flex-1 overflow-hidden">
+            <div class="min-h-0 flex-1 overflow-hidden">
               <PlayerPanel
                 :player-name="state.player_1?.name || 'Player 1'"
                 :code="player1Code"
                 :submissions="player1Submissions"
                 side="left"
+                :class="{ 'panel-spike': isSpikeActive(state.player_1?.id) }"
               />
             </div>
           </div>
 
           <!-- Player 2 panel (bottom half) -->
-          <div class="flex flex-1 flex-col overflow-hidden">
+          <div
+            class="flex min-h-0 flex-1 flex-col overflow-hidden"
+            :class="{ 'panel-spike': isSpikeActive(state.player_2?.id) }"
+          >
             <!-- Player 2 info bar -->
             <div
-              class="bg-zinc-900 flex shrink-0 items-center justify-between px-3 py-1.5"
+              class="flex shrink-0 items-center justify-between bg-zinc-900 px-3 py-1.5"
             >
               <div class="flex items-center gap-2">
                 <span
                   class="text-xs font-bold uppercase tracking-wide text-green-300"
                   >{{ state.player_2?.name }}</span
                 >
-                <span class="text-xs font-bold text-green-600"
-                  >▲ {{ state.votes_2 }}</span
+                <span
+                  v-if="showCrowdSplit"
+                  class="text-[10px] uppercase tracking-[0.25em] text-green-800"
                 >
+                  {{ rightCrowdSplit }}
+                </span>
                 <MatchVerdict
                   :status="state.status"
                   :winner="state.winner"
@@ -151,11 +207,12 @@
               </div>
             </div>
             <!-- Code -->
-            <div class="flex-1 overflow-hidden">
+            <div class="min-h-0 flex-1 overflow-hidden">
               <PlayerPanel
                 :player-name="state.player_2?.name || 'Player 2'"
                 :code="player2Code"
                 :submissions="player2Submissions"
+                :class="{ 'panel-spike': isSpikeActive(state.player_2?.id) }"
               />
             </div>
           </div>
@@ -165,19 +222,27 @@
         <div class="hidden flex-1 flex-col overflow-hidden pb-16 md:flex">
           <!-- Top bar: player | timer | player -->
           <div
-            class="border-zinc-800 bg-zinc-900 grid grid-cols-3 border-b px-6 py-3"
+            class="grid grid-cols-3 border-b border-zinc-800 bg-zinc-900 px-6 py-2"
           >
             <!-- Player 1 -->
-            <div class="flex items-start">
+            <div
+              class="flex items-start"
+              :class="{ 'panel-spike': isSpikeActive(state.player_1?.id) }"
+            >
               <div>
                 <div class="text-xs uppercase tracking-widest text-green-700">
                   ← player 1
                 </div>
-                <div class="text-3xl font-bold tracking-tight text-green-300">
-                  {{ state.player_1?.name || 'Player 1' }}
-                </div>
-                <div class="mt-0.5 text-sm font-bold text-green-600">
-                  ▲ {{ state.votes_1 }}
+                <div class="flex items-baseline gap-3">
+                  <div class="text-3xl font-bold tracking-tight text-green-300">
+                    {{ state.player_1?.name || 'Player 1' }}
+                  </div>
+                  <div
+                    v-if="showCrowdSplit"
+                    class="text-xs uppercase tracking-[0.3em] text-green-800"
+                  >
+                    {{ leftCrowdSplit }}
+                  </div>
                 </div>
                 <div class="mt-2 flex items-center gap-3">
                   <TestCaseDots
@@ -197,37 +262,41 @@
 
             <!-- Center: round + timer -->
             <div class="flex flex-col items-center justify-center">
-              <div class="flex items-center">
+              <div
+                class="mb-1 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-[11px] uppercase tracking-[0.3em]"
+              >
                 <AppButton
                   variant="inline"
                   :active="showProblem"
-                  class="!text-xl text-green-600 hover:text-green-400"
+                  class="!text-sm text-green-600 hover:text-green-400"
                   @click="showProblem = !showProblem"
                 >
                   [{{ state.problem?.title || state.match_id }}]
                 </AppButton>
+                <span v-if="predictionStatusLabel" class="text-green-500">
+                  {{ predictionStatusLabel }}
+                </span>
+                <span v-if="headerHintLabel" class="text-green-800">
+                  {{ headerHintLabel }}
+                </span>
               </div>
-              <div
-                class="mb-1 text-base font-bold uppercase tracking-widest text-green-400"
-              >
-                round {{ state.round_number }} · match
-                {{ state.bracket_position }}
-              </div>
-              <div
-                class="font-mono text-7xl font-bold leading-none tracking-tight"
-                :class="
-                  state.status !== 'Live'
-                    ? 'text-green-800'
-                    : remaining < 60
-                      ? 'text-red-400'
-                      : 'text-green-400'
-                "
-              >
-                {{
-                  state.status === 'Live'
-                    ? formatted
-                    : state.status.toUpperCase()
-                }}
+              <div class="flex items-end justify-center gap-6">
+                <div
+                  class="font-mono text-6xl font-bold leading-none tracking-tight"
+                  :class="
+                    state.status !== 'Live'
+                      ? 'text-green-800'
+                      : remaining < 60
+                        ? 'text-red-400'
+                        : 'text-green-400'
+                  "
+                >
+                  {{
+                    state.status === 'Live'
+                      ? formatted
+                      : state.status.toUpperCase()
+                  }}
+                </div>
               </div>
               <div
                 v-if="state.status === 'Finished' && !state.winner"
@@ -238,16 +307,24 @@
             </div>
 
             <!-- Player 2 -->
-            <div class="flex items-start justify-end">
+            <div
+              class="flex items-start justify-end"
+              :class="{ 'panel-spike': isSpikeActive(state.player_2?.id) }"
+            >
               <div class="text-right">
                 <div class="text-xs uppercase tracking-widest text-green-700">
                   player 2 →
                 </div>
-                <div class="text-3xl font-bold tracking-tight text-green-300">
-                  {{ state.player_2?.name || 'Player 2' }}
-                </div>
-                <div class="mt-0.5 text-sm font-bold text-green-600">
-                  ▲ {{ state.votes_2 }}
+                <div class="flex items-baseline justify-end gap-3">
+                  <div
+                    v-if="showCrowdSplit"
+                    class="text-xs uppercase tracking-[0.3em] text-green-800"
+                  >
+                    {{ rightCrowdSplit }}
+                  </div>
+                  <div class="text-3xl font-bold tracking-tight text-green-300">
+                    {{ state.player_2?.name || 'Player 2' }}
+                  </div>
                 </div>
                 <div class="mt-2 flex items-center justify-end gap-3">
                   <MatchVerdict
@@ -357,10 +434,10 @@
 
         <!-- Reaction bar: desktop only (mobile uses inline buttons in player info bars) -->
         <div
-          class="border-zinc-800 bg-zinc-900/90 fixed bottom-0 left-0 right-0 z-50 hidden items-stretch border-t backdrop-blur-sm md:flex"
+          class="fixed bottom-0 left-0 right-0 z-50 hidden items-stretch border-t border-zinc-800 bg-zinc-900/90 backdrop-blur-sm md:flex"
         >
           <div
-            class="border-zinc-800 flex flex-1 items-center justify-center gap-3 border-r py-2"
+            class="flex flex-1 items-center justify-center gap-3 border-r border-zinc-800 py-2"
           >
             <span
               class="mr-1 text-xs uppercase tracking-widest text-green-800"
@@ -398,6 +475,11 @@ import { useMatchState, useMatchTimer } from '@/data/match'
 import { useLobbyPoll } from '@/data/useLobbyPoll'
 import { useMatchPlayers } from '@/data/useMatchPlayers'
 import { getSocket } from '@/data/socket'
+import {
+  getPredictionStats,
+  getStoredPrediction,
+  setStoredPrediction,
+} from '@/data/predictions'
 import AppNavbar from '@/components/AppNavbar.vue'
 import AppButton from '@/components/AppButton.vue'
 import WaitingLobby from '@/components/WaitingLobby.vue'
@@ -415,6 +497,9 @@ const props = defineProps<{
 
 const { state, loading, reload } = useMatchState(props.matchId)
 const { remaining, formatted } = useMatchTimer(state)
+const selectedPlayerId = ref(getStoredPrediction(props.matchId))
+const predictionPending = ref(false)
+const pendingPredictionId = ref<string | null>(null)
 
 // Poll for status change after timer expires (server processes asynchronously)
 watch(remaining, (r) => {
@@ -461,7 +546,7 @@ const player2Code = computed(() => {
 })
 
 // ── Organizer start ─────────────────────────────────────────────────────────
-const startMatchCall = useCall({
+const startMatchCall: any = useCall({
   url: '/api/v2/method/codeoff.api.contest.start_match_now',
   immediate: false,
   onSuccess() {
@@ -474,14 +559,93 @@ function startMatch() {
 }
 
 // ── Voting ──────────────────────────────────────────────────────────────────
-const voteCall = useCall({
+const voteCall: any = useCall({
   url: '/api/v2/method/codeoff.api.contest.vote_for_player',
   immediate: false,
+  onSuccess() {
+    if (pendingPredictionId.value) {
+      selectedPlayerId.value = pendingPredictionId.value
+      setStoredPrediction(props.matchId, pendingPredictionId.value)
+    }
+    pendingPredictionId.value = null
+    predictionPending.value = false
+  },
+  onError() {
+    pendingPredictionId.value = null
+    predictionPending.value = false
+  },
 })
 
-function handleVote(playerId: string) {
+function handlePredictionPick(playerId: string) {
+  if (selectedPlayerId.value || predictionPending.value) return
+  pendingPredictionId.value = playerId
+  predictionPending.value = true
   voteCall.submit({ match_id: props.matchId, player_id: playerId })
 }
+
+const predictionStats = computed(() =>
+  getPredictionStats(state.value?.votes_1, state.value?.votes_2),
+)
+
+const selectedPlayerName = computed(() => {
+  if (!state.value || !selectedPlayerId.value) return ''
+  if (selectedPlayerId.value === state.value.player_1?.id) {
+    return state.value.player_1?.name || 'player_1'
+  }
+  if (selectedPlayerId.value === state.value.player_2?.id) {
+    return state.value.player_2?.name || 'player_2'
+  }
+  return ''
+})
+
+const predictionStatusLabel = computed(() => {
+  if (!state.value || !selectedPlayerId.value || !selectedPlayerName.value)
+    return ''
+  if (state.value.status === 'Live')
+    return `your pick: ${selectedPlayerName.value}`
+  if (state.value.status === 'Review')
+    return `your pick: ${selectedPlayerName.value} · pending`
+  if (state.value.status === 'Finished') {
+    if (!state.value.winner)
+      return `your pick: ${selectedPlayerName.value} · draw`
+    return state.value.winner === selectedPlayerId.value
+      ? `call hit: ${selectedPlayerName.value}`
+      : `call missed: ${selectedPlayerName.value}`
+  }
+  return `your pick: ${selectedPlayerName.value}`
+})
+
+const hasCrowdSplit = computed(() => predictionStats.value.total > 0)
+
+const showCrowdSplit = computed(
+  () => hasCrowdSplit.value && (!!selectedPlayerId.value || !!state.value?.is_organizer),
+)
+
+const leftCrowdSplit = computed(() =>
+  hasCrowdSplit.value ? `${predictionStats.value.percent1}%` : '',
+)
+
+const rightCrowdSplit = computed(() =>
+  hasCrowdSplit.value ? `${predictionStats.value.percent2}%` : '',
+)
+
+const crowdTotalLabel = computed(() =>
+  showCrowdSplit.value
+    ? `${predictionStats.value.total} pick${predictionStats.value.total === 1 ? '' : 's'}`
+    : '',
+)
+
+const mobileRoundMatchLabel = computed(() => {
+  const base = `r${state.value?.round_number} · m${state.value?.bracket_position}`
+  return crowdTotalLabel.value ? `${base} · ${crowdTotalLabel.value}` : base
+})
+
+const headerHintLabel = computed(() => {
+  if (state.value?.status === 'Ready') {
+    return state.value.is_organizer ? 'organizer view' : 'pick to reveal crowd split'
+  }
+  return ''
+})
 
 // ── Reactions ────────────────────────────────────────────────────────────────
 
@@ -492,13 +656,41 @@ interface Floater {
   dir: 'left' | 'right'
 }
 
+interface MomentumBanner {
+  id: string
+  label: string
+  message: string
+  priority: number
+  durationMs: number
+  tone: 'success' | 'lead' | 'warning' | 'review'
+}
+
+interface ReactionSpike {
+  id: string
+  playerId: string
+  message: string
+}
+
 const floaters = ref<Floater[]>([])
 const reactionThrottle: Record<string, string> = {}
+const activeBanner = ref<MomentumBanner | null>(null)
+const queuedBanners = ref<MomentumBanner[]>([])
+const activeSpikes = ref<ReactionSpike[]>([])
+const reactionWindowByPlayer: Record<string, number[]> = {}
+const spikeCooldownByPlayer: Record<string, number> = {}
+const finalMinuteShown = ref(false)
+
+const REACTION_SPIKE_WINDOW_MS = 3000
+const REACTION_SPIKE_DURATION_MS = 2200
+const REACTION_SPIKE_THRESHOLD = 8
+const REACTION_SPIKE_COOLDOWN_MS = 4500
+
+let bannerTimer: ReturnType<typeof setTimeout> | null = null
 
 // key: `${emoji}-${playerId}` — briefly true after firing for button burst animation
 const activeEmoji = ref<Record<string, boolean>>({})
 
-const reactionCall = useCall({
+const reactionCall: any = useCall({
   url: '/api/v2/method/codeoff.api.contest.send_reaction',
   immediate: false,
 })
@@ -521,6 +713,193 @@ function addFloater(emoji: string, id: string, playerId?: string | null) {
 // IDs of floaters we spawned locally — skip their socket echo
 const localFloaterIds = new Set<string>()
 
+function playerNameFor(playerId: string | null | undefined): string {
+  if (!state.value || !playerId) return 'crowd'
+  if (playerId === state.value.player_1?.id) return state.value.player_1?.name || 'player 1'
+  if (playerId === state.value.player_2?.id) return state.value.player_2?.name || 'player 2'
+  return 'crowd'
+}
+
+function showBanner(banner: MomentumBanner) {
+  activeBanner.value = banner
+  if (bannerTimer) clearTimeout(bannerTimer)
+  bannerTimer = setTimeout(() => {
+    activeBanner.value = null
+    const nextBanner = queuedBanners.value.shift()
+    if (nextBanner) showBanner(nextBanner)
+  }, banner.durationMs)
+}
+
+function queueBanner(banner: MomentumBanner) {
+  if (!activeBanner.value) {
+    showBanner(banner)
+    return
+  }
+
+  if (banner.priority > activeBanner.value.priority) {
+    showBanner(banner)
+    return
+  }
+
+  queuedBanners.value.push(banner)
+  queuedBanners.value.sort((left, right) => right.priority - left.priority)
+}
+
+function pushMomentumBanner(
+  label: string,
+  message: string,
+  tone: MomentumBanner['tone'],
+  priority: number,
+  durationMs = 2800,
+) {
+  queueBanner({
+    id: `${Date.now()}-${Math.random()}`,
+    label,
+    message,
+    tone,
+    priority,
+    durationMs,
+  })
+}
+
+function triggerReactionSpike(playerId: string) {
+  const spikeId = `${playerId}-${Date.now()}`
+  activeSpikes.value = activeSpikes.value.filter((spike) => spike.playerId !== playerId)
+  activeSpikes.value.push({
+    id: spikeId,
+    playerId,
+    message: `crowd erupts for ${playerNameFor(playerId)}`,
+  })
+
+  setTimeout(() => {
+    activeSpikes.value = activeSpikes.value.filter((spike) => spike.id !== spikeId)
+  }, REACTION_SPIKE_DURATION_MS)
+}
+
+function noteReaction(playerId: string | null | undefined) {
+  if (!playerId) return
+
+  const now = Date.now()
+  const recent = (reactionWindowByPlayer[playerId] || []).filter(
+    (timestamp) => now - timestamp <= REACTION_SPIKE_WINDOW_MS,
+  )
+  recent.push(now)
+  reactionWindowByPlayer[playerId] = recent
+
+  if (
+    recent.length >= REACTION_SPIKE_THRESHOLD
+    && now - (spikeCooldownByPlayer[playerId] || 0) > REACTION_SPIKE_COOLDOWN_MS
+  ) {
+    spikeCooldownByPlayer[playerId] = now
+    triggerReactionSpike(playerId)
+  }
+}
+
+function isSpikeActive(playerId: string | null | undefined) {
+  return !!playerId && activeSpikes.value.some((spike) => spike.playerId === playerId)
+}
+
+const leftSpike = computed(() =>
+  activeSpikes.value.find((spike) => spike.playerId === state.value?.player_1?.id) || null,
+)
+
+const rightSpike = computed(() =>
+  activeSpikes.value.find((spike) => spike.playerId === state.value?.player_2?.id) || null,
+)
+
+function leaderForScores(
+  score1: number,
+  score2: number,
+  player1Id: string | null | undefined,
+  player2Id: string | null | undefined,
+) {
+  if (score1 === score2) return null
+  return score1 > score2 ? player1Id || null : player2Id || null
+}
+
+const momentumSnapshot = computed(() => {
+  if (!state.value) return null
+
+  const submissions = state.value.submissions || []
+  const lastSubmission = submissions[submissions.length - 1]
+
+  return {
+    status: state.value.status,
+    winner: state.value.winner,
+    winningReason: state.value.winning_reason,
+    player1Id: state.value.player_1?.id || null,
+    player2Id: state.value.player_2?.id || null,
+    score1: bestScore1.value?.passed_tests || 0,
+    score2: bestScore2.value?.passed_tests || 0,
+    submissionsCount: submissions.length,
+    lastSubmissionPlayerId: lastSubmission?.player || null,
+  }
+})
+
+watch(momentumSnapshot, (next, prev) => {
+  if (!next || !prev) return
+
+  if (
+    next.winner
+    && next.winner !== prev.winner
+    && next.winningReason === 'First Accepted'
+  ) {
+    pushMomentumBanner(
+      'solve landed',
+      `${playerNameFor(next.winner)} lands the solve`,
+      'success',
+      100,
+      3200,
+    )
+    return
+  }
+
+  if (next.status === 'Review' && prev.status !== 'Review') {
+    pushMomentumBanner('review', 'match under review', 'review', 90, 3200)
+    return
+  }
+
+  const scoresChanged = next.score1 !== prev.score1 || next.score2 !== prev.score2
+  const previousLeader = leaderForScores(prev.score1, prev.score2, prev.player1Id, prev.player2Id)
+  const nextLeader = leaderForScores(next.score1, next.score2, next.player1Id, next.player2Id)
+
+  if (scoresChanged && nextLeader && nextLeader !== previousLeader) {
+    pushMomentumBanner(
+      previousLeader ? 'answer back' : 'lead change',
+      previousLeader
+        ? `${playerNameFor(nextLeader)} answers back`
+        : `${playerNameFor(nextLeader)} takes the lead`,
+      'lead',
+      previousLeader ? 80 : 70,
+    )
+    return
+  }
+
+  if (prev.submissionsCount === 0 && next.submissionsCount > 0 && next.lastSubmissionPlayerId) {
+    pushMomentumBanner(
+      'first blood',
+      `${playerNameFor(next.lastSubmissionPlayerId)} lands first blood`,
+      'warning',
+      60,
+    )
+  }
+})
+
+watch(
+  () => [state.value?.status, remaining.value] as const,
+  ([status, secondsLeft], previous) => {
+    if (status !== 'Live') {
+      finalMinuteShown.value = false
+      return
+    }
+
+    if (!finalMinuteShown.value && secondsLeft <= 60 && (!previous || previous[1] > 60)) {
+      finalMinuteShown.value = true
+      pushMomentumBanner('time pressure', 'final minute', 'warning', 65, 2600)
+    }
+  },
+)
+
 function sendReaction(emoji: string, playerId?: string | null) {
   const key = `${emoji}-${playerId}`
   const now = Date.now()
@@ -537,6 +916,7 @@ function sendReaction(emoji: string, playerId?: string | null) {
   const localId = `local-${now}-${Math.random()}`
   localFloaterIds.add(localId)
   addFloater(emoji, localId, playerId)
+  noteReaction(playerId)
   // Clean up the ID if the server never echoes back (e.g. network error)
   setTimeout(() => localFloaterIds.delete(localId), 3000)
   reactionCall.submit({
