@@ -1,39 +1,44 @@
 <template>
-  <div class="text-center">
+  <div
+    class="border-zinc-900 bg-zinc-950/50 w-full max-w-sm border px-5 py-5 text-center sm:px-6 sm:py-6"
+  >
     <div
-      class="mx-auto mb-3 flex items-center justify-center border text-sm font-bold uppercase"
-      :class="[
-        large ? 'mb-4 h-16 w-32' : 'mb-3 h-12 w-24',
-        player?.joined
-          ? 'bg-green-950/20 border-green-400 text-green-400'
-          : 'bg-zinc-900 border-green-900 text-green-800',
-      ]"
-    >
-      {{ player?.joined ? '[ready]' : '[wait]' }}
-    </div>
-    <div
-      class="font-mono uppercase tracking-wider text-green-300"
-      :class="large ? 'text-lg' : 'text-sm'"
+      class="font-mono uppercase tracking-wide text-green-200"
+      :class="large ? 'text-2xl sm:text-3xl' : 'text-lg sm:text-xl'"
     >
       {{ player?.name || defaultName }}
     </div>
     <div
-      class="mt-1"
+      class="mt-2"
       :class="[
         large ? 'text-sm' : 'text-xs',
-        player?.joined ? 'text-green-400' : 'text-green-800',
+        player?.joined ? 'text-green-500' : 'text-green-700',
       ]"
     >
       {{ player?.joined ? 'connected' : 'waiting...' }}
     </div>
-    <div v-if="votes !== undefined" class="mt-3">
-      <AppButton
-        variant="ghost"
-        :disabled="hasVoted"
-        @click="emit('vote', player?.id || '')"
-      >
-        [vote] {{ votes }}
-      </AppButton>
+    <div
+      v-if="votes !== undefined"
+      class="mt-5 border-t border-green-950 pt-4 text-left"
+    >
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div class="text-[10px] uppercase tracking-[0.3em] text-green-800">
+            votes
+          </div>
+          <div class="mt-1 font-mono text-2xl font-bold text-green-300">
+            {{ votes }}
+          </div>
+        </div>
+        <AppButton
+          variant="ghost"
+          class="w-full justify-center sm:w-auto sm:min-w-28"
+          :disabled="hasVoted"
+          @click="emit('vote', player?.id || '')"
+        >
+          {{ hasVoted ? '[voted]' : '[vote]' }}
+        </AppButton>
+      </div>
     </div>
   </div>
 </template>
