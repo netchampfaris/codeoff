@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-zinc-950 flex h-[100dvh] flex-col font-mono text-green-200">
+  <div class="flex h-[100dvh] flex-col bg-zinc-950 font-mono text-green-200">
     <AppNavbar
       :title="
         state
@@ -350,11 +350,13 @@
               :code="player1Code"
               :submissions="player1Submissions"
               side="left"
+              :class="{ 'panel-spike': isSpikeActive(state.player_1?.id) }"
             />
             <PlayerPanel
               :player-name="state.player_2?.name || 'Player 2'"
               :code="player2Code"
               :submissions="player2Submissions"
+              :class="{ 'panel-spike': isSpikeActive(state.player_2?.id) }"
             />
           </div>
 
@@ -371,13 +373,13 @@
             />
             <div class="flex h-full flex-row overflow-hidden">
               <!-- Statement -->
-              <div class="border-zinc-800 flex-1 overflow-auto border-r">
+              <div class="flex-1 overflow-auto border-r border-zinc-800">
                 <ProblemPanel :problem="state.problem" />
               </div>
               <!-- Examples column -->
               <div
                 v-if="state.problem.sample_test_cases?.length"
-                class="bg-zinc-900 w-80 overflow-auto p-4"
+                class="w-80 overflow-auto bg-zinc-900 p-4"
               >
                 <div
                   class="mb-3 text-xs font-bold uppercase tracking-widest text-green-600"
@@ -395,7 +397,7 @@
                     example {{ i + 1 }}
                   </div>
                   <div
-                    class="border-zinc-800 bg-zinc-950 border p-2 text-xs text-green-300"
+                    class="border border-zinc-800 bg-zinc-950 p-2 text-xs text-green-300"
                   >
                     <div class="mb-1 text-green-700">$ input:</div>
                     <code class="block whitespace-pre text-green-400">{{
@@ -403,7 +405,7 @@
                     }}</code>
                   </div>
                   <div
-                    class="border-zinc-800 bg-zinc-950 mt-1 border p-2 text-xs"
+                    class="mt-1 border border-zinc-800 bg-zinc-950 p-2 text-xs"
                   >
                     <div class="mb-1 text-green-700">$ expected:</div>
                     <code class="block whitespace-pre text-green-300">{{
@@ -935,6 +937,7 @@ function handleReactionEvent(data: any) {
       return
     }
     addFloater(data.emoji, data.id, data.player_id)
+    noteReaction(data.player_id)
   }
 }
 
@@ -943,11 +946,89 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  if (bannerTimer) clearTimeout(bannerTimer)
   getSocket().off(`codeoff_match_${props.matchId}`, handleReactionEvent)
 })
 </script>
 
 <style scoped>
+@keyframes banner-slide-in {
+  0% {
+    transform: translateY(-8px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes panel-spike-pulse {
+  0% {
+    box-shadow: inset 0 0 0 0 rgba(74, 222, 128, 0), 0 0 0 0 rgba(74, 222, 128, 0);
+    background: rgba(34, 197, 94, 0);
+  }
+  30% {
+    box-shadow: inset 0 0 0 1px rgba(74, 222, 128, 0.8), 0 0 18px rgba(74, 222, 128, 0.18);
+    background: rgba(34, 197, 94, 0.08);
+  }
+  100% {
+    box-shadow: inset 0 0 0 0 rgba(74, 222, 128, 0), 0 0 0 0 rgba(74, 222, 128, 0);
+    background: rgba(34, 197, 94, 0);
+  }
+}
+
+.banner-fade-enter-active,
+.banner-fade-leave-active {
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+
+.banner-fade-enter-from,
+.banner-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-6px);
+}
+
+.momentum-banner {
+  animation: banner-slide-in 0.22s ease-out;
+  backdrop-filter: blur(10px);
+}
+
+.momentum-banner.success {
+  background: rgba(2, 44, 34, 0.94);
+  border-color: rgba(74, 222, 128, 0.8);
+  color: rgb(187 247 208);
+}
+
+.momentum-banner.lead {
+  background: rgba(5, 46, 22, 0.94);
+  border-color: rgba(34, 197, 94, 0.65);
+  color: rgb(134 239 172);
+}
+
+.momentum-banner.warning {
+  background: rgba(26, 26, 12, 0.94);
+  border-color: rgba(250, 204, 21, 0.55);
+  color: rgb(253 224 71);
+}
+
+.momentum-banner.review {
+  background: rgba(39, 39, 42, 0.94);
+  border-color: rgba(161, 161, 170, 0.65);
+  color: rgb(228 228 231);
+}
+
+.reaction-spike-chip {
+  background: rgba(5, 46, 22, 0.9);
+  border-color: rgba(34, 197, 94, 0.45);
+  color: rgb(134 239 172);
+  backdrop-filter: blur(8px);
+}
+
+.panel-spike {
+  animation: panel-spike-pulse 1.6s ease-out;
+}
+
 /* ── Floating emoji overlay ─────────────────────────────────────────────── */
 @keyframes float-up {
   0% {
