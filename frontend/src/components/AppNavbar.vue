@@ -19,6 +19,13 @@
 
     <!-- Right: optional extra actions + user identity -->
     <div class="flex items-center gap-3">
+      <span
+        v-if="showAudienceCount"
+        class="border-zinc-800 bg-zinc-950 border px-2 py-1 text-[10px] font-semibold uppercase tracking-widest"
+        :class="audienceAvailable ? 'text-green-500' : 'text-green-800'"
+      >
+        live audience {{ audienceLabel }}
+      </span>
       <slot name="actions" />
       <span class="text-xs text-green-700">$ {{ sessionUser || 'guest' }}</span>
       <AppButton
@@ -34,10 +41,25 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { session, sessionUser } from '@/data/session'
+import { useAudienceCount } from '@/data/audience'
 import AppButton from '@/components/AppButton.vue'
 
-defineProps<{
+const props = withDefaults(
+  defineProps<{
   title?: string
-}>()
+  showAudienceCount?: boolean
+}>(),
+  {
+    showAudienceCount: true,
+  },
+)
+
+const { audienceTotal, audienceAvailable } = useAudienceCount()
+
+const audienceLabel = computed(() => {
+  if (audienceTotal.value == null) return '--'
+  return String(audienceTotal.value)
+})
 </script>

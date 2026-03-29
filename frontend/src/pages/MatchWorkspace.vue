@@ -1,6 +1,6 @@
 <template>
   <div class="bg-zinc-950 flex h-full flex-col font-mono text-green-200">
-    <AppNavbar />
+    <AppNavbar :show-audience-count="false" />
     <!-- Content area fills remaining height -->
     <div class="relative flex flex-1 flex-col overflow-hidden">
       <div v-if="loading" class="flex h-full items-center justify-center">

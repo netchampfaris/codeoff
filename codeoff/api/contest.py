@@ -12,6 +12,10 @@ import frappe
 from frappe.utils import now_datetime
 
 ALLOWED_REACTIONS = ["🔥", "💀", "👀", "🎉", "😬"]
+AUDIENCE_CHANNEL = "codeoff_audience"
+AUDIENCE_KEY_PREFIX = "codeoff_presence:global:"
+AUDIENCE_TTL_SECONDS = 45
+AUDIENCE_LAST_COUNT_KEY = "codeoff_audience:last_count"
 
 
 @frappe.whitelist()
@@ -150,6 +154,56 @@ def make_match_ready(match_id: str):
 
 
 @frappe.whitelist(allow_guest=True)
+def heartbeat_audience(viewer_token: str):
+	"""Register or refresh a spectator presence heartbeat and return the latest count."""
+	viewer_token = _normalize_viewer_token(viewer_token)
+	if not viewer_token:
+		frappe.throw("Invalid viewer token")
+
+	cache_key = _audience_presence_key(viewer_token)
+	frappe.cache.set_value(
+		cache_key,
+		{
+			"viewer_token": viewer_token,
+			"updated_at": str(now_datetime()),
+		},
+		expires_in_sec=AUDIENCE_TTL_SECONDS,
+	)
+
+	audience_total = _get_audience_total()
+	_publish_audience_count(audience_total)
+	return {
+		"audience_total": audience_total,
+		"updated_at": str(now_datetime()),
+	}
+
+
+@frappe.whitelist(allow_guest=True)
+def leave_audience(viewer_token: str):
+	"""Remove a spectator presence entry when leaving eligible Codeoff pages."""
+	viewer_token = _normalize_viewer_token(viewer_token)
+	if not viewer_token:
+		return {"audience_total": _get_audience_total(), "updated_at": str(now_datetime())}
+
+	frappe.cache.delete_value(_audience_presence_key(viewer_token))
+	audience_total = _get_audience_total()
+	_publish_audience_count(audience_total, force=True)
+	return {
+		"audience_total": audience_total,
+		"updated_at": str(now_datetime()),
+	}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_audience_count():
+	"""Return the latest global Codeoff audience count."""
+	return {
+		"audience_total": _get_audience_total(),
+		"updated_at": str(now_datetime()),
+	}
+
+
+@frappe.whitelist(allow_guest=True)
 def vote_for_player(match_id: str, player_id: str):
 	"""Cast an audience vote for a player. One vote per match enforced client-side."""
 	match = frappe.db.get_value(
@@ -243,6 +297,38 @@ def _broadcast_match_event(match_id: str, message: dict):
 			user = frappe.db.get_value("Codeoff Player", player_id, "user")
 			if user:
 				frappe.publish_realtime(event, message, user=user)
+
+
+def _audience_presence_key(viewer_token: str) -> str:
+	return f"{AUDIENCE_KEY_PREFIX}{viewer_token}"
+
+
+def _normalize_viewer_token(viewer_token: str | None) -> str:
+	viewer_token = (viewer_token or "").strip()
+	if not viewer_token or len(viewer_token) > 128:
+		return ""
+	allowed = set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_")
+	return viewer_token if all(char in allowed for char in viewer_token) else ""
+
+
+def _get_audience_total() -> int:
+	return len(frappe.cache.get_keys(AUDIENCE_KEY_PREFIX))
+
+
+def _publish_audience_count(audience_total: int, force: bool = False):
+	previous_total = frappe.cache.get_value(AUDIENCE_LAST_COUNT_KEY)
+	if not force and previous_total == audience_total:
+		return
+
+	frappe.cache.set_value(AUDIENCE_LAST_COUNT_KEY, audience_total, expires_in_sec=AUDIENCE_TTL_SECONDS)
+	frappe.publish_realtime(
+		AUDIENCE_CHANNEL,
+		{
+			"event_type": "audience_count_updated",
+			"audience_total": audience_total,
+			"updated_at": str(now_datetime()),
+		},
+	)
 
 
 def _build_match_state(match_id: str):
