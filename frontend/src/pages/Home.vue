@@ -2,6 +2,13 @@
   <div class="bg-zinc-950 flex h-full flex-col font-mono text-green-200">
     <AppNavbar title="home">
       <template #actions>
+        <AppButton
+          variant="inline"
+          class="text-green-800 hover:text-green-400"
+          @click="$router.push({ name: 'SpectateHome' })"
+        >
+          [spectate]
+        </AppButton>
         <DevLoginDropdown />
       </template>
     </AppNavbar>

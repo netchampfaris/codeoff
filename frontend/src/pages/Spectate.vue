@@ -517,20 +517,6 @@ const selectedPlayerId = ref(getStoredPrediction(props.matchId))
 const predictionPending = ref(false)
 const pendingPredictionId = ref<string | null>(null)
 
-// Poll for status change after timer expires (server processes asynchronously)
-watch(remaining, (r) => {
-  if (r === 0 && state.value?.status === 'Live') {
-    const t = setInterval(() => {
-      if (!state.value || state.value.status !== 'Live') {
-        clearInterval(t)
-        return
-      }
-      reload()
-    }, 2000)
-    onUnmounted(() => clearInterval(t))
-  }
-})
-
 const showProblem = ref(false)
 const { bottomPanelHeight, startDragV } = useResizablePanels({
   bottomMin: 120,
@@ -541,6 +527,7 @@ const { bottomPanelHeight, startDragV } = useResizablePanels({
 useLobbyPoll(
   computed(() => state.value?.status),
   reload,
+  ['Ready', 'Live'],
 )
 
 const {
