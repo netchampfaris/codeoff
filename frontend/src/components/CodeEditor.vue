@@ -25,6 +25,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   'update:modelValue': [value: string]
   'cursor-change': [line: number, column: number]
+  'mod-s': []
 }>()
 
 const editorRef = ref<HTMLElement>()
@@ -55,7 +56,19 @@ onMounted(() => {
       EditorView.editable.of(false),
     )
   } else {
+    const shortcutKeymap = keymap.of([
+      {
+        key: 'Mod-s',
+        preventDefault: true,
+        run: () => {
+          emit('mod-s')
+          return true
+        },
+      },
+    ])
+
     extensions.push(
+      shortcutKeymap,
       keymap.of([...defaultKeymap, indentWithTab]),
       EditorView.updateListener.of((update) => {
         if (update.docChanged) {

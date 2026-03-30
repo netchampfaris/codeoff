@@ -116,6 +116,7 @@
               <CodeEditor
                 v-model="code"
                 @cursor-change="onCursorChange"
+                @mod-s="runTests"
                 :readonly="state.status !== 'Live'"
                 placeholder="Write your solution here..."
               />
@@ -324,6 +325,10 @@ const runSampleTests = useCall({
 })
 
 function runTests() {
+  if (runningTests.value || state.value?.status !== 'Live' || remaining.value === 0) {
+    return
+  }
+
   runningTests.value = true
   testResults.value = null
   runSampleTests.submit({ match_id: props.matchId, source_code: code.value })
