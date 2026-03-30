@@ -133,7 +133,7 @@
               </div>
               <AppButton
                 variant="ghost"
-                @click="$router.push({ name: 'SpectateHome' })"
+                @click="$router.push({ name: 'Home' })"
               >
                 [home]
               </AppButton>

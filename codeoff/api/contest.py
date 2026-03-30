@@ -512,10 +512,13 @@ def _refresh_expired_match(match):
 	return match
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_my_match():
 	"""Get the current player's active match (for lobby/redirect)."""
 	user = frappe.session.user
+	if user == "Guest":
+		return {"match_id": None, "status": "not_a_player"}
+
 	player_name = frappe.db.get_value("Codeoff Player", {"user": user}, "name")
 	if not player_name:
 		return {"match_id": None, "status": "not_a_player"}
@@ -637,7 +640,7 @@ def get_active_matches():
 	return matches
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_tournament_bracket():
 	"""Get tournament bracket data for display."""
 	tournament = frappe.get_all(

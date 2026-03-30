@@ -7,18 +7,17 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      redirect: () => (session.isLoggedIn ? '/home' : '/spectate'),
+      redirect: '/home',
     },
     {
       path: '/home',
       name: 'Home',
       component: () => import('@/pages/Home.vue'),
+      meta: { public: true },
     },
     {
       path: '/spectate',
-      name: 'SpectateHome',
-      component: () => import('@/pages/SpectateHome.vue'),
-      meta: { public: true },
+      redirect: '/home',
     },
     {
       path: '/match/:matchId',

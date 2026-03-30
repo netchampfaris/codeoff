@@ -2,13 +2,6 @@
   <div class="flex h-full flex-col bg-zinc-950 font-mono text-green-200">
     <AppNavbar title="home">
       <template #actions>
-        <AppButton
-          variant="inline"
-          class="text-green-800 hover:text-green-400"
-          @click="$router.push({ name: 'SpectateHome' })"
-        >
-          [spectate]
-        </AppButton>
         <DevLoginDropdown />
       </template>
     </AppNavbar>
@@ -48,7 +41,7 @@
       </div>
     </div>
 
-    <!-- Organizer / non-player view: tournament bracket -->
+    <!-- Organizer / guest / non-player view: tournament bracket -->
     <div
       v-else-if="match?.status === 'not_a_player'"
       class="flex flex-1 flex-col overflow-hidden"
