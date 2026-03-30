@@ -2,6 +2,8 @@ import { computed, reactive, ref } from 'vue'
 import { useCall } from 'frappe-ui'
 import router from '@/router'
 
+const CODEOFF_LOGIN_REDIRECT = '/codeoff'
+
 export const sessionUser = ref<string | null>(getSessionUserFromCookie())
 
 export const session = reactive({
@@ -11,7 +13,7 @@ export const session = reactive({
     onSuccess(data: any) {
       sessionUser.value = getSessionUserFromCookie()
       session.login.reset()
-      router.replace(data?.default_route || '/')
+      window.location.href = data?.default_route || CODEOFF_LOGIN_REDIRECT
     },
   }),
   logout: useCall({
@@ -26,6 +28,8 @@ export const session = reactive({
   user: sessionUser,
   isLoggedIn: computed(() => sessionUser.value != null),
 })
+
+export { CODEOFF_LOGIN_REDIRECT }
 
 function getSessionUserFromCookie(): string | null {
   const cookies = new URLSearchParams(document.cookie.split('; ').join('&'))

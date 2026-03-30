@@ -29,6 +29,15 @@
       <slot name="actions" />
       <span class="text-xs text-green-700">$ {{ sessionUser || 'guest' }}</span>
       <AppButton
+        v-if="!sessionUser"
+        tag="a"
+        :href="loginHref"
+        variant="inline"
+        class="text-green-800 hover:text-green-600"
+      >
+        [login]
+      </AppButton>
+      <AppButton
         v-if="sessionUser"
         variant="inline"
         class="text-green-800 hover:text-green-600"
@@ -42,7 +51,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { session, sessionUser } from '@/data/session'
+import {
+  CODEOFF_LOGIN_REDIRECT,
+  session,
+  sessionUser,
+} from '@/data/session'
 import { useAudienceCount } from '@/data/audience'
 import AppButton from '@/components/AppButton.vue'
 
@@ -62,4 +75,8 @@ const audienceLabel = computed(() => {
   if (audienceTotal.value == null) return '--'
   return String(audienceTotal.value)
 })
+
+const loginHref = computed(
+  () => `/login?redirect-to=${encodeURIComponent(CODEOFF_LOGIN_REDIRECT)}`,
+)
 </script>

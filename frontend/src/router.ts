@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { session } from './data/session'
+import { CODEOFF_LOGIN_REDIRECT } from './data/session'
 
 const router = createRouter({
   history: createWebHistory(__FRONTEND_ROUTE__ + '/'),
@@ -38,7 +39,7 @@ const router = createRouter({
 router.beforeEach((to, from) => {
   if (to.meta?.public) return true
   if (to.name !== 'Login' && !session.isLoggedIn) {
-    window.location.href = '/login'
+    window.location.href = `/login?redirect-to=${encodeURIComponent(CODEOFF_LOGIN_REDIRECT)}`
     return false
   }
 })

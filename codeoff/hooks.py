@@ -260,3 +260,7 @@ require_type_annotated_api_methods = True
 website_route_rules = [
 	{"from_route": "/codeoff/<path:app_path>", "to_route": "codeoff"},
 ]
+
+website_redirects = [
+	{"source": "/", "target": "/codeoff"},
+]
