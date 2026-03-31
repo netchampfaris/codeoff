@@ -34,7 +34,7 @@ repos:
     hooks:
       - id: prettier
         name: prettier
-        entry: bash -lc 'cd frontend && yarn run prettier --write --no-editorconfig .'
+        entry: bash -lc 'cd frontend && yarn && yarn format'
         language: system
         pass_filenames: false
         types_or: [javascript, vue, scss]

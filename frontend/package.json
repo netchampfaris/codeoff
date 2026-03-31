@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "serve": "vite preview"
+    "serve": "vite preview",
+    "format": "prettier --write --no-editorconfig ."
   },
   "dependencies": {
     "@codemirror/commands": "^6.10.3",
