@@ -141,7 +141,7 @@ class CodeoffTournament(Document):
 			if m.get("duration_seconds"):
 				try:
 					match_doc.duration_seconds = int(m["duration_seconds"])
-				except ValueError, TypeError:
+				except (ValueError, TypeError):
 					frappe.throw(f"Invalid duration_seconds value: {m['duration_seconds']!r}")
 			match_doc.insert()
 
@@ -174,7 +174,7 @@ class CodeoffTournament(Document):
 			)
 
 		selected = random.sample(all_problems, len(rounds))
-		round_problem_map = {r: p.name for r, p in zip(rounds, selected)}
+		round_problem_map = {r: p.name for r, p in zip(rounds, selected, strict=False)}
 
 		for m in matches:
 			problem = round_problem_map[m.round_number]

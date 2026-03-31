@@ -40,14 +40,14 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 
 	def test_auto_ready_status(self):
 		"""Match with 2 players and a problem should auto-transition to Ready."""
-		match, players, problem, _ = self._setup_match()
+		match, _, problem, _ = self._setup_match()
 		match.problem = problem.name
 		match.save()
 		self.assertEqual(match.status, "Ready")
 
 	def test_start_match_sets_times(self):
 		"""Starting a match should set start_time, deadline, and status=Live."""
-		match, players, problem, _ = self._setup_match()
+		match, _, problem, _ = self._setup_match()
 		match.problem = problem.name
 		match.save()
 		match.start_match()
@@ -60,7 +60,7 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 
 	def test_cannot_start_draft_match(self):
 		"""Cannot start a match that isn't Ready."""
-		match, players, problem, _ = self._setup_match()
+		match, _players, _problem, _tournament = self._setup_match()
 		match.status = "Draft"
 		match.flags.ignore_validate = True
 		match.save()
@@ -70,14 +70,14 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 
 	def test_same_player_rejected(self):
 		"""Match cannot have the same player as both player_1 and player_2."""
-		match, players, problem, _ = self._setup_match()
+		match, _players, _problem, _tournament = self._setup_match()
 		match.player_2 = match.player_1
 		with self.assertRaises(frappe.ValidationError):
 			match.save()
 
 	def test_cannot_start_finished_match(self):
 		"""Cannot re-start a match that is already Finished."""
-		match, players, problem, _ = self._setup_match()
+		match, _players, problem, _tournament = self._setup_match()
 		match.problem = problem.name
 		match.save()
 		match.start_match()
@@ -117,7 +117,7 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 
 	def test_review_match_can_create_rematch_with_different_problem(self):
 		"""A review match can spawn one ready rematch with a new problem."""
-		match, players, problem, _ = self._setup_match()
+		match, _players, problem, _tournament = self._setup_match()
 		alternate_problem = create_problem(title="Alternate Test Problem")
 		match.problem = problem.name
 		match.save()
@@ -172,7 +172,7 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 
 	def test_review_match_with_rematch_cannot_force_finish(self):
 		"""Once a rematch exists, the original review match cannot also be manually finished."""
-		match, players, problem, _ = self._setup_match()
+		match, players, problem, _tournament = self._setup_match()
 		create_problem(title="Force Finish Guard Problem")
 		match.problem = problem.name
 		match.save()

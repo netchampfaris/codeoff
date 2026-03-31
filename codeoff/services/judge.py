@@ -186,7 +186,7 @@ import sys
 import io
 import traceback as _tb
 
-_src = {repr(source_code)}
+_src = {source_code!r}
 try:
     exec(compile(_src, "<your code>", "exec"), globals())
 except SyntaxError as _e:

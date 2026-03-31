@@ -344,7 +344,7 @@ def setup():
 	first_match = frappe.get_doc("Codeoff Match", round1_matches[0].name)
 
 	print("\n✓ Demo data created successfully!")
-	print(f"\nLogin credentials (password for all: 123):")
+	print("\nLogin credentials (password for all: 123):")
 	print(f"  {DEMO_ORGANIZER['email']} (organizer — Desk access)")
 	for p in DEMO_PLAYERS:
 		print(f"  {p['email']} (contestant)")
