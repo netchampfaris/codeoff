@@ -1,11 +1,4 @@
-import {
-  ref,
-  onMounted,
-  onUnmounted,
-  computed,
-  watch,
-  type Ref,
-} from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, type Ref } from 'vue'
 import { useCall } from 'frappe-ui'
 import { getSocket } from './socket'
 
