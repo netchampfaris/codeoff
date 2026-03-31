@@ -18,11 +18,16 @@ AUDIENCE_TTL_SECONDS = 45
 AUDIENCE_LAST_COUNT_KEY = "codeoff_audience:last_count"
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def submit_code(match_id: str, source_code: str):
 	"""Submit code for official judging."""
 	player = _get_current_player()
 	match = frappe.get_doc("Codeoff Match", match_id)
+
+	if match.status != "Live":
+		frappe.throw("Match is not live")
+	if player.name not in (match.player_1, match.player_2):
+		frappe.throw("You are not a participant in this match")
 
 	submission = frappe.new_doc("Codeoff Submission")
 	submission.match = match_id
@@ -54,7 +59,7 @@ def submit_code(match_id: str, source_code: str):
 	return {"submission_id": submission.name, "status": "Queued"}
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def run_sample_tests(match_id: str, source_code: str):
 	"""Run code against sample test cases only. Ephemeral — no record created."""
 	player = _get_current_player()
@@ -72,7 +77,7 @@ def run_sample_tests(match_id: str, source_code: str):
 	return results
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def update_draft(match_id: str, source_code: str, cursor_line: int = 0, cursor_column: int = 0):
 	"""Update draft state in Redis and broadcast to spectators."""
 	player = _get_current_player()
@@ -93,7 +98,7 @@ def update_draft(match_id: str, source_code: str, cursor_line: int = 0, cursor_c
 	_broadcast_match_event(match_id, {"event_type": "draft_updated", **draft_data})
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def join_match(match_id: str):
 	"""Player joins the match lobby. When both players join, the match starts."""
 	player = _get_current_player()
@@ -127,78 +132,72 @@ def join_match(match_id: str):
 	return {"status": match.status}
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def start_match_now(match_id: str):
 	"""Organizer-only: start a Ready match manually."""
 	match = _get_organizer_match(match_id)
 	if match.status != "Ready":
 		frappe.throw("Match is not in Ready status")
 	match.start_match()
-	frappe.db.commit()
 	return {"status": "Live"}
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def make_match_ready(match_id: str):
 	"""Organizer-only: force a Draft match to Ready status."""
 	match = _get_organizer_match(match_id)
 	if match.status != "Draft":
 		frappe.throw("Match is not in Draft status")
-	frappe.db.set_value("Codeoff Match", match_id, "status", "Ready")
-	frappe.db.commit()
+	match.status = "Ready"
+	match.save(ignore_permissions=True)
 	return {"status": "Ready"}
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def organizer_add_match_time(match_id: str, seconds: int):
 	"""Organizer-only: extend a live match deadline."""
 	match = _get_organizer_match(match_id)
 	match.add_time(seconds)
-	frappe.db.commit()
 	match.reload()
 	return {"status": match.status, "deadline": match.deadline}
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def organizer_resolve_match(match_id: str):
 	"""Organizer-only: resolve a live match immediately."""
 	match = _get_organizer_match(match_id)
 	match.resolve_now()
-	frappe.db.commit()
 	match.reload()
 	return {"status": match.status, "winner": match.winner, "winning_reason": match.winning_reason}
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def organizer_force_finish_match(match_id: str, winner_player: str):
 	"""Organizer-only: manually set the winner of a live/review match."""
 	match = _get_organizer_match(match_id)
 	match.force_finish(winner_player)
-	frappe.db.commit()
 	match.reload()
 	return {"status": match.status, "winner": match.winner, "winning_reason": match.winning_reason}
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def organizer_reset_match(match_id: str):
 	"""Organizer-only: reset a match and clear submissions."""
 	match = _get_organizer_match(match_id)
 	match.reset_match()
-	frappe.db.commit()
 	match.reload()
 	return {"status": match.status}
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["POST"])
 def organizer_create_rematch(match_id: str):
 	"""Organizer-only: create a rematch for a review match."""
 	match = _get_organizer_match(match_id)
 	result = match.create_rematch()
-	frappe.db.commit()
 	return result
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["POST"])
 def heartbeat_audience(viewer_token: str):
 	"""Register or refresh a spectator presence heartbeat and return the latest count."""
 	viewer_token = _normalize_viewer_token(viewer_token)
@@ -223,7 +222,7 @@ def heartbeat_audience(viewer_token: str):
 	}
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["POST"])
 def leave_audience(viewer_token: str):
 	"""Remove a spectator presence entry when leaving eligible Codeoff pages."""
 	viewer_token = _normalize_viewer_token(viewer_token)
@@ -239,7 +238,7 @@ def leave_audience(viewer_token: str):
 	}
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_audience_count():
 	"""Return the latest global Codeoff audience count."""
 	return {
@@ -248,7 +247,7 @@ def get_audience_count():
 	}
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["POST"])
 def vote_for_player(match_id: str, player_id: str):
 	"""Cast a spectator crowd pick for a player while the match is Ready."""
 	match = frappe.db.get_value(
@@ -264,17 +263,15 @@ def vote_for_player(match_id: str, player_id: str):
 	if player_id not in (match.player_1, match.player_2):
 		frappe.throw("Invalid player for this match")
 
+	Match = frappe.qb.DocType("Codeoff Match")
 	if player_id == match.player_1:
-		frappe.db.sql(
-			"UPDATE `tabCodeoff Match` SET `votes_player_1` = COALESCE(`votes_player_1`, 0) + 1 WHERE name = %s",
-			(match_id,),
-		)
+		frappe.qb.update(Match).set(Match.votes_player_1, Match.votes_player_1 + 1).where(
+			Match.name == match_id
+		).run()
 	else:
-		frappe.db.sql(
-			"UPDATE `tabCodeoff Match` SET `votes_player_2` = COALESCE(`votes_player_2`, 0) + 1 WHERE name = %s",
-			(match_id,),
-		)
-	frappe.db.commit()
+		frappe.qb.update(Match).set(Match.votes_player_2, Match.votes_player_2 + 1).where(
+			Match.name == match_id
+		).run()
 
 	updated = frappe.db.get_value(
 		"Codeoff Match", match_id, ["votes_player_1", "votes_player_2"], as_dict=True
@@ -292,7 +289,7 @@ def vote_for_player(match_id: str, player_id: str):
 	return {"votes_1": votes_1, "votes_2": votes_2}
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["POST"])
 def send_reaction(match_id: str, emoji: str, player_id: str | None = None, client_id: str | None = None):
 	"""Broadcast an ephemeral emoji reaction to all spectators."""
 	if emoji not in ALLOWED_REACTIONS:
@@ -318,7 +315,7 @@ def send_reaction(match_id: str, emoji: str, player_id: str | None = None, clien
 	return {"ok": True}
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_match_state(match_id: str):
 	"""Get current match state for spectator or contestant. Public API."""
 	return _build_match_state(match_id)
@@ -512,7 +509,7 @@ def _refresh_expired_match(match):
 	return match
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_my_match():
 	"""Get the current player's active match (for lobby/redirect)."""
 	user = frappe.session.user
@@ -523,22 +520,16 @@ def get_my_match():
 	if not player_name:
 		return {"match_id": None, "status": "not_a_player"}
 
-	# Find a live or ready match for this player
-	match_name = frappe.db.get_value(
-		"Codeoff Match",
-		{
-			"status": ("in", ["Ready", "Live"]),
-			"player_1": player_name,
-		},
-		"name",
-	) or frappe.db.get_value(
-		"Codeoff Match",
-		{
-			"status": ("in", ["Ready", "Live"]),
-			"player_2": player_name,
-		},
-		"name",
-	)
+	# Find a live or ready match for this player with a single OR query
+	CMatch = frappe.qb.DocType("Codeoff Match")
+	rows = (
+		frappe.qb.from_(CMatch)
+		.select(CMatch.name)
+		.where(CMatch.status.isin(["Ready", "Live"]))
+		.where((CMatch.player_1 == player_name) | (CMatch.player_2 == player_name))
+		.limit(1)
+	).run(as_dict=True)
+	match_name = rows[0].name if rows else None
 
 	if not match_name:
 		return {"match_id": None, "status": "no_active_match"}
@@ -551,7 +542,7 @@ def get_my_match():
 	}
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_live_matches():
 	"""Return Live and Ready matches for the spectate lobby. Public API."""
 	is_organizer = "System Manager" in frappe.get_roles()
@@ -611,7 +602,7 @@ def get_live_matches():
 	return matches
 
 
-@frappe.whitelist()
+@frappe.whitelist(methods=["GET"])
 def get_active_matches():
 	"""Get all active (Live/Ready) matches. For organizer dashboard."""
 	matches = frappe.get_all(
@@ -640,7 +631,7 @@ def get_active_matches():
 	return matches
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_tournament_bracket():
 	"""Get tournament bracket data for display."""
 	tournament = frappe.get_all(
@@ -673,14 +664,24 @@ def get_tournament_bracket():
 		ignore_permissions=True,
 	)
 
-	# Resolve player names
-	player_cache = {}
+	# Resolve player names in a single batch query
+	all_player_ids = {m.get(f) for m in matches for f in ("player_1", "player_2", "winner") if m.get(f)}
+	player_name_map = (
+		{
+			p.name: p.player_name
+			for p in frappe.get_all(
+				"Codeoff Player",
+				filters={"name": ["in", list(all_player_ids)]},
+				fields=["name", "player_name"],
+			)
+		}
+		if all_player_ids
+		else {}
+	)
 	for m in matches:
 		for field in ("player_1", "player_2", "winner"):
 			pid = m.get(field)
-			if pid and pid not in player_cache:
-				player_cache[pid] = frappe.db.get_value("Codeoff Player", pid, "player_name") or pid
-			m[f"{field}_name"] = player_cache.get(pid) if pid else None
+			m[f"{field}_name"] = player_name_map.get(pid) if pid else None
 
 	# Group by round
 	rounds = {}
@@ -704,15 +705,15 @@ def get_tournament_bracket():
 	}
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET"])
 def get_all_players():
 	"""Return all Codeoff Players (for dev login-as dropdown). Guest-accessible
 	because spectators are guests; only shown when enable_dev_login is set."""
-	return frappe.get_all(
-		"Codeoff Player",
-		fields=["name", "player_name", "user"],
-		order_by="player_name asc",
-	)
+	fields = ["name", "player_name"]
+	t = frappe.get_all("Codeoff Tournament", fields=["enable_dev_login"], limit=1, ignore_permissions=True)
+	if t and t[0].enable_dev_login:
+		fields.append("user")
+	return frappe.get_all("Codeoff Player", fields=fields, order_by="player_name asc")
 
 
 def _get_current_player():

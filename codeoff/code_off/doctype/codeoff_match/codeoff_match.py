@@ -56,6 +56,8 @@ class CodeoffMatch(Document):
 
 	@frappe.whitelist()
 	def start_match(self):
+		if "System Manager" not in frappe.get_roles():
+			frappe.throw("Only organizers can start a match", frappe.PermissionError)
 		if self.status != "Ready":
 			frappe.throw("Match can only be started from Ready status")
 
@@ -97,6 +99,8 @@ class CodeoffMatch(Document):
 	@frappe.whitelist()
 	def force_finish(self, winner_player: str):
 		"""Organizer override: force-finish a Live or Review match."""
+		if "System Manager" not in frappe.get_roles():
+			frappe.throw("Only organizers can force-finish a match", frappe.PermissionError)
 		if self.status not in ("Live", "Review"):
 			frappe.throw("Match must be Live or Review to force-finish")
 		if self.status == "Review" and self._get_existing_rematch():
@@ -149,6 +153,8 @@ class CodeoffMatch(Document):
 	@frappe.whitelist()
 	def create_rematch(self):
 		"""Create a new ready match for the same slot using a different problem."""
+		if "System Manager" not in frappe.get_roles():
+			frappe.throw("Only organizers can create a rematch", frappe.PermissionError)
 		if self.status != "Review":
 			frappe.throw("Only review matches can create a rematch")
 		if not self.player_1 or not self.player_2:
@@ -200,6 +206,8 @@ class CodeoffMatch(Document):
 	@frappe.whitelist()
 	def reset_match(self):
 		"""Reset this match to Ready/Draft state, deleting all submissions."""
+		if "System Manager" not in frappe.get_roles():
+			frappe.throw("Only organizers can reset a match", frappe.PermissionError)
 		submissions = frappe.get_all("Codeoff Submission", filters={"match": self.name}, pluck="name")
 		for sub in submissions:
 			frappe.delete_doc("Codeoff Submission", sub, ignore_permissions=True)
@@ -231,6 +239,8 @@ class CodeoffMatch(Document):
 	@frappe.whitelist()
 	def add_time(self, seconds: int):
 		"""Extend the deadline of a Live match by N seconds."""
+		if "System Manager" not in frappe.get_roles():
+			frappe.throw("Only organizers can add time to a match", frappe.PermissionError)
 		if self.status != "Live":
 			frappe.throw("Match must be Live to add time")
 		seconds = int(seconds)
@@ -250,6 +260,8 @@ class CodeoffMatch(Document):
 	@frappe.whitelist()
 	def resolve_now(self):
 		"""Synchronously run match timeout resolution — use if the background job didn't fire."""
+		if "System Manager" not in frappe.get_roles():
+			frappe.throw("Only organizers can resolve a match manually", frappe.PermissionError)
 		if self.status != "Live":
 			frappe.throw("Match must be Live to resolve")
 		from codeoff.services.match_engine import resolve_match_timeout
