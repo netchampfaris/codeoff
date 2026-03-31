@@ -51,11 +51,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import {
-  CODEOFF_LOGIN_REDIRECT,
-  session,
-  sessionUser,
-} from '@/data/session'
+import { CODEOFF_LOGIN_REDIRECT, session, sessionUser } from '@/data/session'
 import { useAudienceCount } from '@/data/audience'
 import AppButton from '@/components/AppButton.vue'
 

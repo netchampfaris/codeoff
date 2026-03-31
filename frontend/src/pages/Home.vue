@@ -1,5 +1,5 @@
 <template>
-  <div class="bg-zinc-950 flex h-full flex-col font-mono text-green-200">
+  <div class="flex h-full flex-col bg-zinc-950 font-mono text-green-200">
     <AppNavbar title="home">
       <template #actions>
         <AppButton

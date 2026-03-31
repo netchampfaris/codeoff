@@ -1,7 +1,7 @@
 <template>
-  <div class="border-zinc-800 bg-zinc-900 flex flex-col border-t font-mono">
+  <div class="flex flex-col border-t border-zinc-800 bg-zinc-900 font-mono">
     <!-- Tab bar -->
-    <div class="border-zinc-800 flex border-b">
+    <div class="flex border-b border-zinc-800">
       <AppButton
         variant="tab"
         :active="activeTab === 'tests'"
@@ -29,7 +29,7 @@
       <div v-if="testResults">
         <div
           v-if="testResults.stdout"
-          class="border-zinc-800 bg-zinc-950 mb-3 border p-2"
+          class="mb-3 border border-zinc-800 bg-zinc-950 p-2"
         >
           <div
             class="mb-1 text-xs font-bold uppercase tracking-wider text-green-700"
@@ -43,7 +43,7 @@
         <div class="flex flex-col gap-1">
           <template v-for="(result, i) in testResults.details" :key="i">
             <div
-              class="border-zinc-800 flex items-start gap-3 border-b py-1.5 text-sm last:border-0"
+              class="flex items-start gap-3 border-b border-zinc-800 py-1.5 text-sm last:border-0"
             >
               <span
                 class="w-14 shrink-0 font-bold"
@@ -73,7 +73,7 @@
         </div>
         <pre
           v-if="testResults.error"
-          class="bg-red-950/20 mt-2 whitespace-pre-wrap border border-red-900 p-2 text-sm text-red-400"
+          class="mt-2 whitespace-pre-wrap border border-red-900 bg-red-950/20 p-2 text-sm text-red-400"
           >{{ testResults.error }}</pre
         >
       </div>
@@ -88,7 +88,7 @@
         <div
           v-for="sub in submissions"
           :key="sub.name"
-          class="border-zinc-800 bg-zinc-900 flex items-center justify-between border p-2 text-sm"
+          class="flex items-center justify-between border border-zinc-800 bg-zinc-900 p-2 text-sm"
         >
           <div class="flex items-center gap-3">
             <span

@@ -2,7 +2,7 @@
   <div class="w-80 overflow-hidden border font-mono" :class="borderClass">
     <!-- Player 1 -->
     <div
-      class="border-zinc-800 flex items-center justify-between border-b px-3 py-2.5"
+      class="flex items-center justify-between border-b border-zinc-800 px-3 py-2.5"
       :class="playerBgClass(match.player_1)"
     >
       <span class="truncate text-base" :class="playerTextClass(match.player_1)">
