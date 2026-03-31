@@ -87,18 +87,12 @@ class CodeoffMatch(Document):
 
 		# Broadcast updated match state
 		from codeoff.api.contest import publish_match_state
+		from codeoff.services.match_engine import schedule_match_timeout
 
 		publish_match_state(self.name)
 
 		# Schedule timeout resolution
-		frappe.enqueue(
-			"codeoff.services.match_engine.resolve_match_timeout",
-			match_id=self.name,
-			enqueue_after_commit=True,
-			at_front=False,
-			job_id=f"match_timeout_{self.name}",
-			execute_after=duration,
-		)
+		schedule_match_timeout(self.name, duration)
 
 	@frappe.whitelist()
 	def force_finish(self, winner_player: str):
@@ -260,7 +254,7 @@ class CodeoffMatch(Document):
 			frappe.throw("Match must be Live to resolve")
 		from codeoff.services.match_engine import resolve_match_timeout
 
-		resolve_match_timeout(self.name)
+		resolve_match_timeout(self.name, force=True)
 		frappe.msgprint("Match resolved")
 
 	def get_next_match_position(self):

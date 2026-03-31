@@ -1,7 +1,14 @@
 import frappe
 from frappe.tests import IntegrationTestCase
+from frappe.utils import now_datetime
 
-from codeoff.services.match_engine import determine_winner_by_score, finalize_match, recompute_scores
+from codeoff.api.contest import get_match_state
+from codeoff.services.match_engine import (
+	determine_winner_by_score,
+	finalize_match,
+	recompute_scores,
+	resolve_match_timeout,
+)
 from codeoff.tests.utils import (
 	cleanup_test_data,
 	create_live_match,
@@ -33,14 +40,14 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 
 	def test_auto_ready_status(self):
 		"""Match with 2 players and a problem should auto-transition to Ready."""
-		match, players, problem, _ = self._setup_match()
+		match, _, problem, _ = self._setup_match()
 		match.problem = problem.name
 		match.save()
 		self.assertEqual(match.status, "Ready")
 
 	def test_start_match_sets_times(self):
 		"""Starting a match should set start_time, deadline, and status=Live."""
-		match, players, problem, _ = self._setup_match()
+		match, _, problem, _ = self._setup_match()
 		match.problem = problem.name
 		match.save()
 		match.start_match()
@@ -53,7 +60,7 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 
 	def test_cannot_start_draft_match(self):
 		"""Cannot start a match that isn't Ready."""
-		match, players, problem, _ = self._setup_match()
+		match, _players, _problem, _tournament = self._setup_match()
 		match.status = "Draft"
 		match.flags.ignore_validate = True
 		match.save()
@@ -63,14 +70,14 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 
 	def test_same_player_rejected(self):
 		"""Match cannot have the same player as both player_1 and player_2."""
-		match, players, problem, _ = self._setup_match()
+		match, _players, _problem, _tournament = self._setup_match()
 		match.player_2 = match.player_1
 		with self.assertRaises(frappe.ValidationError):
 			match.save()
 
 	def test_cannot_start_finished_match(self):
 		"""Cannot re-start a match that is already Finished."""
-		match, players, problem, _ = self._setup_match()
+		match, _players, problem, _tournament = self._setup_match()
 		match.problem = problem.name
 		match.save()
 		match.start_match()
@@ -110,7 +117,7 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 
 	def test_review_match_can_create_rematch_with_different_problem(self):
 		"""A review match can spawn one ready rematch with a new problem."""
-		match, players, problem, _ = self._setup_match()
+		match, _players, problem, _tournament = self._setup_match()
 		alternate_problem = create_problem(title="Alternate Test Problem")
 		match.problem = problem.name
 		match.save()
@@ -165,7 +172,7 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 
 	def test_review_match_with_rematch_cannot_force_finish(self):
 		"""Once a rematch exists, the original review match cannot also be manually finished."""
-		match, players, problem, _ = self._setup_match()
+		match, players, problem, _tournament = self._setup_match()
 		create_problem(title="Force Finish Guard Problem")
 		match.problem = problem.name
 		match.save()
@@ -178,3 +185,34 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 
 		with self.assertRaises(frappe.ValidationError):
 			match.force_finish(players[0].name)
+
+	def test_timeout_waits_for_extended_deadline(self):
+		"""A timeout firing before an extended deadline should requeue instead of resolving."""
+		from datetime import timedelta
+		from unittest.mock import patch
+
+		match, _, _ = create_live_match(player_prefix="extendeddeadline")
+		match.deadline = now_datetime() + timedelta(seconds=180)
+		match.save(ignore_permissions=True)
+
+		with patch("codeoff.services.match_engine.schedule_match_timeout") as schedule_timeout:
+			resolve_match_timeout(match.name)
+
+		match.reload()
+		self.assertEqual(match.status, "Live")
+		schedule_timeout.assert_called_once()
+		self.assertGreater(schedule_timeout.call_args.args[1], 0)
+
+	def test_get_match_state_resolves_expired_live_match(self):
+		"""Fetching state should resolve overdue live matches when the queue has not yet run."""
+		from datetime import timedelta
+
+		match, _, _ = create_live_match(player_prefix="expiredstate")
+		match.deadline = now_datetime() - timedelta(seconds=5)
+		match.save(ignore_permissions=True)
+
+		state = get_match_state(match.name)
+		match.reload()
+
+		self.assertEqual(state["status"], "Review")
+		self.assertEqual(match.status, "Review")

@@ -8,8 +8,9 @@ body {
   -webkit-tap-highlight-color: transparent;
   background-color: #09090b; /* zinc-950 */
   color: #d1fae5;
-  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, 'SFMono-Regular',
-    Menlo, Consolas, 'DejaVu Sans Mono', monospace;
+  font-family:
+    'JetBrains Mono', 'Fira Code', ui-monospace, 'SFMono-Regular', Menlo,
+    Consolas, 'DejaVu Sans Mono', monospace;
 }
 
 /* Terminal-style scrollbars */

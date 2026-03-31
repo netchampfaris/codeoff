@@ -2,7 +2,7 @@
   <div class="flex flex-1 flex-col overflow-hidden font-mono">
     <!-- Header -->
     <div
-      class="border-zinc-800 bg-zinc-900 flex items-center justify-between border-b px-5 py-3"
+      class="flex items-center justify-between border-b border-zinc-800 bg-zinc-900 px-5 py-3"
     >
       <div class="flex-1 text-center">
         <h1 class="text-xl font-bold tracking-tight text-green-300">

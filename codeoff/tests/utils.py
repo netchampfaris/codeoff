@@ -1,6 +1,5 @@
 import frappe
 
-
 CLEANUP_DOCTYPES = (
 	"Codeoff Submission",
 	"Codeoff Draft State",

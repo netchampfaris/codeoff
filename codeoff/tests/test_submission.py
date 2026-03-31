@@ -37,7 +37,7 @@ class TestCodeoffSubmissionValidation(IntegrationTestCase):
 
 	def test_submission_rejected_for_non_participant(self):
 		"""Outsider cannot submit to a match they're not in."""
-		match, players, outsider, _ = self._setup_live_match_with_outsider()
+		match, _, outsider, _ = self._setup_live_match_with_outsider()
 
 		with self.assertRaises(frappe.ValidationError):
 			frappe.get_doc(

@@ -14,19 +14,19 @@ frappe.ui.form.on("Codeoff Match", {
 						reqd: 1,
 					},
 					({ seconds }) => {
-						frm.call("add_time", { seconds }).then(() => frm.reload_doc())
+						frm.call("add_time", { seconds }).then(() => frm.reload_doc());
 					},
 					"Add Time to Match",
-					"Add",
-				)
-			})
+					"Add"
+				);
+			});
 
 			frm.add_custom_button("Judge Now", () => {
 				frappe.confirm(
 					"Run match resolution synchronously? Use this if the background job didn't fire.",
-					() => frm.call("resolve_now").then(() => frm.reload_doc()),
-				)
-			})
+					() => frm.call("resolve_now").then(() => frm.reload_doc())
+				);
+			});
 		}
 	},
 });

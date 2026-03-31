@@ -79,7 +79,7 @@ class TestCodeoffWinnerDetermination(IntegrationTestCase):
 
 	def test_no_submissions_enters_review(self):
 		"""No submissions from either player should enter Review."""
-		match, players, _ = create_live_match(player_prefix="wintest")
+		match, _, _ = create_live_match(player_prefix="wintest")
 
 		recompute_scores(match)
 		determine_winner_by_score(match)

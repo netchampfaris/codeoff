@@ -18,6 +18,7 @@ declare module 'vue' {
     DevLoginDropdown: typeof import('./src/components/DevLoginDropdown.vue')['default']
     EmojiButtonBar: typeof import('./src/components/EmojiButtonBar.vue')['default']
     LobbyPlayerCard: typeof import('./src/components/LobbyPlayerCard.vue')['default']
+    MatchManagementDialog: typeof import('./src/components/MatchManagementDialog.vue')['default']
     MatchVerdict: typeof import('./src/components/MatchVerdict.vue')['default']
     PlayerPanel: typeof import('./src/components/PlayerPanel.vue')['default']
     ProblemPanel: typeof import('./src/components/ProblemPanel.vue')['default']

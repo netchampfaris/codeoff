@@ -1,4 +1,4 @@
-import { reactive, ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch, type Ref } from 'vue'
 import { useCall } from 'frappe-ui'
 import { getSocket } from './socket'
 
@@ -182,4 +182,43 @@ export function useMatchTimer(
   })
 
   return { remaining, formatted }
+}
+
+export function usePostDeadlineRefresh(
+  state: ReturnType<typeof useMatchState>['state'],
+  remaining: Ref<number>,
+  reload: () => void,
+) {
+  let refreshTimer: ReturnType<typeof setInterval> | null = null
+
+  function stopRefreshTimer() {
+    if (refreshTimer) {
+      clearInterval(refreshTimer)
+      refreshTimer = null
+    }
+  }
+
+  watch(
+    () => [state.value?.status, remaining.value] as const,
+    ([status, secondsLeft]) => {
+      if (status !== 'Live' || secondsLeft > 0) {
+        stopRefreshTimer()
+        return
+      }
+
+      if (refreshTimer) return
+
+      reload()
+      refreshTimer = setInterval(() => {
+        if (state.value?.status !== 'Live') {
+          stopRefreshTimer()
+          return
+        }
+        reload()
+      }, 2000)
+    },
+    { immediate: true },
+  )
+
+  onUnmounted(stopRefreshTimer)
 }
