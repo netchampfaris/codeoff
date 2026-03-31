@@ -8,6 +8,14 @@
       "
     >
       <template #actions>
+        <AppButton
+          v-if="state?.is_organizer"
+          variant="inline"
+          class="text-green-800 hover:text-green-400"
+          @click="showManageMatch = true"
+        >
+          [manage match]
+        </AppButton>
         <DevLoginDropdown />
       </template>
     </AppNavbar>
@@ -482,12 +490,21 @@
       </div>
     </div>
   </div>
+  <MatchManagementDialog
+    v-model="showManageMatch"
+    :match="state"
+    @refreshed="reload"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useCall } from 'frappe-ui'
-import { useMatchState, useMatchTimer } from '@/data/match'
+import {
+  useMatchState,
+  useMatchTimer,
+  usePostDeadlineRefresh,
+} from '@/data/match'
 import { useLobbyPoll } from '@/data/useLobbyPoll'
 import { useMatchPlayers } from '@/data/useMatchPlayers'
 import { getSocket } from '@/data/socket'
@@ -505,6 +522,7 @@ import DevLoginDropdown from '@/components/DevLoginDropdown.vue'
 import TestCaseDots from '@/components/TestCaseDots.vue'
 import EmojiButtonBar from '@/components/EmojiButtonBar.vue'
 import MatchVerdict from '@/components/MatchVerdict.vue'
+import MatchManagementDialog from '@/components/MatchManagementDialog.vue'
 import { useResizablePanels } from '@/data/useResizablePanels'
 
 const props = defineProps<{
@@ -513,9 +531,11 @@ const props = defineProps<{
 
 const { state, loading, reload } = useMatchState(props.matchId)
 const { remaining, formatted } = useMatchTimer(state)
+usePostDeadlineRefresh(state, remaining, reload)
 const selectedPlayerId = ref(getStoredPrediction(props.matchId))
 const predictionPending = ref(false)
 const pendingPredictionId = ref<string | null>(null)
+const showManageMatch = ref(false)
 
 const showProblem = ref(false)
 const { bottomPanelHeight, startDragV } = useResizablePanels({

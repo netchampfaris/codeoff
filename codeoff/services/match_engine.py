@@ -5,11 +5,25 @@
 Match engine: handles match lifecycle, scoring, winner determination, and bracket advancement.
 """
 
+import math
+
 import frappe
 from frappe.utils import now_datetime
 
 
-def resolve_match_timeout(match_id):
+def schedule_match_timeout(match_id: str, delay_seconds: float | int):
+	"""Schedule match timeout resolution for the current deadline."""
+	frappe.enqueue(
+		"codeoff.services.match_engine.resolve_match_timeout",
+		match_id=match_id,
+		enqueue_after_commit=True,
+		at_front=False,
+		job_id=f"match_timeout_{match_id}",
+		execute_after=max(1, math.ceil(float(delay_seconds))),
+	)
+
+
+def resolve_match_timeout(match_id, force: bool = False):
 	"""Called by background job when match deadline is reached."""
 	match = frappe.get_doc("Codeoff Match", match_id)
 
@@ -19,6 +33,12 @@ def resolve_match_timeout(match_id):
 	# Check if someone already won (accepted submission during match)
 	if match.winner:
 		return
+
+	if not force and match.deadline:
+		remaining_seconds = (match.deadline - now_datetime()).total_seconds()
+		if remaining_seconds > 0:
+			schedule_match_timeout(match.name, remaining_seconds)
+			return
 
 	recompute_scores(match)
 	determine_winner_by_score(match)

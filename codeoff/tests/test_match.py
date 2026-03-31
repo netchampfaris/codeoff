@@ -1,7 +1,14 @@
 import frappe
 from frappe.tests import IntegrationTestCase
+from frappe.utils import now_datetime
 
-from codeoff.services.match_engine import determine_winner_by_score, finalize_match, recompute_scores
+from codeoff.api.contest import get_match_state
+from codeoff.services.match_engine import (
+	determine_winner_by_score,
+	finalize_match,
+	recompute_scores,
+	resolve_match_timeout,
+)
 from codeoff.tests.utils import (
 	cleanup_test_data,
 	create_live_match,
@@ -178,3 +185,34 @@ class TestCodeoffMatchLifecycle(IntegrationTestCase):
 
 		with self.assertRaises(frappe.ValidationError):
 			match.force_finish(players[0].name)
+
+	def test_timeout_waits_for_extended_deadline(self):
+		"""A timeout firing before an extended deadline should requeue instead of resolving."""
+		from datetime import timedelta
+		from unittest.mock import patch
+
+		match, _, _ = create_live_match(player_prefix="extendeddeadline")
+		match.deadline = now_datetime() + timedelta(seconds=180)
+		match.save(ignore_permissions=True)
+
+		with patch("codeoff.services.match_engine.schedule_match_timeout") as schedule_timeout:
+			resolve_match_timeout(match.name)
+
+		match.reload()
+		self.assertEqual(match.status, "Live")
+		schedule_timeout.assert_called_once()
+		self.assertGreater(schedule_timeout.call_args.args[1], 0)
+
+	def test_get_match_state_resolves_expired_live_match(self):
+		"""Fetching state should resolve overdue live matches when the queue has not yet run."""
+		from datetime import timedelta
+
+		match, _, _ = create_live_match(player_prefix="expiredstate")
+		match.deadline = now_datetime() - timedelta(seconds=5)
+		match.save(ignore_permissions=True)
+
+		state = get_match_state(match.name)
+		match.reload()
+
+		self.assertEqual(state["status"], "Review")
+		self.assertEqual(match.status, "Review")

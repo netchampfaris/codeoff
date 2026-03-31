@@ -130,9 +130,7 @@ def join_match(match_id: str):
 @frappe.whitelist()
 def start_match_now(match_id: str):
 	"""Organizer-only: start a Ready match manually."""
-	if "System Manager" not in frappe.get_roles():
-		frappe.throw("Only organizers can start a match", frappe.PermissionError)
-	match = frappe.get_doc("Codeoff Match", match_id)
+	match = _get_organizer_match(match_id)
 	if match.status != "Ready":
 		frappe.throw("Match is not in Ready status")
 	match.start_match()
@@ -143,14 +141,61 @@ def start_match_now(match_id: str):
 @frappe.whitelist()
 def make_match_ready(match_id: str):
 	"""Organizer-only: force a Draft match to Ready status."""
-	if "System Manager" not in frappe.get_roles():
-		frappe.throw("Only organizers can make a match ready", frappe.PermissionError)
-	match = frappe.get_doc("Codeoff Match", match_id)
+	match = _get_organizer_match(match_id)
 	if match.status != "Draft":
 		frappe.throw("Match is not in Draft status")
 	frappe.db.set_value("Codeoff Match", match_id, "status", "Ready")
 	frappe.db.commit()
 	return {"status": "Ready"}
+
+
+@frappe.whitelist()
+def organizer_add_match_time(match_id: str, seconds: int):
+	"""Organizer-only: extend a live match deadline."""
+	match = _get_organizer_match(match_id)
+	match.add_time(seconds)
+	frappe.db.commit()
+	match.reload()
+	return {"status": match.status, "deadline": match.deadline}
+
+
+@frappe.whitelist()
+def organizer_resolve_match(match_id: str):
+	"""Organizer-only: resolve a live match immediately."""
+	match = _get_organizer_match(match_id)
+	match.resolve_now()
+	frappe.db.commit()
+	match.reload()
+	return {"status": match.status, "winner": match.winner, "winning_reason": match.winning_reason}
+
+
+@frappe.whitelist()
+def organizer_force_finish_match(match_id: str, winner_player: str):
+	"""Organizer-only: manually set the winner of a live/review match."""
+	match = _get_organizer_match(match_id)
+	match.force_finish(winner_player)
+	frappe.db.commit()
+	match.reload()
+	return {"status": match.status, "winner": match.winner, "winning_reason": match.winning_reason}
+
+
+@frappe.whitelist()
+def organizer_reset_match(match_id: str):
+	"""Organizer-only: reset a match and clear submissions."""
+	match = _get_organizer_match(match_id)
+	match.reset_match()
+	frappe.db.commit()
+	match.reload()
+	return {"status": match.status}
+
+
+@frappe.whitelist()
+def organizer_create_rematch(match_id: str):
+	"""Organizer-only: create a rematch for a review match."""
+	match = _get_organizer_match(match_id)
+	result = match.create_rematch()
+	frappe.db.commit()
+	return result
 
 
 @frappe.whitelist(allow_guest=True)
@@ -334,6 +379,7 @@ def _publish_audience_count(audience_total: int, force: bool = False):
 def _build_match_state(match_id: str):
 	"""Internal: build the full match state dict."""
 	match = frappe.get_doc("Codeoff Match", match_id)
+	match = _refresh_expired_match(match)
 
 	# Get draft states from Redis
 	drafts = {}
@@ -442,6 +488,28 @@ def _build_match_state(match_id: str):
 		"votes_1": votes_1,
 		"votes_2": votes_2,
 	}
+
+
+def _get_organizer_match(match_id: str):
+	"""Ensure the caller is an organizer before mutating match state."""
+	if "System Manager" not in frappe.get_roles():
+		frappe.throw("Only organizers can manage matches", frappe.PermissionError)
+	return frappe.get_doc("Codeoff Match", match_id)
+
+
+def _refresh_expired_match(match):
+	"""Resolve overdue live matches during state reads if the queue hasn't caught up yet."""
+	if match.status != "Live" or not match.deadline or match.winner:
+		return match
+
+	if match.deadline > now_datetime():
+		return match
+
+	from codeoff.services.match_engine import resolve_match_timeout
+
+	resolve_match_timeout(match.name)
+	match.reload()
+	return match
 
 
 @frappe.whitelist()
