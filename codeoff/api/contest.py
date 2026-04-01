@@ -713,10 +713,16 @@ def get_tournament_bracket():
 
 @frappe.whitelist(allow_guest=True)
 def get_all_players():
-	"""Return all Codeoff Players (for dev login-as dropdown). Only available in
-	developer mode — used by the player-switcher shown when enable_dev_login is set."""
-	if not frappe.conf.developer_mode:
-		frappe.throw("This API is only available in developer mode", frappe.PermissionError)
+	"""Return all Codeoff Players (for dev login-as dropdown). Only available when
+	enable_dev_login is set on the Live tournament."""
+	enable_dev_login = frappe.db.get_value(
+		"Codeoff Tournament",
+		{"status": "Live"},
+		"enable_dev_login",
+		order_by="creation desc",
+	)
+	if not enable_dev_login:
+		frappe.throw("This API is only available when enable_dev_login is set on the Live tournament", frappe.PermissionError)
 	return frappe.get_all(
 		"Codeoff Player",
 		fields=["name", "player_name", "user"],
