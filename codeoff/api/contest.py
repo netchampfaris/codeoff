@@ -148,8 +148,8 @@ def make_match_ready(match_id: str):
 	match = _get_organizer_match(match_id)
 	if match.status != "Draft":
 		frappe.throw("Match is not in Draft status")
-	frappe.db.set_value("Codeoff Match", match_id, "status", "Ready")
-	frappe.db.commit()
+	match.status = "Ready"
+	match.save(ignore_permissions=True)
 	return {"status": "Ready"}
 
 
