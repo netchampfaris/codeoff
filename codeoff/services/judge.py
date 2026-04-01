@@ -15,6 +15,8 @@ import time
 
 import frappe
 
+from codeoff.services.sandbox import SandboxValidationError, validate_source_code
+
 
 def judge_submission(submission_id):
 	"""Background job entry point. Runs the submission against all hidden test cases."""
@@ -75,6 +77,19 @@ def run_tests(source_code, function_name, test_cases, time_limit=2.0, memory_lim
 			"runtime_ms": 0,
 			"details": [],
 			"error": "No test cases found",
+		}
+
+	# Pre-execution sandbox validation (AST analysis)
+	try:
+		validate_source_code(source_code)
+	except SandboxValidationError as e:
+		return {
+			"verdict": "Sandbox Violation",
+			"passed_tests": 0,
+			"total_tests": len(test_cases),
+			"runtime_ms": 0,
+			"details": [],
+			"error": str(e),
 		}
 
 	# Build the runner script
@@ -166,6 +181,8 @@ def run_tests(source_code, function_name, test_cases, time_limit=2.0, memory_lim
 
 def _build_runner_script(source_code, function_name, test_cases):
 	"""Build a self-contained Python script that runs the user code against test cases."""
+	from codeoff.services.sandbox import get_import_hook_code, get_restricted_builtins_code
+
 	tests_json = json.dumps(
 		[
 			{
@@ -178,6 +195,9 @@ def _build_runner_script(source_code, function_name, test_cases):
 		]
 	)
 
+	import_hook = get_import_hook_code()
+	restricted_builtins = get_restricted_builtins_code()
+
 	# compile() with a friendly filename so all tracebacks reference "<your code>"
 	# and line numbers are 1-based within the user's own code.
 	runner = f"""
@@ -186,14 +206,24 @@ import sys
 import io
 import traceback as _tb
 
+# -- Sandbox: install import allowlist --
+{import_hook}
+
+# -- Sandbox: define restricted builtins --
+{restricted_builtins}
+
 _src = {source_code!r}
+
+# Execute user code in a namespace with restricted builtins
+_user_globals = {{'__builtins__': _SAFE_BUILTINS}}
 try:
-    exec(compile(_src, "<your code>", "exec"), globals())
+    exec(compile(_src, "<your code>", "exec"), _user_globals)
 except SyntaxError as _e:
     print(json.dumps({{"passed": 0, "total": {len(test_cases)}, "details": [], "error": "SyntaxError on line " + str(_e.lineno) + ": " + str(_e.msg)}}))
     sys.exit(0)
 
 def _run_tests():
+    _func = _user_globals['{function_name}']
     tests = json.loads('''{tests_json}''')
     results = []
     passed = 0
@@ -208,7 +238,7 @@ def _run_tests():
             _capture = io.StringIO()
             sys.stdout = _capture
             try:
-                actual = {function_name}(*args)
+                actual = _func(*args)
             finally:
                 sys.stdout = sys.__stdout__
                 all_stdout += _capture.getvalue()
@@ -243,6 +273,11 @@ def _execute_in_subprocess(script, time_limit, memory_limit_mb):
 			# Set memory limit (may fail on some platforms)
 			try:
 				resource.setrlimit(resource.RLIMIT_AS, (memory_bytes, memory_bytes))
+			except Exception:
+				pass
+			# Prevent fork bombs — allow only 1 process (the current one)
+			try:
+				resource.setrlimit(resource.RLIMIT_NPROC, (1, 1))
 			except Exception:
 				pass
 
