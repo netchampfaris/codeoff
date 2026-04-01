@@ -30,7 +30,6 @@ def submit_code(match_id: str, source_code: str):
 	submission.problem = match.problem
 	submission.source_code = source_code
 	submission.insert(ignore_permissions=True)
-	frappe.db.commit()
 
 	# Broadcast updated match state
 	publish_match_state(match_id)
@@ -45,10 +44,12 @@ def submit_code(match_id: str, source_code: str):
 		judge_submission(submission.name)
 		return {"submission_id": submission.name, "status": "Completed"}
 
+	# enqueue_after_commit ensures the submission row is visible to the worker
 	frappe.enqueue(
 		"codeoff.services.judge.judge_submission",
 		submission_id=submission.name,
 		at_front=True,
+		enqueue_after_commit=True,
 	)
 
 	return {"submission_id": submission.name, "status": "Queued"}
@@ -76,6 +77,11 @@ def run_sample_tests(match_id: str, source_code: str):
 def update_draft(match_id: str, source_code: str, cursor_line: int = 0, cursor_column: int = 0):
 	"""Update draft state in Redis and broadcast to spectators."""
 	player = _get_current_player()
+
+	# Validate player belongs to this match
+	match_players = frappe.db.get_value("Codeoff Match", match_id, ["player_1", "player_2"], as_dict=True)
+	if not match_players or player.name not in (match_players.player_1, match_players.player_2):
+		frappe.throw("You are not a participant in this match")
 
 	# Store in Redis
 	draft_data = {
@@ -117,7 +123,6 @@ def join_match(match_id: str):
 	# Use atomic set_value to avoid race condition where concurrent joins
 	# overwrite each other's flags via full document save
 	frappe.db.set_value("Codeoff Match", match_id, f"{slot}_joined", 1)
-	frappe.db.commit()
 
 	# Broadcast updated match state
 	publish_match_state(match_id)
@@ -134,7 +139,6 @@ def start_match_now(match_id: str):
 	if match.status != "Ready":
 		frappe.throw("Match is not in Ready status")
 	match.start_match()
-	frappe.db.commit()
 	return {"status": "Live"}
 
 
@@ -144,8 +148,8 @@ def make_match_ready(match_id: str):
 	match = _get_organizer_match(match_id)
 	if match.status != "Draft":
 		frappe.throw("Match is not in Draft status")
-	frappe.db.set_value("Codeoff Match", match_id, "status", "Ready")
-	frappe.db.commit()
+	match.status = "Ready"
+	match.save(ignore_permissions=True)
 	return {"status": "Ready"}
 
 
@@ -154,7 +158,6 @@ def organizer_add_match_time(match_id: str, seconds: int):
 	"""Organizer-only: extend a live match deadline."""
 	match = _get_organizer_match(match_id)
 	match.add_time(seconds)
-	frappe.db.commit()
 	match.reload()
 	return {"status": match.status, "deadline": match.deadline}
 
@@ -164,7 +167,6 @@ def organizer_resolve_match(match_id: str):
 	"""Organizer-only: resolve a live match immediately."""
 	match = _get_organizer_match(match_id)
 	match.resolve_now()
-	frappe.db.commit()
 	match.reload()
 	return {"status": match.status, "winner": match.winner, "winning_reason": match.winning_reason}
 
@@ -174,7 +176,6 @@ def organizer_force_finish_match(match_id: str, winner_player: str):
 	"""Organizer-only: manually set the winner of a live/review match."""
 	match = _get_organizer_match(match_id)
 	match.force_finish(winner_player)
-	frappe.db.commit()
 	match.reload()
 	return {"status": match.status, "winner": match.winner, "winning_reason": match.winning_reason}
 
@@ -184,7 +185,6 @@ def organizer_reset_match(match_id: str):
 	"""Organizer-only: reset a match and clear submissions."""
 	match = _get_organizer_match(match_id)
 	match.reset_match()
-	frappe.db.commit()
 	match.reload()
 	return {"status": match.status}
 
@@ -194,7 +194,6 @@ def organizer_create_rematch(match_id: str):
 	"""Organizer-only: create a rematch for a review match."""
 	match = _get_organizer_match(match_id)
 	result = match.create_rematch()
-	frappe.db.commit()
 	return result
 
 
@@ -274,7 +273,6 @@ def vote_for_player(match_id: str, player_id: str):
 			"UPDATE `tabCodeoff Match` SET `votes_player_2` = COALESCE(`votes_player_2`, 0) + 1 WHERE name = %s",
 			(match_id,),
 		)
-	frappe.db.commit()
 
 	updated = frappe.db.get_value(
 		"Codeoff Match", match_id, ["votes_player_1", "votes_player_2"], as_dict=True
@@ -673,13 +671,22 @@ def get_tournament_bracket():
 		ignore_permissions=True,
 	)
 
-	# Resolve player names
+	# Batch-fetch all player names to avoid N+1 queries
+	player_ids = {m[f] for m in matches for f in ("player_1", "player_2", "winner") if m.get(f)}
 	player_cache = {}
+	if player_ids:
+		rows = frappe.get_all(
+			"Codeoff Player",
+			filters={"name": ["in", list(player_ids)]},
+			fields=["name", "player_name"],
+		)
+		player_cache = {r.name: r.player_name or r.name for r in rows}
+		for pid in player_ids:
+			player_cache.setdefault(pid, pid)
+
 	for m in matches:
 		for field in ("player_1", "player_2", "winner"):
 			pid = m.get(field)
-			if pid and pid not in player_cache:
-				player_cache[pid] = frappe.db.get_value("Codeoff Player", pid, "player_name") or pid
 			m[f"{field}_name"] = player_cache.get(pid) if pid else None
 
 	# Group by round
@@ -706,8 +713,16 @@ def get_tournament_bracket():
 
 @frappe.whitelist(allow_guest=True)
 def get_all_players():
-	"""Return all Codeoff Players (for dev login-as dropdown). Guest-accessible
-	because spectators are guests; only shown when enable_dev_login is set."""
+	"""Return all Codeoff Players (for dev login-as dropdown). Only available when
+	enable_dev_login is set on the Live tournament."""
+	enable_dev_login = frappe.db.get_value(
+		"Codeoff Tournament",
+		{"status": "Live"},
+		"enable_dev_login",
+		order_by="creation desc",
+	)
+	if not enable_dev_login:
+		frappe.throw("This API is only available when enable_dev_login is set on the Live tournament", frappe.PermissionError)
 	return frappe.get_all(
 		"Codeoff Player",
 		fields=["name", "player_name", "user"],
