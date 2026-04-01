@@ -671,13 +671,22 @@ def get_tournament_bracket():
 		ignore_permissions=True,
 	)
 
-	# Resolve player names
+	# Batch-fetch all player names to avoid N+1 queries
+	player_ids = {m[f] for m in matches for f in ("player_1", "player_2", "winner") if m.get(f)}
 	player_cache = {}
+	if player_ids:
+		rows = frappe.get_all(
+			"Codeoff Player",
+			filters={"name": ["in", list(player_ids)]},
+			fields=["name", "player_name"],
+		)
+		player_cache = {r.name: r.player_name or r.name for r in rows}
+		for pid in player_ids:
+			player_cache.setdefault(pid, pid)
+
 	for m in matches:
 		for field in ("player_1", "player_2", "winner"):
 			pid = m.get(field)
-			if pid and pid not in player_cache:
-				player_cache[pid] = frappe.db.get_value("Codeoff Player", pid, "player_name") or pid
 			m[f"{field}_name"] = player_cache.get(pid) if pid else None
 
 	# Group by round
