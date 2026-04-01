@@ -19,7 +19,8 @@ export function useCodeDraft(
   let draftTimeout: ReturnType<typeof setTimeout> | null = null
 
   const updateDraft = useCall({
-    url: '/api/v2/method/codeoff.api.contest.update_draft',
+    url: `/api/v2/document/Codeoff%20Match/${matchId}/method/update_draft`,
+    method: 'POST',
     immediate: false,
   })
 
@@ -28,7 +29,6 @@ export function useCodeDraft(
     if (draftTimeout) clearTimeout(draftTimeout)
     draftTimeout = setTimeout(() => {
       updateDraft.submit({
-        match_id: matchId,
         source_code: code.value,
         cursor_line: lastCursor.line,
         cursor_column: lastCursor.column,

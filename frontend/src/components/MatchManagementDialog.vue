@@ -284,7 +284,11 @@ function failAction(err: any) {
 }
 
 const startMatchCall = useCall({
-  url: '/api/v2/method/codeoff.api.contest.start_match_now',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${props.match?.match_id}/method/start_match`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess() {
     endAction('Match started')
@@ -293,7 +297,11 @@ const startMatchCall = useCall({
 })
 
 const addTimeCall = useCall({
-  url: '/api/v2/method/codeoff.api.contest.organizer_add_match_time',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${props.match?.match_id}/method/add_time`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess() {
     endAction('Match time updated')
@@ -302,7 +310,11 @@ const addTimeCall = useCall({
 })
 
 const judgeNowCall = useCall({
-  url: '/api/v2/method/codeoff.api.contest.organizer_resolve_match',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${props.match?.match_id}/method/resolve_now`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess(data: any) {
     endAction(
@@ -313,7 +325,11 @@ const judgeNowCall = useCall({
 })
 
 const forceFinishCall = useCall({
-  url: '/api/v2/method/codeoff.api.contest.organizer_force_finish_match',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${props.match?.match_id}/method/force_finish`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess() {
     endAction('Winner updated')
@@ -322,7 +338,11 @@ const forceFinishCall = useCall({
 })
 
 const resetMatchCall = useCall({
-  url: '/api/v2/method/codeoff.api.contest.organizer_reset_match',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${props.match?.match_id}/method/reset_match`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess() {
     endAction('Match reset')
@@ -331,7 +351,11 @@ const resetMatchCall = useCall({
 })
 
 const createRematchCall = useCall({
-  url: '/api/v2/method/codeoff.api.contest.organizer_create_rematch',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${props.match?.match_id}/method/create_rematch`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess(data: any) {
     endAction(
@@ -346,26 +370,25 @@ const createRematchCall = useCall({
 function startMatch() {
   if (!props.match) return
   beginAction('start')
-  startMatchCall.submit({ match_id: props.match.match_id })
+  startMatchCall.submit({})
 }
 
 function addTime(seconds: number) {
   if (!props.match) return
   beginAction(`add-${seconds}`)
-  addTimeCall.submit({ match_id: props.match.match_id, seconds })
+  addTimeCall.submit({ seconds })
 }
 
 function judgeNow() {
   if (!props.match) return
   beginAction('judge')
-  judgeNowCall.submit({ match_id: props.match.match_id })
+  judgeNowCall.submit({})
 }
 
 function forceFinish(winnerPlayer: string) {
   if (!props.match) return
   beginAction(`winner-${winnerPlayer}`)
   forceFinishCall.submit({
-    match_id: props.match.match_id,
     winner_player: winnerPlayer,
   })
 }
@@ -373,12 +396,12 @@ function forceFinish(winnerPlayer: string) {
 function resetMatch() {
   if (!props.match) return
   beginAction('reset')
-  resetMatchCall.submit({ match_id: props.match.match_id })
+  resetMatchCall.submit({})
 }
 
 function createRematch() {
   if (!props.match) return
   beginAction('rematch')
-  createRematchCall.submit({ match_id: props.match.match_id })
+  createRematchCall.submit({})
 }
 </script>

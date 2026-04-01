@@ -570,7 +570,11 @@ const player2Code = computed(() => {
 
 // ── Organizer start ─────────────────────────────────────────────────────────
 const startMatchCall: any = useCall({
-  url: '/api/v2/method/codeoff.api.contest.start_match_now',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${props.matchId}/method/start_match`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess() {
     reload()
@@ -578,12 +582,16 @@ const startMatchCall: any = useCall({
 })
 
 function startMatch() {
-  startMatchCall.submit({ match_id: props.matchId })
+  startMatchCall.submit({})
 }
 
 // ── Voting ──────────────────────────────────────────────────────────────────
 const voteCall: any = useCall({
-  url: '/api/v2/method/codeoff.api.contest.vote_for_player',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${props.matchId}/method/vote_for_player`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess() {
     if (pendingPredictionId.value) {
@@ -603,7 +611,7 @@ function handlePredictionPick(playerId: string) {
   if (selectedPlayerId.value || predictionPending.value) return
   pendingPredictionId.value = playerId
   predictionPending.value = true
-  voteCall.submit({ match_id: props.matchId, player_id: playerId })
+  voteCall.submit({ player_id: playerId })
 }
 
 const predictionStats = computed(() =>
@@ -718,7 +726,11 @@ let bannerTimer: ReturnType<typeof setTimeout> | null = null
 const activeEmoji = ref<Record<string, boolean>>({})
 
 const reactionCall: any = useCall({
-  url: '/api/v2/method/codeoff.api.contest.send_reaction',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${props.matchId}/method/send_reaction`,
+  ),
+  method: 'POST',
   immediate: false,
 })
 
@@ -981,7 +993,6 @@ function sendReaction(emoji: string, playerId?: string | null) {
   // Clean up the ID if the server never echoes back (e.g. network error)
   setTimeout(() => localFloaterIds.delete(localId), 3000)
   reactionCall.submit({
-    match_id: props.matchId,
     emoji,
     player_id: playerId,
     client_id: localId,

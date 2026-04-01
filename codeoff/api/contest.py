@@ -2,199 +2,20 @@
 # For license information, please see license.txt
 
 """
-API methods for contestant and spectator interactions.
+Non-DocType API endpoints: audience presence, live match listings, and tournament bracket.
+Doc-scoped match actions (submit_code, join_match, vote_for_player, etc.) live as
+@frappe.whitelist() methods on the Codeoff Match controller.
 """
 
 import json
-import uuid
 
 import frappe
 from frappe.utils import now_datetime
 
-ALLOWED_REACTIONS = ["🔥", "💀", "👀", "🎉", "😬"]
 AUDIENCE_CHANNEL = "codeoff_audience"
 AUDIENCE_KEY_PREFIX = "codeoff_presence:global:"
 AUDIENCE_TTL_SECONDS = 45
 AUDIENCE_LAST_COUNT_KEY = "codeoff_audience:last_count"
-
-
-@frappe.whitelist(methods=["POST"])
-def submit_code(match_id: str, source_code: str):
-	"""Submit code for official judging."""
-	player = _get_current_player()
-	match = frappe.get_doc("Codeoff Match", match_id)
-
-	if match.status != "Live":
-		frappe.throw("Match is not live")
-	if player.name not in (match.player_1, match.player_2):
-		frappe.throw("You are not a participant in this match")
-
-	submission = frappe.new_doc("Codeoff Submission")
-	submission.match = match_id
-	submission.player = player.name
-	submission.problem = match.problem
-	submission.source_code = source_code
-	submission.insert(ignore_permissions=True)
-	frappe.db.commit()
-
-	# Broadcast updated match state
-	publish_match_state(match_id)
-
-	# Enqueue or run synchronously based on tournament setting
-	tournament = frappe.db.get_value("Codeoff Match", match_id, "tournament")
-	sync_judging = frappe.db.get_value("Codeoff Tournament", tournament, "sync_judging")
-
-	if sync_judging:
-		from codeoff.services.judge import judge_submission
-
-		judge_submission(submission.name)
-		return {"submission_id": submission.name, "status": "Completed"}
-
-	frappe.enqueue(
-		"codeoff.services.judge.judge_submission",
-		submission_id=submission.name,
-		at_front=True,
-	)
-
-	return {"submission_id": submission.name, "status": "Queued"}
-
-
-@frappe.whitelist(methods=["POST"])
-def run_sample_tests(match_id: str, source_code: str):
-	"""Run code against sample test cases only. Ephemeral — no record created."""
-	player = _get_current_player()
-	match = frappe.get_doc("Codeoff Match", match_id)
-
-	if match.status != "Live":
-		frappe.throw("Match is not live")
-
-	if player.name not in (match.player_1, match.player_2):
-		frappe.throw("You are not a participant in this match")
-
-	from codeoff.services.judge import run_sample_tests as _run_sample_tests
-
-	results = _run_sample_tests(source_code, match.problem)
-	return results
-
-
-@frappe.whitelist(methods=["POST"])
-def update_draft(match_id: str, source_code: str, cursor_line: int = 0, cursor_column: int = 0):
-	"""Update draft state in Redis and broadcast to spectators."""
-	player = _get_current_player()
-
-	# Store in Redis
-	draft_data = {
-		"match_id": match_id,
-		"player_id": player.name,
-		"language": "python",
-		"source_code": source_code,
-		"cursor_line": int(cursor_line),
-		"cursor_column": int(cursor_column),
-		"updated_at": str(now_datetime()),
-	}
-	cache_key = f"codeoff_draft:{match_id}:{player.name}"
-	frappe.cache.set_value(cache_key, frappe.as_json(draft_data))
-
-	_broadcast_match_event(match_id, {"event_type": "draft_updated", **draft_data})
-
-
-@frappe.whitelist(methods=["POST"])
-def join_match(match_id: str):
-	"""Player joins the match lobby. When both players join, the match starts."""
-	player = _get_current_player()
-	match = frappe.get_doc("Codeoff Match", match_id)
-
-	if match.status not in ("Ready", "Live"):
-		frappe.throw("Match is not available to join")
-
-	# Determine which slot this player is in
-	if match.player_1 == player.name:
-		slot = "player_1"
-	elif match.player_2 == player.name:
-		slot = "player_2"
-	else:
-		frappe.throw("You are not a player in this match")
-
-	# Already joined?
-	if match.get(f"{slot}_joined"):
-		return {"status": match.status, "already_joined": True}
-
-	# Use atomic set_value to avoid race condition where concurrent joins
-	# overwrite each other's flags via full document save
-	frappe.db.set_value("Codeoff Match", match_id, f"{slot}_joined", 1)
-	frappe.db.commit()
-
-	# Broadcast updated match state
-	publish_match_state(match_id)
-
-	# Return fresh status
-	match.reload()
-	return {"status": match.status}
-
-
-@frappe.whitelist(methods=["POST"])
-def start_match_now(match_id: str):
-	"""Organizer-only: start a Ready match manually."""
-	match = _get_organizer_match(match_id)
-	if match.status != "Ready":
-		frappe.throw("Match is not in Ready status")
-	match.start_match()
-	return {"status": "Live"}
-
-
-@frappe.whitelist(methods=["POST"])
-def make_match_ready(match_id: str):
-	"""Organizer-only: force a Draft match to Ready status."""
-	match = _get_organizer_match(match_id)
-	if match.status != "Draft":
-		frappe.throw("Match is not in Draft status")
-	match.status = "Ready"
-	match.save(ignore_permissions=True)
-	return {"status": "Ready"}
-
-
-@frappe.whitelist(methods=["POST"])
-def organizer_add_match_time(match_id: str, seconds: int):
-	"""Organizer-only: extend a live match deadline."""
-	match = _get_organizer_match(match_id)
-	match.add_time(seconds)
-	match.reload()
-	return {"status": match.status, "deadline": match.deadline}
-
-
-@frappe.whitelist(methods=["POST"])
-def organizer_resolve_match(match_id: str):
-	"""Organizer-only: resolve a live match immediately."""
-	match = _get_organizer_match(match_id)
-	match.resolve_now()
-	match.reload()
-	return {"status": match.status, "winner": match.winner, "winning_reason": match.winning_reason}
-
-
-@frappe.whitelist(methods=["POST"])
-def organizer_force_finish_match(match_id: str, winner_player: str):
-	"""Organizer-only: manually set the winner of a live/review match."""
-	match = _get_organizer_match(match_id)
-	match.force_finish(winner_player)
-	match.reload()
-	return {"status": match.status, "winner": match.winner, "winning_reason": match.winning_reason}
-
-
-@frappe.whitelist(methods=["POST"])
-def organizer_reset_match(match_id: str):
-	"""Organizer-only: reset a match and clear submissions."""
-	match = _get_organizer_match(match_id)
-	match.reset_match()
-	match.reload()
-	return {"status": match.status}
-
-
-@frappe.whitelist(methods=["POST"])
-def organizer_create_rematch(match_id: str):
-	"""Organizer-only: create a rematch for a review match."""
-	match = _get_organizer_match(match_id)
-	result = match.create_rematch()
-	return result
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
@@ -245,80 +66,6 @@ def get_audience_count():
 		"audience_total": _get_audience_total(),
 		"updated_at": str(now_datetime()),
 	}
-
-
-@frappe.whitelist(allow_guest=True, methods=["POST"])
-def vote_for_player(match_id: str, player_id: str):
-	"""Cast a spectator crowd pick for a player while the match is Ready."""
-	match = frappe.db.get_value(
-		"Codeoff Match",
-		match_id,
-		["status", "player_1", "player_2", "votes_player_1", "votes_player_2"],
-		as_dict=True,
-	)
-	if not match:
-		frappe.throw("Match not found")
-	if match.status != "Ready":
-		frappe.throw("Voting is only open while the match is in the lobby")
-	if player_id not in (match.player_1, match.player_2):
-		frappe.throw("Invalid player for this match")
-
-	Match = frappe.qb.DocType("Codeoff Match")
-	if player_id == match.player_1:
-		frappe.qb.update(Match).set(Match.votes_player_1, Match.votes_player_1 + 1).where(
-			Match.name == match_id
-		).run()
-	else:
-		frappe.qb.update(Match).set(Match.votes_player_2, Match.votes_player_2 + 1).where(
-			Match.name == match_id
-		).run()
-
-	updated = frappe.db.get_value(
-		"Codeoff Match", match_id, ["votes_player_1", "votes_player_2"], as_dict=True
-	)
-	votes_1 = updated.votes_player_1 or 0
-	votes_2 = updated.votes_player_2 or 0
-	_broadcast_match_event(
-		match_id,
-		{
-			"event_type": "vote_update",
-			"votes_1": votes_1,
-			"votes_2": votes_2,
-		},
-	)
-	return {"votes_1": votes_1, "votes_2": votes_2}
-
-
-@frappe.whitelist(allow_guest=True, methods=["POST"])
-def send_reaction(match_id: str, emoji: str, player_id: str | None = None, client_id: str | None = None):
-	"""Broadcast an ephemeral emoji reaction to all spectators."""
-	if emoji not in ALLOWED_REACTIONS:
-		frappe.throw("Invalid reaction")
-	# Sanitize client_id — it's echoed back for dedup; reject oversized values
-	if client_id and len(str(client_id)) > 128:
-		client_id = None
-	# Validate player_id belongs to this match if provided
-	if player_id:
-		players = frappe.db.get_value("Codeoff Match", match_id, ["player_1", "player_2"], as_dict=True)
-		if not players or player_id not in (players.player_1, players.player_2):
-			player_id = None
-	_broadcast_match_event(
-		match_id,
-		{
-			"event_type": "reaction",
-			"emoji": emoji,
-			"player_id": player_id,
-			"client_id": client_id,
-			"id": str(uuid.uuid4()),
-		},
-	)
-	return {"ok": True}
-
-
-@frappe.whitelist(allow_guest=True, methods=["GET"])
-def get_match_state(match_id: str):
-	"""Get current match state for spectator or contestant. Public API."""
-	return _build_match_state(match_id)
 
 
 def publish_match_state(match_id: str):
@@ -485,13 +232,6 @@ def _build_match_state(match_id: str):
 		"votes_1": votes_1,
 		"votes_2": votes_2,
 	}
-
-
-def _get_organizer_match(match_id: str):
-	"""Ensure the caller is an organizer before mutating match state."""
-	if "System Manager" not in frappe.get_roles():
-		frappe.throw("Only organizers can manage matches", frappe.PermissionError)
-	return frappe.get_doc("Codeoff Match", match_id)
 
 
 def _refresh_expired_match(match):
@@ -714,12 +454,3 @@ def get_all_players():
 	if t and t[0].enable_dev_login:
 		fields.append("user")
 	return frappe.get_all("Codeoff Player", fields=fields, order_by="player_name asc")
-
-
-def _get_current_player():
-	"""Get the Codeoff Player for the currently logged-in user."""
-	user = frappe.session.user
-	player_name = frappe.db.get_value("Codeoff Player", {"user": user}, "name")
-	if not player_name:
-		frappe.throw("No player profile found for your account")
-	return frappe.get_doc("Codeoff Player", player_name)

@@ -61,7 +61,7 @@ export function useMatchState(matchId: string) {
   const error = ref<string | null>(null)
 
   const fetchState = useCall({
-    url: '/api/v2/method/codeoff.api.contest.get_match_state',
+    url: `/api/v2/document/Codeoff%20Match/${matchId}/method/get_match_state`,
     immediate: false,
     onSuccess(data: MatchState) {
       state.value = data
@@ -75,7 +75,7 @@ export function useMatchState(matchId: string) {
 
   function load() {
     loading.value = true
-    fetchState.submit({ match_id: matchId })
+    fetchState.submit({})
   }
 
   function reload() {
