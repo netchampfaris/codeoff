@@ -213,7 +213,11 @@ const submitError = ref<string | null>(null)
 
 // --- Organizer start match ---
 const startMatchCall = useCall({
-  url: '/api/v2/method/codeoff.api.contest.start_match_now',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${props.matchId}/method/start_match`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess() {
     reload()
@@ -221,7 +225,7 @@ const startMatchCall = useCall({
 })
 
 function startMatch() {
-  startMatchCall.submit({ match_id: props.matchId })
+  startMatchCall.submit({})
 }
 
 // --- Resizable panels ---
@@ -287,7 +291,10 @@ const myPlayerName = computed(() => {
 // --- Join match ---
 let joined = false
 const joinMatch = useCall({
-  url: '/api/v2/method/codeoff.api.contest.join_match',
+  url: computed(
+    () => `/api/v2/document/Codeoff%20Match/${props.matchId}/method/join_match`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess() {
     reload()
@@ -297,13 +304,17 @@ const joinMatch = useCall({
 watch(state, (s) => {
   if (s && !joined && (s.status === 'Ready' || s.status === 'Live')) {
     joined = true
-    joinMatch.submit({ match_id: props.matchId })
+    joinMatch.submit({})
   }
 })
 
 // --- Run sample tests ---
 const runSampleTests = useCall({
-  url: '/api/v2/method/codeoff.api.contest.run_sample_tests',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${props.matchId}/method/run_sample_tests`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess(data: any) {
     testResults.value = data
@@ -325,12 +336,16 @@ function runTests() {
 
   runningTests.value = true
   testResults.value = null
-  runSampleTests.submit({ match_id: props.matchId, source_code: code.value })
+  runSampleTests.submit({ source_code: code.value })
 }
 
 // --- Submit code ---
 const submitCodeCall = useCall({
-  url: '/api/v2/method/codeoff.api.contest.submit_code',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${props.matchId}/method/submit_code`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess() {
     submitting.value = false
@@ -346,6 +361,6 @@ const submitCodeCall = useCall({
 
 function submitCode() {
   submitting.value = true
-  submitCodeCall.submit({ match_id: props.matchId, source_code: code.value })
+  submitCodeCall.submit({ source_code: code.value })
 }
 </script>

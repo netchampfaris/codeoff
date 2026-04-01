@@ -83,7 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
 import { useCall } from 'frappe-ui'
 import { useMyMatch } from '@/data/match'
 import { useTournament } from '@/data/useTournament'
@@ -95,8 +95,13 @@ import DevLoginDropdown from '@/components/DevLoginDropdown.vue'
 const { match, loading, reload } = useMyMatch()
 const { bracket } = useTournament()
 
+const makeReadyMatchId = ref('')
 const makeReadyCall = useCall({
-  url: '/api/v2/method/codeoff.api.contest.make_match_ready',
+  url: computed(
+    () =>
+      `/api/v2/document/Codeoff%20Match/${makeReadyMatchId.value}/method/make_match_ready`,
+  ),
+  method: 'POST',
   immediate: false,
   onSuccess() {
     bracket.submit()
@@ -104,7 +109,8 @@ const makeReadyCall = useCall({
 })
 
 function makeMatchReady(matchId: string) {
-  makeReadyCall.submit({ match_id: matchId })
+  makeReadyMatchId.value = matchId
+  makeReadyCall.submit({})
 }
 
 // Auto-refresh bracket every 5 s so timers and scores stay live
