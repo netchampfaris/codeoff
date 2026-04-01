@@ -1,6 +1,6 @@
 from frappe.tests import IntegrationTestCase
 
-from codeoff.services.judge import run_tests
+from codeoff.services.sandbox import run_tests
 from codeoff.tests.utils import make_test_cases
 
 

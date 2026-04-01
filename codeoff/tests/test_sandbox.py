@@ -1,7 +1,6 @@
 from frappe.tests import IntegrationTestCase
 
-from codeoff.services.judge import run_tests
-from codeoff.services.sandbox import SandboxValidationError, validate_source_code
+from codeoff.services.sandbox import SandboxValidationError, run_tests, validate_source_code
 from codeoff.tests.utils import make_test_cases
 
 
