@@ -188,7 +188,6 @@ class CodeoffMatch(Document):
 
 		from codeoff.api.contest import publish_match_state
 
-		frappe.db.commit()
 		publish_match_state(self.name)
 		publish_match_state(rematch.name)
 		return {
@@ -225,7 +224,6 @@ class CodeoffMatch(Document):
 				"votes_player_2": 0,
 			},
 		)
-		frappe.db.commit()
 		frappe.msgprint(f"Match reset to {new_status}")
 
 	@frappe.whitelist()
@@ -240,7 +238,6 @@ class CodeoffMatch(Document):
 		current_deadline = frappe.db.get_value("Codeoff Match", self.name, "deadline")
 		new_deadline = current_deadline + timedelta(seconds=seconds)
 		frappe.db.set_value("Codeoff Match", self.name, "deadline", new_deadline)
-		frappe.db.commit()
 
 		from codeoff.api.contest import publish_match_state
 

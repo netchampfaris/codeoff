@@ -30,7 +30,6 @@ def submit_code(match_id: str, source_code: str):
 	submission.problem = match.problem
 	submission.source_code = source_code
 	submission.insert(ignore_permissions=True)
-	frappe.db.commit()
 
 	# Broadcast updated match state
 	publish_match_state(match_id)
@@ -45,10 +44,12 @@ def submit_code(match_id: str, source_code: str):
 		judge_submission(submission.name)
 		return {"submission_id": submission.name, "status": "Completed"}
 
+	# enqueue_after_commit ensures the submission row is visible to the worker
 	frappe.enqueue(
 		"codeoff.services.judge.judge_submission",
 		submission_id=submission.name,
 		at_front=True,
+		enqueue_after_commit=True,
 	)
 
 	return {"submission_id": submission.name, "status": "Queued"}
@@ -122,7 +123,6 @@ def join_match(match_id: str):
 	# Use atomic set_value to avoid race condition where concurrent joins
 	# overwrite each other's flags via full document save
 	frappe.db.set_value("Codeoff Match", match_id, f"{slot}_joined", 1)
-	frappe.db.commit()
 
 	# Broadcast updated match state
 	publish_match_state(match_id)
@@ -139,7 +139,6 @@ def start_match_now(match_id: str):
 	if match.status != "Ready":
 		frappe.throw("Match is not in Ready status")
 	match.start_match()
-	frappe.db.commit()
 	return {"status": "Live"}
 
 
@@ -159,7 +158,6 @@ def organizer_add_match_time(match_id: str, seconds: int):
 	"""Organizer-only: extend a live match deadline."""
 	match = _get_organizer_match(match_id)
 	match.add_time(seconds)
-	frappe.db.commit()
 	match.reload()
 	return {"status": match.status, "deadline": match.deadline}
 
@@ -169,7 +167,6 @@ def organizer_resolve_match(match_id: str):
 	"""Organizer-only: resolve a live match immediately."""
 	match = _get_organizer_match(match_id)
 	match.resolve_now()
-	frappe.db.commit()
 	match.reload()
 	return {"status": match.status, "winner": match.winner, "winning_reason": match.winning_reason}
 
@@ -179,7 +176,6 @@ def organizer_force_finish_match(match_id: str, winner_player: str):
 	"""Organizer-only: manually set the winner of a live/review match."""
 	match = _get_organizer_match(match_id)
 	match.force_finish(winner_player)
-	frappe.db.commit()
 	match.reload()
 	return {"status": match.status, "winner": match.winner, "winning_reason": match.winning_reason}
 
@@ -189,7 +185,6 @@ def organizer_reset_match(match_id: str):
 	"""Organizer-only: reset a match and clear submissions."""
 	match = _get_organizer_match(match_id)
 	match.reset_match()
-	frappe.db.commit()
 	match.reload()
 	return {"status": match.status}
 
@@ -199,7 +194,6 @@ def organizer_create_rematch(match_id: str):
 	"""Organizer-only: create a rematch for a review match."""
 	match = _get_organizer_match(match_id)
 	result = match.create_rematch()
-	frappe.db.commit()
 	return result
 
 
@@ -279,7 +273,6 @@ def vote_for_player(match_id: str, player_id: str):
 			"UPDATE `tabCodeoff Match` SET `votes_player_2` = COALESCE(`votes_player_2`, 0) + 1 WHERE name = %s",
 			(match_id,),
 		)
-	frappe.db.commit()
 
 	updated = frappe.db.get_value(
 		"Codeoff Match", match_id, ["votes_player_1", "votes_player_2"], as_dict=True
