@@ -6,6 +6,7 @@
  "field_order": [
   "round_number",
   "duration_seconds",
+    "difficulty",
   "problem"
  ],
  "fields": [
@@ -23,6 +24,13 @@
    "label": "Duration (seconds)",
    "reqd": 1
   },
+    {
+     "fieldname": "difficulty",
+     "fieldtype": "Select",
+     "in_list_view": 1,
+     "label": "Difficulty",
+     "options": "Easy\nMedium\nHard"
+    },
   {
    "fieldname": "problem",
    "fieldtype": "Link",

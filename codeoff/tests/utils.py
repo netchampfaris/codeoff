@@ -36,7 +36,7 @@ def create_players(count, prefix="player"):
 	return players
 
 
-def create_tournament(players, duration=600):
+def create_tournament(players, duration=600, round_durations=None):
 	tournament = frappe.get_doc(
 		{
 			"doctype": "Codeoff Tournament",
@@ -44,6 +44,7 @@ def create_tournament(players, duration=600):
 			"match_duration_seconds": duration,
 			"format": "Single Elimination",
 			"players": [{"player": p.name, "seed": i + 1} for i, p in enumerate(players)],
+			"round_durations": round_durations or [],
 		}
 	)
 	tournament.insert(ignore_permissions=True)

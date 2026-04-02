@@ -12,6 +12,7 @@ import frappe
 from frappe.utils import now_datetime
 
 ALLOWED_REACTIONS = ["🔥", "💀", "👀", "🎉", "😬"]
+MAX_SOURCE_CODE_BYTES = 65_536  # 64 KiB
 AUDIENCE_CHANNEL = "codeoff_audience"
 AUDIENCE_KEY_PREFIX = "codeoff_presence:global:"
 AUDIENCE_TTL_SECONDS = 45
@@ -21,6 +22,8 @@ AUDIENCE_LAST_COUNT_KEY = "codeoff_audience:last_count"
 @frappe.whitelist()
 def submit_code(match_id: str, source_code: str):
 	"""Submit code for official judging."""
+	if len(source_code.encode()) > MAX_SOURCE_CODE_BYTES:
+		frappe.throw("Source code exceeds maximum allowed size")
 	player = _get_current_player()
 	match = frappe.get_doc("Codeoff Match", match_id)
 
@@ -57,6 +60,8 @@ def submit_code(match_id: str, source_code: str):
 @frappe.whitelist()
 def run_sample_tests(match_id: str, source_code: str):
 	"""Run code against sample test cases only. Ephemeral — no record created."""
+	if len(source_code.encode()) > MAX_SOURCE_CODE_BYTES:
+		frappe.throw("Source code exceeds maximum allowed size")
 	player = _get_current_player()
 	match = frappe.get_doc("Codeoff Match", match_id)
 
@@ -75,6 +80,8 @@ def run_sample_tests(match_id: str, source_code: str):
 @frappe.whitelist()
 def update_draft(match_id: str, source_code: str, cursor_line: int = 0, cursor_column: int = 0):
 	"""Update draft state in Redis and broadcast to spectators."""
+	if len(source_code.encode()) > MAX_SOURCE_CODE_BYTES:
+		frappe.throw("Source code exceeds maximum allowed size")
 	player = _get_current_player()
 
 	# Store in Redis
@@ -300,11 +307,12 @@ def send_reaction(match_id: str, emoji: str, player_id: str | None = None, clien
 	# Sanitize client_id — it's echoed back for dedup; reject oversized values
 	if client_id and len(str(client_id)) > 128:
 		client_id = None
-	# Validate player_id belongs to this match if provided
-	if player_id:
-		players = frappe.db.get_value("Codeoff Match", match_id, ["player_1", "player_2"], as_dict=True)
-		if not players or player_id not in (players.player_1, players.player_2):
-			player_id = None
+	# Always verify the match exists, and validate player_id if provided
+	match_players = frappe.db.get_value("Codeoff Match", match_id, ["player_1", "player_2"], as_dict=True)
+	if not match_players:
+		frappe.throw("Match not found", frappe.DoesNotExistError)
+	if player_id and player_id not in (match_players.player_1, match_players.player_2):
+		player_id = None
 	_broadcast_match_event(
 		match_id,
 		{
@@ -697,17 +705,92 @@ def get_tournament_bracket():
 		"tournament_id": t.name,
 		"status": t.status,
 		"current_round": t.current_round,
-		"enable_dev_login": bool(t.enable_dev_login),
+			"enable_dev_login": bool(t.enable_dev_login),
 		"is_organizer": is_organizer,
 		"total_rounds": total_rounds,
+		"player_count": frappe.db.count("Codeoff Tournament Player", {"parent": t.name}),
 		"rounds": rounds,
 	}
 
 
+@frappe.whitelist()
+def plan_tournament(tournament_name: str, round_configs: str) -> dict:
+	"""
+	Generate bracket and assign random problems by difficulty per round.
+	round_configs: JSON list of {round_number, duration_seconds, difficulty}
+	"""
+	import random
+	from collections import defaultdict
+
+	if "System Manager" not in frappe.get_roles():
+		frappe.throw("Only organizers can plan tournaments", frappe.PermissionError)
+
+	configs_list: list[dict] = (
+		frappe.parse_json(round_configs) if isinstance(round_configs, str) else round_configs
+	)
+	config_by_round = {int(c["round_number"]): c for c in configs_list}
+
+	tournament = frappe.get_doc("Codeoff Tournament", tournament_name)
+	preview = tournament.get_bracket_preview()  # shuffled matchups, no DB writes
+
+	# Group preview matches by round
+	matches_by_round: dict[int, list] = defaultdict(list)
+	for m in preview:
+		matches_by_round[int(m["round_number"])].append(m)
+
+	# Pre-fetch active problems grouped by difficulty
+	problems_by_difficulty: dict[str, list] = {}
+	for diff in ("Easy", "Medium", "Hard"):
+		problems_by_difficulty[diff] = frappe.get_all(
+			"Codeoff Problem",
+			filters={"difficulty": diff, "is_active": 1},
+			fields=["name"],
+		)
+
+	# Build plan: each match in a round gets a distinct random problem of the configured difficulty
+	plan: list[dict] = []
+	for round_num in sorted(matches_by_round):
+		matches = matches_by_round[round_num]
+		cfg = config_by_round.get(round_num, {})
+		difficulty = cfg.get("difficulty", "Easy")
+		duration = cfg.get("duration_seconds")
+
+		pool = problems_by_difficulty.get(difficulty, [])
+		if len(pool) < len(matches):
+			frappe.throw(
+				f"Not enough {difficulty} problems ({len(pool)}) for Round {round_num} "
+				f"({len(matches)} match(es) needed)"
+			)
+
+		selected = random.sample(pool, len(matches))
+		for match, problem in zip(matches, selected, strict=True):
+			entry = dict(match)
+			entry["problem"] = problem["name"]
+			if duration:
+				entry["duration_seconds"] = int(duration)
+			plan.append(entry)
+
+	return tournament.create_bracket_from_plan(plan)
+
+
 @frappe.whitelist(allow_guest=True)
 def get_all_players():
-	"""Return all Codeoff Players (for dev login-as dropdown). Guest-accessible
-	because spectators are guests; only shown when enable_dev_login is set."""
+	"""Return all Codeoff Players for the dev login-as dropdown.
+
+	Only returns data when the latest tournament has enable_dev_login set.
+	The `user` (email) field is only included when enable_dev_login is active,
+	since that flag is an explicit organizer opt-in for test/dev environments.
+	"""
+	tournament = frappe.get_all(
+		"Codeoff Tournament",
+		fields=["enable_dev_login"],
+		order_by="creation desc",
+		limit=1,
+		ignore_permissions=True,
+	)
+	if not tournament or not tournament[0].enable_dev_login:
+		return []
+
 	return frappe.get_all(
 		"Codeoff Player",
 		fields=["name", "player_name", "user"],

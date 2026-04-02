@@ -187,6 +187,84 @@ class TestCodeoffBracket(IntegrationTestCase):
 		self.assertEqual(tournament.status, "Completed")
 		self.assertIsNotNone(tournament.completed_on)
 
+	def test_plan_tournament_assigns_random_problems_by_round_difficulty(self):
+		"""Planning should create matches with unique per-match problems from each round's difficulty pool."""
+		players = create_players(8)
+		easy_problems = [create_problem(title=f"Easy {i} {frappe.generate_hash(length=4)}", difficulty="Easy") for i in range(4)]
+		medium_problems = [
+			create_problem(title=f"Medium {i} {frappe.generate_hash(length=4)}", difficulty="Medium")
+			for i in range(2)
+		]
+		hard_problem = create_problem(title=f"Hard {frappe.generate_hash(length=4)}", difficulty="Hard")
+		tournament = create_tournament(
+			players,
+			round_durations=[
+				{"round_number": 1, "duration_seconds": 120, "difficulty": "Easy"},
+				{"round_number": 2, "duration_seconds": 240, "difficulty": "Medium"},
+				{"round_number": 3, "duration_seconds": 360, "difficulty": "Hard"},
+			],
+		)
+
+		result = tournament.plan_tournament()
+		matches = frappe.get_all(
+			"Codeoff Match",
+			filters={"tournament": tournament.name},
+			fields=[
+				"round_number",
+				"bracket_position",
+				"player_1",
+				"player_2",
+				"problem",
+				"duration_seconds",
+				"status",
+			],
+			order_by="round_number asc, bracket_position asc",
+		)
+
+		self.assertEqual(result["created"], 7)
+		self.assertEqual(len(matches), 7)
+
+		round_1 = [m for m in matches if m.round_number == 1]
+		self.assertEqual(len(round_1), 4)
+		self.assertEqual({m.duration_seconds for m in round_1}, {120})
+		self.assertEqual({m.status for m in round_1}, {"Ready"})
+		self.assertTrue(all(m.player_1 and m.player_2 for m in round_1))
+		self.assertEqual(
+			{m.problem for m in round_1},
+			{problem.name for problem in easy_problems},
+		)
+
+		round_2 = [m for m in matches if m.round_number == 2]
+		self.assertEqual(len(round_2), 2)
+		self.assertEqual({m.duration_seconds for m in round_2}, {240})
+		self.assertEqual({m.status for m in round_2}, {"Draft"})
+		self.assertFalse(any(m.player_1 or m.player_2 for m in round_2))
+		self.assertEqual(
+			{m.problem for m in round_2},
+			{problem.name for problem in medium_problems},
+		)
+
+		round_3 = [m for m in matches if m.round_number == 3]
+		self.assertEqual(len(round_3), 1)
+		self.assertEqual(round_3[0].duration_seconds, 360)
+		self.assertEqual(round_3[0].status, "Draft")
+		self.assertEqual(round_3[0].problem, hard_problem.name)
+
+	def test_plan_tournament_requires_enough_problems_for_difficulty_pool(self):
+		"""Planning should fail when a round's difficulty pool cannot cover its matches."""
+		players = create_players(4)
+		create_problem(title=f"Easy Only {frappe.generate_hash(length=4)}", difficulty="Easy")
+		tournament = create_tournament(
+			players,
+			round_durations=[
+				{"round_number": 1, "duration_seconds": 120, "difficulty": "Easy"},
+				{"round_number": 2, "duration_seconds": 240, "difficulty": "Hard"},
+			],
+		)
+
+		with self.assertRaises(frappe.ValidationError):
+			tournament.plan_tournament()
+
 	def test_clear_tournament_data_deletes_runtime_records(self):
 		"""Clearing tournament data should remove matches and dependent records but keep the tournament."""
 		players = create_players(4)
