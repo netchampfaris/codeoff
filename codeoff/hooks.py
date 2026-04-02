@@ -11,15 +11,15 @@ app_license = "agpl-3.0"
 # required_apps = []
 
 # Each item in the list will be shown as an app in the apps page
-# add_to_apps_screen = [
-# 	{
-# 		"name": "codeoff",
-# 		"logo": "/assets/codeoff/logo.png",
-# 		"title": "Code Off",
-# 		"route": "/codeoff",
-# 		"has_permission": "codeoff.api.permission.has_app_permission"
-# 	}
-# ]
+add_to_apps_screen = [
+	{
+		"name": "codeoff",
+		"logo": "/assets/codeoff/favicon.svg",
+		"title": "Code Off",
+		"route": "/codeoff",
+		# "has_permission": "codeoff.api.permission.has_app_permission",
+	}
+]
 
 # Includes in <head>
 # ------------------
@@ -263,4 +263,5 @@ website_route_rules = [
 
 website_redirects = [
 	{"source": "/", "target": "/codeoff"},
+	{"source": "/me", "target": "/codeoff"},
 ]
