@@ -6,6 +6,7 @@ interface TournamentBracket {
   status: string
   current_round: number | null
   total_rounds: number
+  player_count: number
   is_organizer?: boolean
   enable_dev_login?: boolean
   rounds: Record<string, any[]>

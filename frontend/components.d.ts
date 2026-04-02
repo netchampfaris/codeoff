@@ -20,6 +20,7 @@ declare module 'vue' {
     LobbyPlayerCard: typeof import('./src/components/LobbyPlayerCard.vue')['default']
     MatchManagementDialog: typeof import('./src/components/MatchManagementDialog.vue')['default']
     MatchVerdict: typeof import('./src/components/MatchVerdict.vue')['default']
+    PlanTournamentDialog: typeof import('./src/components/PlanTournamentDialog.vue')['default']
     PlayerPanel: typeof import('./src/components/PlayerPanel.vue')['default']
     ProblemPanel: typeof import('./src/components/ProblemPanel.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

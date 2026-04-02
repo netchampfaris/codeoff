@@ -47,13 +47,13 @@
       class="flex flex-1 flex-col overflow-hidden"
     >
       <div
-        v-if="bracket.loading"
+        v-if="bracket.loading && !bracket.data"
         class="flex flex-1 items-center justify-center"
       >
         <div class="text-sm text-green-800">loading bracket...</div>
       </div>
       <BracketView
-        v-else-if="bracket.data"
+        v-else-if="bracket.data && bracket.data.total_rounds > 0"
         :data="bracket.data"
         @spectate="
           $router.push({ name: 'Spectate', params: { matchId: $event } })
@@ -91,7 +91,6 @@ import AppNavbar from '@/components/AppNavbar.vue'
 import AppButton from '@/components/AppButton.vue'
 import BracketView from '@/components/BracketView.vue'
 import DevLoginDropdown from '@/components/DevLoginDropdown.vue'
-
 const { match, loading, reload } = useMyMatch()
 const { bracket } = useTournament()
 
