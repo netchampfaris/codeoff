@@ -237,7 +237,7 @@ import sys as _sys
 _sys.meta_path.insert(0, _SafeImportFinder())
 """
 
-RESTRICTED_BUILTINS_CODE = '''
+RESTRICTED_BUILTINS_CODE = """
 import builtins as _builtins
 
 _ALLOWED_IMPORT_MODULES = $ALLOWED_MODULES$
@@ -291,7 +291,7 @@ _SAFE_BUILTINS = {
     'UnicodeError': UnicodeError, 'UnicodeTranslateError': UnicodeTranslateError,
     'ValueError': ValueError, 'ZeroDivisionError': ZeroDivisionError,
 }
-'''
+"""
 
 
 def get_import_hook_code() -> str:

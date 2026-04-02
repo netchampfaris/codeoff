@@ -36,7 +36,7 @@ class CodeoffMatch(Document):
 		votes_player_1: DF.Int
 		votes_player_2: DF.Int
 		winner: DF.Link | None
-		winning_reason: DF.Literal["", "First Accepted", "Best Score", "Tie Review", "Manual Override"]
+		winning_reason: DF.Literal["", "First Accepted", "Best Score", "Draw", "Tie Review", "Manual Override"]
 		wrong_submissions_player_1: DF.Int
 		wrong_submissions_player_2: DF.Int
 	# end: auto-generated types

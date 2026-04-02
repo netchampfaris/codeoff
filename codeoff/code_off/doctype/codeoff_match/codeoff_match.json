@@ -93,6 +93,7 @@
    "description": "If set, overrides round and tournament duration for this match",
    "fieldname": "duration_seconds",
    "fieldtype": "Int",
+   "in_list_view": 1,
    "label": "Duration Override (seconds)"
   },
   {
@@ -205,7 +206,7 @@
   }
  ],
  "links": [],
- "modified": "2026-03-27 04:19:59.618107",
+ "modified": "2026-04-02 16:20:46.711410",
  "modified_by": "organizer@codeoff.demo",
  "module": "Code Off",
  "name": "Codeoff Match",
