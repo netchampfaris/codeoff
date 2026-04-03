@@ -1,5 +1,8 @@
 <template>
-  <div class="w-80 overflow-hidden border font-mono" :class="borderClass">
+  <div
+    class="w-full overflow-hidden border font-mono sm:w-80"
+    :class="borderClass"
+  >
     <!-- Player 1 -->
     <div
       class="flex items-center justify-between border-b border-zinc-800 px-3 py-2.5"

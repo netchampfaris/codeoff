@@ -11,10 +11,31 @@
       </div>
     </div>
 
-    <!-- Bracket visualization -->
+    <!-- Mobile: vertical rounds list -->
+    <div class="flex flex-1 flex-col gap-6 overflow-y-auto px-4 py-6 sm:hidden">
+      <div v-for="round in sortedRounds" :key="round.number">
+        <div
+          class="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-green-600"
+        >
+          [ {{ getRoundLabel(round.number) }} ]
+        </div>
+        <div class="flex flex-col gap-3">
+          <BracketMatchCard
+            v-for="m in round.matches"
+            :key="m.name"
+            :match="m"
+            :isOrganizer="data.is_organizer"
+            @spectate="$emit('spectate', $event)"
+            @makeReady="$emit('makeReady', $event)"
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop: bracket visualization -->
     <div
       ref="bracketContainer"
-      class="flex flex-1 items-center justify-center overflow-x-auto px-8 py-10"
+      class="hidden flex-1 items-center justify-center overflow-x-auto px-8 py-10 sm:flex"
     >
       <div class="relative flex items-center gap-16">
         <!-- Connector lines -->
