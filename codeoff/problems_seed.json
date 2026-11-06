@@ -1,0 +1,1562 @@
+[
+  {
+    "title": "Count Good Pairs",
+    "slug": "count-good-pairs",
+    "difficulty": "Easy",
+    "function_name": "count_good_pairs",
+    "function_signature": "def count_good_pairs(nums):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Count Good Pairs\n\n## Problem Statement\n\nGiven a list of integers `nums`, return the number of **good pairs**.\n\nA pair `(i, j)` is **good** if:\n- `nums[i] == nums[j]`, and\n- `i < j`\n\n## Examples\n\n### Example 1\n\n**Input:** `nums = [1, 2, 3, 1, 1, 3]`\n**Output:** `4`\n**Explanation:** There are 4 good pairs: `(0,3)`, `(0,4)`, `(3,4)`, `(2,5)`.\n\n### Example 2\n\n**Input:** `nums = [1, 1, 1, 1]`\n**Output:** `6`\n**Explanation:** Every pair is good: `(0,1)`, `(0,2)`, `(0,3)`, `(1,2)`, `(1,3)`, `(2,3)`.\n\n### Example 3\n\n**Input:** `nums = [1, 2, 3]`\n**Output:** `0`\n**Explanation:** No two elements are equal.\n\n## Constraints\n\n- `1 <= len(nums) <= 100`\n- `1 <= nums[i] <= 100`",
+    "starter_code": "def count_good_pairs(nums):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[[1, 2, 3, 1, 1, 3]]",
+        "expected_output": "4",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[[1, 1, 1, 1]]",
+        "expected_output": "6",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[[1, 2, 3]]",
+        "expected_output": "0",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[[1]]",
+        "expected_output": "0",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[[1, 1]]",
+        "expected_output": "1",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[[5, 5, 5]]",
+        "expected_output": "3",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[[1, 2, 1, 2, 1]]",
+        "expected_output": "4",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[[7, 3, 7, 3, 7]]",
+        "expected_output": "4",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[[1, 2, 3, 4, 5, 1, 2, 3, 4, 5]]",
+        "expected_output": "5",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[[100, 100, 100, 100, 100]]",
+        "expected_output": "10",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Longest Common Prefix",
+    "slug": "longest-common-prefix",
+    "difficulty": "Easy",
+    "function_name": "longest_common_prefix",
+    "function_signature": "def longest_common_prefix(strs):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Longest Common Prefix\n\n## Problem Statement\n\nGiven a list of strings `strs`, find the longest string that is a prefix of **every** string in the list. If there is no common prefix, return an empty string `\"\"`.\n\n## Examples\n\n### Example 1\n\n**Input:** `strs = [\"flower\", \"flow\", \"flight\"]`\n**Output:** `\"fl\"`\n**Explanation:** `\"fl\"` is the longest prefix shared by all three strings.\n\n### Example 2\n\n**Input:** `strs = [\"dog\", \"racecar\", \"car\"]`\n**Output:** `\"\"`\n**Explanation:** There is no common prefix among the input strings.\n\n### Example 3\n\n**Input:** `strs = [\"interview\", \"intercom\", \"interest\"]`\n**Output:** `\"inter\"`\n**Explanation:** All three strings start with `\"inter\"`.\n\n## Constraints\n\n- `1 <= len(strs) <= 200`\n- `0 <= len(strs[i]) <= 200`\n- All strings consist of lowercase English letters only.",
+    "starter_code": "def longest_common_prefix(strs):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[[\"flower\", \"flow\", \"flight\"]]",
+        "expected_output": "\"fl\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[[\"dog\", \"racecar\", \"car\"]]",
+        "expected_output": "\"\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[[\"interview\", \"intercom\", \"interest\"]]",
+        "expected_output": "\"inter\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[[\"ab\", \"a\"]]",
+        "expected_output": "\"a\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[[\"abc\"]]",
+        "expected_output": "\"abc\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[[\"abc\", \"abc\", \"abc\"]]",
+        "expected_output": "\"abc\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[[\"cir\", \"car\"]]",
+        "expected_output": "\"c\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[[\"prefix\", \"preface\", \"prepare\"]]",
+        "expected_output": "\"pre\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[[\"x\", \"y\", \"z\"]]",
+        "expected_output": "\"\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[[\"\", \"abc\"]]",
+        "expected_output": "\"\"",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Missing Number",
+    "slug": "missing-number",
+    "difficulty": "Easy",
+    "function_name": "missing_number",
+    "function_signature": "def missing_number(nums):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Missing Number\n\n## Problem Statement\n\nGiven a list `nums` containing `n` **distinct** integers in the range `[0, n]`, return the **one number** that is missing from the list.\n\nThe list has `n` elements so exactly one number in the range `[0, n]` is absent.\n\n## Examples\n\n### Example 1\n\n**Input:** `nums = [3, 0, 1]`\n**Output:** `2`\n**Explanation:** The range is `[0, 1, 2, 3]`. `2` is missing.\n\n### Example 2\n\n**Input:** `nums = [0, 1]`\n**Output:** `2`\n**Explanation:** The range is `[0, 1, 2]`. `2` is missing.\n\n### Example 3\n\n**Input:** `nums = [9, 6, 4, 2, 3, 5, 7, 0, 1]`\n**Output:** `8`\n**Explanation:** The range is `[0..9]`. `8` is missing.\n\n## Constraints\n\n- `1 <= n <= 10000`\n- `0 <= nums[i] <= n`\n- All values in `nums` are distinct.",
+    "starter_code": "def missing_number(nums):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[[3, 0, 1]]",
+        "expected_output": "2",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[[0, 1]]",
+        "expected_output": "2",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[[9, 6, 4, 2, 3, 5, 7, 0, 1]]",
+        "expected_output": "8",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[[0]]",
+        "expected_output": "1",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[[1]]",
+        "expected_output": "0",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[[0, 2]]",
+        "expected_output": "1",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[[1, 2, 3]]",
+        "expected_output": "0",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[[0, 1, 2, 4]]",
+        "expected_output": "3",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[[5, 4, 3, 2, 1, 0]]",
+        "expected_output": "6",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[[1, 2, 3, 4, 5]]",
+        "expected_output": "0",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Move Zeroes",
+    "slug": "move-zeroes",
+    "difficulty": "Easy",
+    "function_name": "move_zeroes",
+    "function_signature": "def move_zeroes(nums):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Move Zeroes\n\n## Problem Statement\n\nGiven an integer list `nums`, move all `0`s to the **end** while preserving the relative order of the non-zero elements. Return the modified list.\n\nDo **not** create a new list \u2014 modify and return `nums` in-place (or return the equivalent result; the judge checks the return value).\n\n## Examples\n\n### Example 1\n\n**Input:** `nums = [0, 1, 0, 3, 12]`\n**Output:** `[1, 3, 12, 0, 0]`\n\n### Example 2\n\n**Input:** `nums = [0, 0, 1]`\n**Output:** `[1, 0, 0]`\n\n### Example 3\n\n**Input:** `nums = [1, 2, 3]`\n**Output:** `[1, 2, 3]`\n**Explanation:** No zeroes, so the list is unchanged.\n\n## Constraints\n\n- `1 <= len(nums) <= 10000`\n- `-2^31 <= nums[i] <= 2^31 - 1`",
+    "starter_code": "def move_zeroes(nums):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[[0, 1, 0, 3, 12]]",
+        "expected_output": "[1, 3, 12, 0, 0]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[[0, 0, 1]]",
+        "expected_output": "[1, 0, 0]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[[1, 2, 3]]",
+        "expected_output": "[1, 2, 3]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[[0]]",
+        "expected_output": "[0]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[[1]]",
+        "expected_output": "[1]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[[0, 0, 0]]",
+        "expected_output": "[0, 0, 0]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[[4, 2, 0, 1, 5]]",
+        "expected_output": "[4, 2, 1, 5, 0]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[[0, 0, 1, 0, 2]]",
+        "expected_output": "[1, 2, 0, 0, 0]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[[-1, 0, 3, 0, -5]]",
+        "expected_output": "[-1, 3, -5, 0, 0]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[[1, 0, 2, 0, 3, 0]]",
+        "expected_output": "[1, 2, 3, 0, 0, 0]",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Palindrome Check",
+    "slug": "palindrome-check",
+    "difficulty": "Easy",
+    "function_name": "is_palindrome",
+    "function_signature": "def is_palindrome(s):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Palindrome Check\n\n## Problem Statement\n\nGiven a string `s`, return `True` if it reads the same forwards and backwards (a **palindrome**), and `False` otherwise.\n\nThe check is **case-insensitive** and should **ignore all non-alphanumeric characters** (spaces, punctuation, etc.).\n\n## Examples\n\n### Example 1\n\n**Input:** `s = \"racecar\"`\n**Output:** `True`\n\n### Example 2\n\n**Input:** `s = \"hello\"`\n**Output:** `False`\n\n### Example 3\n\n**Input:** `s = \"A man a plan a canal Panama\"`\n**Output:** `True`\n**Explanation:** After keeping only letters/digits and lowercasing: `\"amanaplanacanalpanama\"`, which is a palindrome.\n\n### Example 4\n\n**Input:** `s = \"Was it a car or a cat I saw\"`\n**Output:** `True`\n\n## Constraints\n\n- `0 <= len(s) <= 10000`\n- `s` may contain letters, digits, spaces, and punctuation.",
+    "starter_code": "def is_palindrome(s):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[\"racecar\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[\"hello\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[\"A man a plan a canal Panama\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[\"\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[\"a\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[\"ab\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[\"Was it a car or a cat I saw\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[\"No lemon, no melon\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[\"Madam\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[\"race a car\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 11",
+        "visibility": "Hidden",
+        "input_data": "[\"12321\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 12",
+        "visibility": "Hidden",
+        "input_data": "[\"123\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Single Number",
+    "slug": "single-number",
+    "difficulty": "Easy",
+    "function_name": "single_number",
+    "function_signature": "def single_number(nums):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Single Number\n\n## Problem Statement\n\nGiven a non-empty list of integers `nums`, every element appears **exactly twice** except for one element which appears **exactly once**. Return that single element.\n\nYour solution must work correctly for any input satisfying these constraints.\n\n## Examples\n\n### Example 1\n\n**Input:** `nums = [2, 2, 1]`  \n**Output:** `1`\n\n### Example 2\n\n**Input:** `nums = [4, 1, 2, 1, 2]`  \n**Output:** `4`\n\n### Example 3\n\n**Input:** `nums = [1]`  \n**Output:** `1`\n\n### Example 4\n\n**Input:** `nums = [7, 3, 7, 5, 5]`  \n**Output:** `3`\n\n## Constraints\n\n- `1 <= len(nums) <= 30001` (always odd \u2014 one unique, rest in pairs)\n- `-30000 <= nums[i] <= 30000`\n- Exactly one element appears once; all others appear exactly twice.",
+    "starter_code": "def single_number(nums):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[[2, 2, 1]]",
+        "expected_output": "1",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[[4, 1, 2, 1, 2]]",
+        "expected_output": "4",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[[1]]",
+        "expected_output": "1",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[[7, 3, 7, 5, 5]]",
+        "expected_output": "3",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[[0, 1, 0]]",
+        "expected_output": "1",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[[99]]",
+        "expected_output": "99",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[[-1, -1, -2]]",
+        "expected_output": "-2",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[[1, 2, 3, 2, 1]]",
+        "expected_output": "3",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[[10, 20, 10, 30, 20]]",
+        "expected_output": "30",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[[-3, 4, -3]]",
+        "expected_output": "4",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Two Sum",
+    "slug": "two-sum",
+    "difficulty": "Easy",
+    "function_name": "two_sum",
+    "function_signature": "def two_sum(nums, target):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Two Sum\n\n## Problem Statement\n\nGiven a list of integers `nums` and an integer `target`, return the **indices** of the two numbers that add up to `target`.\n\nYou may assume exactly one valid answer exists. You may not use the same element twice. Return the indices in **ascending order**.\n\n## Examples\n\n### Example 1\n\n**Input:** `nums = [2, 7, 11, 15]`, `target = 9`\n**Output:** `[0, 1]`\n**Explanation:** `nums[0] + nums[1] == 2 + 7 == 9`.\n\n### Example 2\n\n**Input:** `nums = [3, 2, 4]`, `target = 6`\n**Output:** `[1, 2]`\n**Explanation:** `nums[1] + nums[2] == 2 + 4 == 6`.\n\n### Example 3\n\n**Input:** `nums = [3, 3]`, `target = 6`\n**Output:** `[0, 1]`\n\n## Constraints\n\n- `2 <= len(nums) <= 10000`\n- `-10^9 <= nums[i] <= 10^9`\n- `-10^9 <= target <= 10^9`\n- Exactly one valid answer exists.",
+    "starter_code": "def two_sum(nums, target):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[[2, 7, 11, 15], 9]",
+        "expected_output": "[0, 1]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[[3, 2, 4], 6]",
+        "expected_output": "[1, 2]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[[3, 3], 6]",
+        "expected_output": "[0, 1]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[[1, 2, 3, 4, 5], 9]",
+        "expected_output": "[3, 4]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[[-1, -2, -3, -4, -5], -8]",
+        "expected_output": "[2, 4]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[[0, 4, 3, 0], 0]",
+        "expected_output": "[0, 3]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[[1, 5, 3, 7], 8]",
+        "expected_output": "[1, 3]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[[5, 75, 25], 100]",
+        "expected_output": "[1, 2]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[[1, 3, 5, 7, 9], 10]",
+        "expected_output": "[0, 4]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[[-3, 4, 3, 90], 0]",
+        "expected_output": "[0, 2]",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Valid Anagram",
+    "slug": "valid-anagram",
+    "difficulty": "Easy",
+    "function_name": "is_anagram",
+    "function_signature": "def is_anagram(s, t):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Valid Anagram\n\n## Problem Statement\n\nGiven two strings `s` and `t`, return `True` if `t` is an **anagram** of `s`, and `False` otherwise.\n\nAn anagram is a word formed by rearranging the letters of another, using all original letters **exactly once**. The comparison is **case-sensitive**.\n\n## Examples\n\n### Example 1\n\n**Input:** `s = \"anagram\"`, `t = \"nagaram\"`  \n**Output:** `True`\n\n### Example 2\n\n**Input:** `s = \"rat\"`, `t = \"car\"`  \n**Output:** `False`\n\n### Example 3\n\n**Input:** `s = \"listen\"`, `t = \"silent\"`  \n**Output:** `True`\n\n### Example 4\n\n**Input:** `s = \"abc\"`, `t = \"ab\"`  \n**Output:** `False`  \n**Explanation:** Different lengths \u2014 cannot be an anagram.\n\n## Constraints\n\n- `1 <= len(s), len(t) <= 50000`\n- `s` and `t` consist of lowercase English letters.",
+    "starter_code": "def is_anagram(s, t):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[\"anagram\", \"nagaram\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[\"rat\", \"car\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[\"listen\", \"silent\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[\"abc\", \"ab\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[\"a\", \"a\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[\"a\", \"b\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[\"aacc\", \"ccac\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[\"triangle\", \"integral\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[\"dusty\", \"study\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[\"hello\", \"world\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 11",
+        "visibility": "Hidden",
+        "input_data": "[\"aab\", \"aba\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 12",
+        "visibility": "Hidden",
+        "input_data": "[\"ab\", \"ba\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Group Anagrams",
+    "slug": "group-anagrams",
+    "difficulty": "Medium",
+    "function_name": "group_anagrams",
+    "function_signature": "def group_anagrams(strs):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Group Anagrams\n\n## Problem Statement\n\nGiven a list of strings `strs`, group the **anagrams** together and return the groups as a list of lists.\n\nTwo strings are anagrams if one can be formed by rearranging the letters of the other. Each group must contain all strings that are anagrams of each other.\n\nThe order of the groups in the output and the order of strings within each group **do not matter** \u2014 the judge sorts before comparing.\n\n## Examples\n\n### Example 1\n\n**Input:** `strs = [\"eat\", \"tea\", \"tan\", \"ate\", \"nat\", \"bat\"]`\n**Output:** `[[\"eat\", \"tea\", \"ate\"], [\"tan\", \"nat\"], [\"bat\"]]`\n**Explanation:** `\"eat\"`, `\"tea\"`, and `\"ate\"` are anagrams of each other. `\"tan\"` and `\"nat\"` are anagrams. `\"bat\"` stands alone.\n\n### Example 2\n\n**Input:** `strs = [\"\"]`\n**Output:** `[[\"\"]]`\n\n### Example 3\n\n**Input:** `strs = [\"a\"]`\n**Output:** `[[\"a\"]]`\n\n## Constraints\n\n- `1 <= len(strs) <= 10000`\n- `0 <= len(strs[i]) <= 100`\n- `strs[i]` consists of lowercase English letters.",
+    "starter_code": "def group_anagrams(strs):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[[\"eat\", \"tea\", \"tan\", \"ate\", \"nat\", \"bat\"]]",
+        "expected_output": "[[\"eat\", \"tea\", \"ate\"], [\"tan\", \"nat\"], [\"bat\"]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[[\"\"]]",
+        "expected_output": "[[\"\"]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[[\"a\"]]",
+        "expected_output": "[[\"a\"]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[[\"abc\", \"bca\", \"cab\"]]",
+        "expected_output": "[[\"abc\", \"bca\", \"cab\"]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[[\"ab\", \"ba\", \"cd\", \"dc\"]]",
+        "expected_output": "[[\"ab\", \"ba\"], [\"cd\", \"dc\"]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[[\"a\", \"b\", \"c\"]]",
+        "expected_output": "[[\"a\"], [\"b\"], [\"c\"]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[[\"\", \"\", \"a\"]]",
+        "expected_output": "[[\"\", \"\"], [\"a\"]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[[\"listen\", \"silent\", \"enlist\", \"hello\"]]",
+        "expected_output": "[[\"listen\", \"silent\", \"enlist\"], [\"hello\"]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[[\"abc\", \"abc\"]]",
+        "expected_output": "[[\"abc\", \"abc\"]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[[\"z\", \"y\", \"x\"]]",
+        "expected_output": "[[\"z\"], [\"y\"], [\"x\"]]",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Rotate Array",
+    "slug": "rotate-array",
+    "difficulty": "Medium",
+    "function_name": "rotate_array",
+    "function_signature": "def rotate_array(nums, k):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Rotate Array\n\n## Problem Statement\n\nGiven an integer array `nums` and a non-negative integer `k`, rotate the array to the **right** by `k` steps and return the resulting list.\n\nRotating right by 1 step means moving the last element to the front.\n\n## Examples\n\n### Example 1\n\n**Input:** `nums = [1, 2, 3, 4, 5, 6, 7]`, `k = 3`\n**Output:** `[5, 6, 7, 1, 2, 3, 4]`\n**Explanation:** Rotate right 3 steps:\n- Step 1: `[7, 1, 2, 3, 4, 5, 6]`\n- Step 2: `[6, 7, 1, 2, 3, 4, 5]`\n- Step 3: `[5, 6, 7, 1, 2, 3, 4]`\n\n### Example 2\n\n**Input:** `nums = [-1, -100, 3, 99]`, `k = 2`\n**Output:** `[3, 99, -1, -100]`\n\n### Example 3\n\n**Input:** `nums = [1, 2, 3]`, `k = 4`\n**Output:** `[3, 1, 2]`\n**Explanation:** `k = 4` is equivalent to `k = 1` for an array of length 3 (`4 % 3 = 1`).\n\n## Constraints\n\n- `1 <= len(nums) <= 10000`\n- `-2^31 <= nums[i] <= 2^31 - 1`\n- `0 <= k <= 10^5`",
+    "starter_code": "def rotate_array(nums, k):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[[1, 2, 3, 4, 5, 6, 7], 3]",
+        "expected_output": "[5, 6, 7, 1, 2, 3, 4]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[[-1, -100, 3, 99], 2]",
+        "expected_output": "[3, 99, -1, -100]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[[1, 2, 3], 4]",
+        "expected_output": "[3, 1, 2]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[[1, 2], 1]",
+        "expected_output": "[2, 1]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[[1], 0]",
+        "expected_output": "[1]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[[1, 2, 3, 4, 5], 5]",
+        "expected_output": "[1, 2, 3, 4, 5]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[[1, 2, 3, 4], 2]",
+        "expected_output": "[3, 4, 1, 2]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[[1, 2], 0]",
+        "expected_output": "[1, 2]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[[1, 2, 3, 4, 5], 7]",
+        "expected_output": "[4, 5, 1, 2, 3]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[[10, 20, 30], 9]",
+        "expected_output": "[10, 20, 30]",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Spiral Matrix",
+    "slug": "spiral-matrix",
+    "difficulty": "Medium",
+    "function_name": "spiral_order",
+    "function_signature": "def spiral_order(matrix):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Spiral Matrix\n\n## Problem Statement\n\nGiven an `m \u00d7 n` matrix of integers, return all its elements in **spiral order** \u2014 clockwise, starting from the top-left corner.\n\n## Examples\n\n### Example 1\n\n**Input:** `matrix = [[1,2,3],[4,5,6],[7,8,9]]`\n**Output:** `[1, 2, 3, 6, 9, 8, 7, 4, 5]`\n**Explanation:**\n```\n1 \u2192 2 \u2192 3\n            \u2193\n4 \u2192 5   6\n\u2191       \u2193\n7 \u2190 8 \u2190 9\n```\nTraverse: right along the top, down the right side, left along the bottom, up the left side, then spiral inward.\n\n### Example 2\n\n**Input:** `matrix = [[1,2,3,4],[5,6,7,8],[9,10,11,12]]`\n**Output:** `[1, 2, 3, 4, 8, 12, 11, 10, 9, 5, 6, 7]`\n\n### Example 3\n\n**Input:** `matrix = [[1]]`\n**Output:** `[1]`\n\n## Constraints\n\n- `1 <= m, n <= 20` (m rows, n columns)\n- `-100 <= matrix[i][j] <= 100`",
+    "starter_code": "def spiral_order(matrix):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[[[1,2,3],[4,5,6],[7,8,9]]]",
+        "expected_output": "[1,2,3,6,9,8,7,4,5]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[[[1,2,3,4],[5,6,7,8],[9,10,11,12]]]",
+        "expected_output": "[1,2,3,4,8,12,11,10,9,5,6,7]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[[[1]]]",
+        "expected_output": "[1]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[[[1,2],[3,4]]]",
+        "expected_output": "[1,2,4,3]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[[[1,2,3],[4,5,6]]]",
+        "expected_output": "[1,2,3,6,5,4]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[[[1,2],[3,4],[5,6]]]",
+        "expected_output": "[1,2,4,6,5,3]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[[[1,2,3,4,5]]]",
+        "expected_output": "[1,2,3,4,5]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[[[1],[2],[3],[4],[5]]]",
+        "expected_output": "[1,2,3,4,5]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[[[1,2,3],[4,5,6],[7,8,9],[10,11,12]]]",
+        "expected_output": "[1,2,3,6,9,12,11,10,7,4,5,8]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[[[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]]",
+        "expected_output": "[1,2,3,4,8,12,16,15,14,13,9,5,6,7,11,10]",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "String Compression",
+    "slug": "string-compression",
+    "difficulty": "Medium",
+    "function_name": "compress",
+    "function_signature": "def compress(s):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# String Compression\n\n## Problem Statement\n\nGiven a string `s`, return its **run-length encoded** form.\n\nIn run-length encoding, each group of **consecutive identical characters** is replaced by the character followed by the count of how many times it appears consecutively in that group \u2014 even if the count is `1`.\n\n## Examples\n\n### Example 1\n\n**Input:** `s = \"aabcccccaaa\"`\n**Output:** `\"a2b1c5a3\"`\n**Explanation:** `aa` \u2192 `a2`, `b` \u2192 `b1`, `ccccc` \u2192 `c5`, `aaa` \u2192 `a3`.\n\n### Example 2\n\n**Input:** `s = \"abc\"`\n**Output:** `\"a1b1c1\"`\n**Explanation:** Each character appears exactly once in its run.\n\n### Example 3\n\n**Input:** `s = \"aaa\"`\n**Output:** `\"a3\"`\n\n### Example 4\n\n**Input:** `s = \"\"`\n**Output:** `\"\"`\n**Explanation:** An empty string encodes to an empty string.\n\n## Constraints\n\n- `0 <= len(s) <= 10000`\n- `s` consists of lowercase English letters only.",
+    "starter_code": "def compress(s):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[\"aabcccccaaa\"]",
+        "expected_output": "\"a2b1c5a3\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[\"abc\"]",
+        "expected_output": "\"a1b1c1\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[\"aaa\"]",
+        "expected_output": "\"a3\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[\"\"]",
+        "expected_output": "\"\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[\"a\"]",
+        "expected_output": "\"a1\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[\"aabbcc\"]",
+        "expected_output": "\"a2b2c2\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[\"aaabbb\"]",
+        "expected_output": "\"a3b3\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[\"abcdd\"]",
+        "expected_output": "\"a1b1c1d2\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[\"zzzzzzzzzz\"]",
+        "expected_output": "\"z10\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[\"aababc\"]",
+        "expected_output": "\"a2b1a1b1c1\"",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Valid Parentheses",
+    "slug": "valid-parentheses",
+    "difficulty": "Medium",
+    "function_name": "is_balanced",
+    "function_signature": "def is_balanced(s):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Valid Parentheses\n\n## Problem Statement\n\nGiven a string `s` containing only the characters `(`, `)`, `{`, `}`, `[`, and `]`, determine if the string is **valid**.\n\nA string is valid if:\n1. Every opening bracket is closed by the **same type** of bracket.\n2. Opening brackets are closed in the **correct order** (last opened, first closed).\n3. Every closing bracket has a corresponding opening bracket.\n\nReturn `True` if valid, `False` otherwise.\n\n## Examples\n\n### Example 1\n\n**Input:** `s = \"()\"`\n**Output:** `True`\n\n### Example 2\n\n**Input:** `s = \"()[]{}\"`\n**Output:** `True`\n\n### Example 3\n\n**Input:** `s = \"(]\"`\n**Output:** `False`\n**Explanation:** The closing `]` does not match the opening `(`.\n\n### Example 4\n\n**Input:** `s = \"([)]\"`\n**Output:** `False`\n**Explanation:** Brackets are interleaved incorrectly.\n\n### Example 5\n\n**Input:** `s = \"{[]}\"`\n**Output:** `True`\n\n## Constraints\n\n- `1 <= len(s) <= 10000`\n- `s` consists of parentheses only: `()[]{}`.",
+    "starter_code": "def is_balanced(s):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[\"()\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[\"()[]{}\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[\"(]\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Sample",
+        "input_data": "[\"([)]\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Sample",
+        "input_data": "[\"{[]}\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[\")\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[\"((\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[\"{[()]}\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[\"(()())\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[\"((()))\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 11",
+        "visibility": "Hidden",
+        "input_data": "[\"(((\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 12",
+        "visibility": "Hidden",
+        "input_data": "[\"{}[]()\"]",
+        "expected_output": "true",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 13",
+        "visibility": "Hidden",
+        "input_data": "[\"{[}]\"]",
+        "expected_output": "false",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Decode String",
+    "slug": "decode-string",
+    "difficulty": "Hard",
+    "function_name": "decode_string",
+    "function_signature": "def decode_string(s):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Decode String\n\n## Problem Statement\n\nGiven an encoded string `s`, return its decoded form.\n\nThe encoding rule is: `k[encoded_string]`, where `encoded_string` inside the brackets is repeated exactly `k` times. The number `k` is always a positive integer.\n\nEncodings can be **nested** \u2014 a bracket group may contain other bracket groups inside it.\n\nYou may assume the input is always valid (no extra spaces, no malformed brackets, brackets are always balanced).\n\n## Examples\n\n### Example 1\n\n**Input:** `s = \"3[a]2[bc]\"`\n**Output:** `\"aaabcbc\"`\n**Explanation:** `3[a]` \u2192 `\"aaa\"`, `2[bc]` \u2192 `\"bcbc\"`. Concatenated: `\"aaabcbc\"`.\n\n### Example 2\n\n**Input:** `s = \"3[a2[c]]\"`\n**Output:** `\"accaccacc\"`\n**Explanation:** Inner `2[c]` \u2192 `\"cc\"`. Then `\"a\" + \"cc\"` = `\"acc\"`. Outer `3[\"acc\"]` \u2192 `\"accaccacc\"`.\n\n### Example 3\n\n**Input:** `s = \"2[abc]3[cd]ef\"`\n**Output:** `\"abcabccdcdcdef\"`\n**Explanation:** `2[abc]` \u2192 `\"abcabc\"`, `3[cd]` \u2192 `\"cdcdcd\"`, then `\"ef\"` appended.\n\n### Example 4\n\n**Input:** `s = \"abc\"`\n**Output:** `\"abc\"`\n**Explanation:** No encoding \u2014 returned as-is.\n\n## Constraints\n\n- `1 <= len(s) <= 30`\n- `s` consists of lowercase English letters, digits, and square brackets `[]`.\n- All integers in `s` are in the range `[1, 10]`.\n- Brackets are always balanced and valid.",
+    "starter_code": "def decode_string(s):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[\"3[a]2[bc]\"]",
+        "expected_output": "\"aaabcbc\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[\"3[a2[c]]\"]",
+        "expected_output": "\"accaccacc\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[\"2[abc]3[cd]ef\"]",
+        "expected_output": "\"abcabccdcdcdef\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[\"abc\"]",
+        "expected_output": "\"abc\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[\"1[a]\"]",
+        "expected_output": "\"a\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[\"10[a]\"]",
+        "expected_output": "\"aaaaaaaaaa\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[\"2[2[a]]\"]",
+        "expected_output": "\"aaaa\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[\"3[ab]\"]",
+        "expected_output": "\"ababab\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[\"2[a3[b]]\"]",
+        "expected_output": "\"abbbabbb\"",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[\"a2[b3[c]]d\"]",
+        "expected_output": "\"abcccbcccd\"",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Merge Intervals",
+    "slug": "merge-intervals",
+    "difficulty": "Hard",
+    "function_name": "merge_intervals",
+    "function_signature": "def merge_intervals(intervals):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Merge Intervals\n\n## Problem Statement\n\nGiven a list of intervals where `intervals[i] = [start, end]`, merge all **overlapping** intervals and return a list of the non-overlapping intervals that cover all intervals in the input.\n\nTwo intervals `[a, b]` and `[c, d]` overlap if `c <= b` (the second starts before or exactly when the first ends).\n\nThe output intervals must be **sorted by start time**.\n\n## Examples\n\n### Example 1\n\n**Input:** `intervals = [[1, 3], [2, 6], [8, 10], [15, 18]]`\n**Output:** `[[1, 6], [8, 10], [15, 18]]`\n**Explanation:** `[1,3]` and `[2,6]` overlap \u2192 merged to `[1,6]`. The others don't overlap.\n\n### Example 2\n\n**Input:** `intervals = [[1, 4], [4, 5]]`\n**Output:** `[[1, 5]]`\n**Explanation:** `[1,4]` and `[4,5]` touch at 4, so they merge into `[1,5]`.\n\n### Example 3\n\n**Input:** `intervals = [[1, 4], [2, 3]]`\n**Output:** `[[1, 4]]`\n**Explanation:** `[2,3]` is completely inside `[1,4]`, so the result is just `[1,4]`.\n\n## Constraints\n\n- `1 <= len(intervals) <= 10000`\n- `intervals[i].length == 2`\n- `0 <= start <= end <= 10000`\n- The input may **not** be sorted.",
+    "starter_code": "def merge_intervals(intervals):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[[[1, 3], [2, 6], [8, 10], [15, 18]]]",
+        "expected_output": "[[1, 6], [8, 10], [15, 18]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[[[1, 4], [4, 5]]]",
+        "expected_output": "[[1, 5]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[[[1, 4], [2, 3]]]",
+        "expected_output": "[[1, 4]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[[[1, 2], [3, 4], [5, 6]]]",
+        "expected_output": "[[1, 2], [3, 4], [5, 6]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[[[1, 10], [2, 3], [4, 5]]]",
+        "expected_output": "[[1, 10]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[[[1, 4]]]",
+        "expected_output": "[[1, 4]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[[[4, 5], [1, 4], [0, 4]]]",
+        "expected_output": "[[0, 5]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[[[1, 3], [3, 5], [5, 7]]]",
+        "expected_output": "[[1, 7]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[[[0, 0], [1, 1]]]",
+        "expected_output": "[[0, 0], [1, 1]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[[[2, 3], [4, 5], [6, 7], [8, 9], [1, 10]]]",
+        "expected_output": "[[1, 10]]",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  },
+  {
+    "title": "Rotate Matrix",
+    "slug": "rotate-matrix",
+    "difficulty": "Hard",
+    "function_name": "rotate_matrix",
+    "function_signature": "def rotate_matrix(matrix):",
+    "time_limit_seconds": 2.0,
+    "memory_limit_mb": 256,
+    "statement": "# Rotate Matrix\n\n## Problem Statement\n\nGiven an `n \u00d7 n` 2D matrix, rotate it **90 degrees clockwise** and return the result.\n\nIn a clockwise rotation, the top row becomes the right column, the right column becomes the bottom row, and so on.\n\n## Examples\n\n### Example 1\n\n**Input:**\n```\nmatrix = [\n  [1, 2, 3],\n  [4, 5, 6],\n  [7, 8, 9]\n]\n```\n**Output:**\n```\n[\n  [7, 4, 1],\n  [8, 5, 2],\n  [9, 6, 3]\n]\n```\n**Explanation:** The first column `[1,4,7]` read bottom to top becomes the first row `[7,4,1]`. And so on for the other columns.\n\n### Example 2\n\n**Input:**\n```\nmatrix = [\n  [5,  1,  9, 11],\n  [2,  4,  8, 10],\n  [13, 3,  6,  7],\n  [15, 14, 12, 16]\n]\n```\n**Output:**\n```\n[\n  [15, 13, 2,  5 ],\n  [14, 3,  4,  1 ],\n  [12, 6,  8,  9 ],\n  [16, 7,  10, 11]\n]\n```\n\n### Example 3\n\n**Input:** `matrix = [[1]]`\n**Output:** `[[1]]`\n\n## Constraints\n\n- `n == len(matrix) == len(matrix[i])`\n- `1 <= n <= 20`\n- `-1000 <= matrix[i][j] <= 1000`",
+    "starter_code": "def rotate_matrix(matrix):\n    pass",
+    "is_active": 1,
+    "test_cases": [
+      {
+        "case_name": "Case 1",
+        "visibility": "Sample",
+        "input_data": "[[[1,2,3],[4,5,6],[7,8,9]]]",
+        "expected_output": "[[7,4,1],[8,5,2],[9,6,3]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 2",
+        "visibility": "Sample",
+        "input_data": "[[[5,1,9,11],[2,4,8,10],[13,3,6,7],[15,14,12,16]]]",
+        "expected_output": "[[15,13,2,5],[14,3,4,1],[12,6,8,9],[16,7,10,11]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 3",
+        "visibility": "Sample",
+        "input_data": "[[[1]]]",
+        "expected_output": "[[1]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 4",
+        "visibility": "Hidden",
+        "input_data": "[[[1,2],[3,4]]]",
+        "expected_output": "[[3,1],[4,2]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 5",
+        "visibility": "Hidden",
+        "input_data": "[[[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]]]",
+        "expected_output": "[[13,9,5,1],[14,10,6,2],[15,11,7,3],[16,12,8,4]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 6",
+        "visibility": "Hidden",
+        "input_data": "[[[1,0,0],[0,1,0],[0,0,1]]]",
+        "expected_output": "[[0,0,1],[0,1,0],[1,0,0]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 7",
+        "visibility": "Hidden",
+        "input_data": "[[[0,0],[0,0]]]",
+        "expected_output": "[[0,0],[0,0]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 8",
+        "visibility": "Hidden",
+        "input_data": "[[[1,0],[0,0]]]",
+        "expected_output": "[[0,1],[0,0]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 9",
+        "visibility": "Hidden",
+        "input_data": "[[[2,3],[1,4]]]",
+        "expected_output": "[[1,2],[4,3]]",
+        "weight": 1,
+        "is_active": 1
+      },
+      {
+        "case_name": "Case 10",
+        "visibility": "Hidden",
+        "input_data": "[[[1,2,3],[0,0,0],[7,8,9]]]",
+        "expected_output": "[[7,0,1],[8,0,2],[9,0,3]]",
+        "weight": 1,
+        "is_active": 1
+      }
+    ]
+  }
+]
